@@ -22,7 +22,7 @@ $ source 02-UC2_Berryconda.sh
 ```
 * your final terminal output should look like this (last line):
 
-![Berryconda done](https://raw.githubusercontent.com/bionanoimaging/UC2-GIT/master/RASPBERRY-PI/V2/2019-08-07-062835_1824x984_scrot.png)
+![Berryconda done](https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/blob/master/SCRIPTS/2019-08-07-062835_1824x984_scrot.png)
 
 ## Acknowledgements
 Thanks to https://github.com/jjhelmus/berryconda for making Python 3.6 easily available for RaspberryPi.
