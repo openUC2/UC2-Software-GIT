@@ -1,5 +1,5 @@
 ## Disclaimer
-By using this install script you agree to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) by [J.J. Helmus](https://github.com/jjhelmus) available in his [Berryconda repository](https://github.com/jjhelmus/berryconda).
+By using this install script you agree to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) available in the following [repository](https://github.com/jjhelmus/berryconda).
 
 
 ## Installing
