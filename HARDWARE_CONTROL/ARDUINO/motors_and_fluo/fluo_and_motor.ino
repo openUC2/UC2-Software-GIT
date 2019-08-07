@@ -8,7 +8,7 @@
 #define CLOCK_FREQUENCY 100000 //choose according to frequency of I2C-Master
 #define HEARTBEAT_INTERVAL 300000
 #define LED 13
-#define FLUO_PIN 13
+#define FLUO_PIN 12
 #define MAX_MSG_LEN 32
 #define MAX_INST 10
 
@@ -28,13 +28,12 @@ char *ptr_stop = NULL;
 //User-defined commands
 char msg[7];
 
-
 //Device Identifier
 const char *DEVICE_ID = "MOTORS";
 
 const int nCommands = 4;
 const char *COMMANDSET[nCommands] = {"DRVX", "DRVY", "DRVZ", "FLUO"};
-const char *INSTRUCTS[nCommands] = {"1", "1", "1","1"};
+const char *INSTRUCTS[nCommands] = {"1", "1", "1", "1"};
 
 const int nComCMDs = 4;
 const char *COM_CMDS[nComCMDs] = {"STATUS", "LOGOFF", "NAME", "ANNOUNCE"};
@@ -53,6 +52,7 @@ char outBuffer[outBufLen];
 
 const size_t max_msg_size = sizeof(sendBuffer);
 
+int FLUO_STATUS = 0;
 //flag to escape Wire-library callback-function (less error-prone)
 volatile boolean receiveFlag = false;
 
@@ -95,32 +95,24 @@ void executeCommand(int nINST)
   {
     strlcat(outBuffer, "Pressed DRVX. Number of steps is: ", outBufLen);
     strlcat(outBuffer, msg, outBufLen);
-    stepperX.Move((int)(INST[0]/10));
+    stepperX.Move((int)(INST[0] / 10));
   }
   else if (strcmp(CMD, COMMANDSET[1]) == 0)
   {
     strlcat(outBuffer, "Pressed DRVY. Number of steps is: ", outBufLen);
     strlcat(outBuffer, msg, outBufLen);
-    stepperY.Move((int)(INST[0]/10));
+    stepperY.Move((int)(INST[0] / 10));
   }
   else if (strcmp(CMD, COMMANDSET[2]) == 0)
   {
     strlcat(outBuffer, "Pressed DRVZ. Number of steps is: ", outBufLen);
     strlcat(outBuffer, msg, outBufLen);
-    stepperZ.Move(INST[0]*10);
+    stepperZ.Move(INST[0] * 10);
   }
   else if (strcmp(CMD, COMMANDSET[3]) == 0)
   {
-    if(digitalRead(FLUO_PIN)){//HIGH is boolean: 1
-      digitalWrite(FLUO_PIN, LOW);
-      strlcat(outBuffer, "Fluo deactivated.", outBufLen);
-    }
-    else{
-      digitalWrite(FLUO_PIN, HIGH);
-      strlcat(outBuffer, "Fluo activated.", outBufLen);
-    }
-    
-    
+    analogWrite(FLUO_PIN, INST[0]);
+    //strlcat(outBuffer, "Fluo activated.", outBufLen);
   }
   else
   {
@@ -132,6 +124,10 @@ void setup()
 {
   pinMode(LED, OUTPUT);
   pinMode(FLUO_PIN, OUTPUT);
+  analogWrite(FLUO_PIN,255);
+  delay(1000);
+  analogWrite(FLUO_PIN,0);
+  delay(1000);  
   //Wire-library callbacks
   Wire.begin(SLAVE_ADDRESS);
   //Wire.setClock(CLOCK_FREQUENCY);
@@ -150,9 +146,9 @@ void setup()
   strlcat(busy_msg, "BUSY", sizeof(busy_msg));
   strlcat(busy_msg, delim_stop, sizeof(busy_msg));
 
-   stepperX.SetSpeed(2);
-   stepperY.SetSpeed(2);
-   stepperZ.SetSpeed(15);
+  stepperX.SetSpeed(2);
+  stepperY.SetSpeed(2);
+  stepperZ.SetSpeed(15);
 }
 
 void loop()
