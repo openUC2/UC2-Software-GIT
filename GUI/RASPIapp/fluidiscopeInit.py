@@ -10,30 +10,32 @@ import fluidiscopeGlobVar as fg
 import fluidiscopeIO
 import unipath as uni
 
+from I2CDevice import I2CDevice
+
 if not fg.my_dev_flag:
     import picamera
     from I2CBus import I2CBus
-    from I2CDevice import I2CDevice
-
 
 # Initialization routine of Fluidiscope
 
 
 def arduino_init():
-    arch = os.uname()[4]
+    try:
+        arch = os.uname()[4]
+    except:
+        arch = os.name
     if "arm" in arch:
         fg.camera = picamera.PiCamera()
         print("cam is online")
-        # address = I2CBus.scanBus()
-        fg.ledarr = I2CDevice(0x07) #normally 0x07 -> changed for fluo system 10.07.2019
-        fg.motors = I2CDevice(0x08) #normally 0x08 -> changed for fluo system 10.07.2019
-        time.sleep(1.0) #because accessing same device
-        fg.fluo = I2CDevice(0x08)   #sits on the same
-        #TODO: WHAT THE HACK?!
-        #fg.ledarr.announce()
-        #fg.motors.announce()
-        #fluidiscopeIO.send(fg.ledarr, "CLEAR")
-
+    # address = I2CBus.scanBus()
+    fg.ledarr = I2CDevice(0x07)  # normally 0x07
+    fg.motors = I2CDevice(0x08)  # normally 0x08
+    # time.sleep(1.0) #because accessing same device
+    # sits on the same Arduino as motors for now
+    fg.fluo = I2CDevice(0x08)
+    # fg.ledarr.announce()
+    # fg.motors.announce()
+    #fluidiscopeIO.send(fg.ledarr, "CLEAR")
 
 
 def GUI_define_sizes():

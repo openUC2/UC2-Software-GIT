@@ -18,10 +18,13 @@ class I2CDevice(object):
     com_cmds = {"STATUS": "STATUS", "LOGOFF": "LOGOFF", "NAME": "NAME"}
 
     def __init__(self, address):
-        try:
-            address = int(address)
-        except ValueError:
-            raise fluidException("Invalid address format.")
+        if fg.my_dev_flag:
+            adress = 0
+        else:
+            try:
+                address = int(address)
+            except ValueError:
+                raise fluidException("Invalid address format.")
 
         self.address = address
         self.name = "unknown"
@@ -36,18 +39,23 @@ class I2CDevice(object):
 
     def requestEvent(self):
         try:
-            byte_msg = I2CBus.defaultBus.read_i2c_block_data(self.address, 0, I2CDevice.max_msg_len)
+            byte_msg = I2CBus.defaultBus.read_i2c_block_data(
+                self.address, 0, I2CDevice.max_msg_len)
         except Exception as e:
-            print("Unknown error {0} occured on request on address {1}".format(e, hex(self.address)))
+            print("Unknown error {0} occured on request on address {1}".format(
+                e, hex(self.address)))
             return
 
         if self.isEmpty(byte_msg):
-            print("Device on address {0} is not responding. (message is empty).".format(hex(self.address)))
+            print("Device on address {0} is not responding. (message is empty).".format(
+                hex(self.address)))
         else:
             try:
                 str_msg = [chr(x) for x in byte_msg]
-                strt = min(i for i, c in enumerate(str_msg) if c == self.delim_strt)
-                stop = max(i for i, c in enumerate(str_msg) if c == self.delim_stop)
+                strt = min(i for i, c in enumerate(
+                    str_msg) if c == self.delim_strt)
+                stop = max(i for i, c in enumerate(
+                    str_msg) if c == self.delim_stop)
                 str_msg = str_msg[strt + 1:stop]
                 str_msg = "".join(str_msg)
             except Exception as e:
@@ -62,10 +70,12 @@ class I2CDevice(object):
         try:
             self.outBuffer = self.delim_strt + str(value) + self.delim_stop
             self.outBuffer = [ord(x) for x in self.outBuffer]
-            I2CBus.defaultBus.write_i2c_block_data(self.address, 1, self.outBuffer)
+            I2CBus.defaultBus.write_i2c_block_data(
+                self.address, 1, self.outBuffer)
             self.outBuffer = ""
         except Exception as e:
-            print("Unknown error {0} occured on send to address {1}".format(e, hex(self.address)))
+            print("Unknown error {0} occured on send to address {1}".format(
+                e, hex(self.address)))
         return
 
     def extractCommand(self, args):
@@ -83,8 +93,12 @@ class I2CDevice(object):
 
     def send(self, *args):
         cmd = self.extractCommand(args)
-        print("Sending:   {0}".format(cmd))
-        self.sendEvent(cmd)
+        if fg.my_dev_flag:
+            print(
+                "Debugging mode. Generated Command=[{}] has not been sent.".format(cmd))
+        else:
+            print("Sending:   {0}".format(cmd))
+            self.sendEvent(cmd)
 
     def request(self):
         ans = self.requestEvent()

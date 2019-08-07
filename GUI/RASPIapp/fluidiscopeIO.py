@@ -1,19 +1,21 @@
+from shutil import copyfile
+from safe_cast import safe_str
+import unipath as uni
+import time
+import fluidiscopeToolbox as toolbox
+import fluidiscopeGlobVar as fg
+from fluidException import fluidException
+from copy import deepcopy
 import io
 import os
 import datetime
 import re
+import time
+
 if os.name == 'nt':
     import yaml
 else:
     from ruamel import yaml
-from copy import deepcopy
-from fluidException import fluidException
-import fluidiscopeGlobVar as fg
-import fluidiscopeToolbox as toolbox
-import time
-import unipath as uni
-from safe_cast import safe_str
-from shutil import copyfile
 
 if not fg.my_dev_flag:
     from I2CDevice import I2CDevice
@@ -60,7 +62,10 @@ def restore_config():
         src = str(uni.Path(backup_path, f))
         dst = str(uni.Path(fg.config_path, f))
         copyfile(src, dst)
-        os.rename(dst, dst.replace('.bak', '.yaml'))
+        dstn = dst.replace('.bak', '.yaml')
+        if os.path.exists(dstn):
+            os.remove(dstn)
+        os.rename(dst, dstn)
 
     try:
         restored_main_load = fluid_load(fg.config_file)
@@ -148,9 +153,11 @@ def fluid_dump(write_file, data):
         with io.open(write_file, 'w', encoding='utf8') as stream:
             yaml.safe_dump(data, stream, default_flow_style=False)
     except Exception as exc:
-            print(write_file)
-            print(exc)
-            exit()
+        print(exc)
+        print("Using yaml.dump for file {}".format(write_file))
+        with io.open(write_file, 'w', encoding='utf8') as stream:
+            yaml.dump(data, stream, default_flow_style=False)
+        # exit()
 
 
 def settings_save_restore(self, instance, restore):
@@ -197,7 +204,8 @@ def settings_save_restore(self, instance, restore):
                 if restore:
                     self.ids[prop_help].text = str(fg.config['imaging'][key])
                 else:
-                    fg.config['imaging'][key] = toolbox.textinput_convert(self.ids[prop_help].text)
+                    fg.config['imaging'][key] = toolbox.textinput_convert(
+                        self.ids[prop_help].text)
             except Exception as e:
                 pass
 
@@ -206,7 +214,8 @@ def settings_save_restore(self, instance, restore):
 
     elif any(chk[7:9]):
         if restore:
-            fg.config['light']['user'] = deepcopy(fg.config['light']['default'])
+            fg.config['light']['user'] = deepcopy(
+                fg.config['light']['default'])
             self.ids['slider_light_set_2_NA'].value = fg.config['light']['NA']
         update_matrix(self, instance, ignore_NA=True, sync_only=False)
 
@@ -254,7 +263,7 @@ def slider_setNA(self, instance):
 def update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern='CUS'):
     prop_help = 'scr_light_set_2_grid_'
     if pattern == 'CUS':
-        pattern_key = ['light','user']
+        pattern_key = ['light', 'user']
     else:
         pattern_key = ['light_patterns', pattern]
     n = fg.config['light']['matrixdim'][0]
@@ -270,22 +279,22 @@ def update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern='CUS'
         if offset_y <= row < n-offset_y:
             for col in range(m):
                 if offset_x <= col < m-offset_x:
-
                     pos = row*n + col
                     prop_help = 'scr_light_set_2_grid_' + str(pos)
-                    # TODO: Change it back to color selected by colorwheel!
-
-                    if fg.config[pattern_key[0]][pattern_key[1]][row][col] > 0: # was: sum()>0 -> but why?
+                    if sum(fg.config[pattern_key[0]][pattern_key[1]][row][col]) > 0:
                         self.ids[prop_help].value = 1
-                        self.ids[prop_help].fl_value = fg.config[pattern_key[0]][pattern_key[1]][row][col]
+                        self.ids[prop_help].fl_value = fg.config[pattern_key[0]
+                                                                 ][pattern_key[1]][row][col]
                         toolbox.activate(self.ids[prop_help])
                     else:
                         self.ids[prop_help].value = 0
-                        self.ids[prop_help].fl_value = [0,0,0]
+                        self.ids[prop_help].fl_value = [0, 0, 0]
                         toolbox.deactivate(self.ids[prop_help])
 
-                    if not sync_only and not fg.my_dev_flag and sum(self.ids[prop_help].fl_value)>0:
-                        fg.ledarr.send("PXL", pos, list(self.ids[prop_help].fl_value))
+                    if not sync_only and sum(self.ids[prop_help].fl_value) > 0:
+                        fg.ledarr.send("PXL", pos, list(
+                            self.ids[prop_help].fl_value))
+                        time.sleep(0.050)
                         #print("sent:{0} of {1}".format(support_str,type(list(support_str))))
 
 

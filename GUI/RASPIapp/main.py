@@ -32,19 +32,16 @@ import fluidiscopeGlobVar as fg
 import fluidiscopeInit
 import fluidiscopeToolbox as toolbox
 import fluidiscopeIO
+from I2CDevice import I2CDevice
 
 if not fg.my_dev_flag:
-    from I2CDevice import I2CDevice
     import picamera
 
 # Initialization
-
-if not fg.my_dev_flag:
-    fluidiscopeInit.arduino_init()
-else:
-    fg.camera = 1
-    fg.ledarr = "LEDARR"
-    fg.motors = "MOTORS"
+fluidiscopeInit.arduino_init()
+#    fg.camera = 1
+#    fg.ledarr = "LEDARR"
+#    fg.motors = "MOTORS"
 
 fluidiscopeInit.load_config()
 fluidiscopeInit.GUI_define_sizes()
@@ -86,10 +83,6 @@ class Fluidiscope(BoxLayout):
 
     def select_imaging_method(self, instance):
         toolbox.select_method(self, instance, "imaging_method")
-
-    def btn_function_fluo(self, instance):
-
-        toolbox.fluorescence_function(self, instance)
 
     # do a measurement (e.g. SNAP, experiment)
     def measurement_control(self, instance):
@@ -140,19 +133,14 @@ class Fluidiscope(BoxLayout):
 
     # light functions
     def slider_change(self, instance):
-        if fg.my_dev_flag:
-            print '%s value has changed to %s' % (
-                instance.name, str(instance.value))
-        else:
-            print '%s value has changed to %s' % (
-                instance.name, str(instance.value))
-            fg.ledarr.send("RECT+0+0+8+8+1", int(instance.value), int(instance.value), int(instance.value))
-        fg.config['light']['intensity_expt'] = instance.value
+        toolbox.slider_change(self,instance)
 
 
     def buttons_light(self, instance):
         toolbox.buttons_light(self,instance)
 
+    def buttons_light_fluo(self,instance):
+        toolbox.buttons_light_fluo(self,instance)
 
     def colorpicker_selected_color(self, instance):
         toolbox.selected_color(self, instance)
@@ -238,8 +226,8 @@ class Fluidiscope(BoxLayout):
     # overwrite def-function
     def __init__(self, **kwargs):
         super(Fluidiscope, self).__init__(**kwargs)
-        self.drives_list.adapter.bind(
-            on_selection_change=self.drive_selection_changed)
+        #self.drives_list.adapter.bind(
+        #    on_selection_change=self.drive_selection_changed)
 
     def get_drives(self):
         if platform == 'win':
@@ -260,9 +248,10 @@ class Fluidiscope(BoxLayout):
         self.file_chooser.path = selected_item
 
     def drive_selection_update(self):
-        self.drives_list.adapter.data = self.get_drives()
-        if (hasattr(self.drives_list, '_reset_spopulate')):
-            self.drives_list._reset_spopulate()
+        #self.drives_list.adapter.data = self.get_drives()
+        #if (hasattr(self.drives_list, '_reset_spopulate')):
+        #    self.drives_list._reset_spopulate()
+        pass
 
     def chkbox_delete_active(self):
         print("********* Checkbox on_active works **********")

@@ -110,8 +110,8 @@
     orientation: 'horizontal'
 
     # ATTRIBUTES
-    drives_list: scr_copy_1_drives_list
-    file_chooser: scr_copy_1_filechooser
+    #drives_list: scr_copy_1_drives_list
+    #file_chooser: scr_copy_1_filechooser
 
     # LEFT SIDE
     BoxLayout:
@@ -276,10 +276,17 @@
                     on_press: root.buttons_light(self)
             FluidLineVert:
                # inserts a pre-defined line
+            FluidButton:
+                size_hint_x: 0.1
+                #padding: [5,0,5,0]
+                #spacing: [2,0]
+                id: btn_light_fluo
+                text: "FLUO"
+                on_press: root.buttons_light_fluo(self)
             FluidSlide3:
                 id: slider_light_intensity
                 name: "slider_light_intensity_name"
-                size_hint_x: 0.48
+                size_hint_x: 0.38
                 min: 0
                 max: 255
                 value: root.init_var[0]
@@ -386,11 +393,12 @@
                                 id: btn_imaging_technique_3
                                 text: "Custom"
                                 on_press: root.select_imaging_method(self)
+                            FluidLineVert:
                             FluidButton:
                                 size_hint_x: 0.25
-                                id: btn_imaging_technique_4
-                                text: "Fluo"
-                                on_press: root.btn_function_fluo(self)
+                                id: btn_imaging_technique_fluo
+                                text: "Fluor"
+                                on_press: root.buttons_light_fluo(self)
                     BoxLayout:
                         size_hint_y: 0.2
                         orientation: 'vertical'
