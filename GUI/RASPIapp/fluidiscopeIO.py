@@ -149,14 +149,14 @@ def fluid_load(read_file):
 
 
 def fluid_dump(write_file, data):
-    try:
-        with io.open(write_file, 'w', encoding='utf8') as stream:
-            yaml.safe_dump(data, stream, default_flow_style=False)
-    except Exception as exc:
-        print(exc)
-        print("Using yaml.dump for file {}".format(write_file))
-        with io.open(write_file, 'w', encoding='utf8') as stream:
-            yaml.dump(data, stream, default_flow_style=False)
+    # try:
+    with io.open(write_file, 'w', encoding='utf8') as stream:
+        yaml.safe_dump(data, stream, default_flow_style=False)
+    # except Exception as exc:
+    #    print(exc)
+    #    print("Using yaml.dump for file {}".format(write_file))
+    #    with io.open(write_file, 'w', encoding='utf8') as stream:
+    #        yaml.dump(data, stream, default_flow_style=False)
         # exit()
 
 
@@ -260,7 +260,8 @@ def slider_setNA(self, instance):
     print("NA set by slider: {0}".format(fg.config['light']['NA']))
 
 
-def update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern='CUS'):
+def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
+    fg.config['light']['update_matrix_active'] = True
     prop_help = 'scr_light_set_2_grid_'
     if pattern == 'CUS':
         pattern_key = ['light', 'user']
@@ -294,8 +295,9 @@ def update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern='CUS'
                     if not sync_only and sum(self.ids[prop_help].fl_value) > 0:
                         fg.ledarr.send("PXL", pos, list(
                             self.ids[prop_help].fl_value))
-                        time.sleep(0.050)
+                        time.sleep(fg.config['experiment']['i2c_send_delay'])
                         #print("sent:{0} of {1}".format(support_str,type(list(support_str))))
+    fg.config['light']['update_matrix_active'] = False
 
 
 def prepareFolder():

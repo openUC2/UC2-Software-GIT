@@ -36,7 +36,8 @@ def autofocus_callback(self,instance,*rargs):
     print("Autofocus-03a- config->experiment->is_autofocus_busy={}".format(fg.config['experiment']['is_autofocus_busy']))
     # run autofocus routine
     print("Autofocus-03b- autofocus_callback in fluidiscopeAutofocus.py started.")
-    ref_image = autofocus_routine(self)
+    fg.config['experiment']['imaging_method']='AF'
+    autofocus_routine(self)
     # simulation datastack
     # x_positions, calc_im_qual = simulate_data_stack()
     fg.config['experiment']['is_autofocus_busy'] = False

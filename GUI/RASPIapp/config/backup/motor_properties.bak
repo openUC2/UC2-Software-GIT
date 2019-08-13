@@ -6,9 +6,9 @@ calibration_z_pos: 0
 change_amount: 16
 conversion_factor_xy: 1
 conversion_factor_z: 1
-standard_move_dist_xy: 500
-standard_move_dist_z: 500
+standard_move_dist_xy: 80
+standard_move_dist_z: 80
 standard_move_time_xy: 1
 standard_move_time_z: 3
-stepsize_xy: 400
-stepsize_z: 560
+stepsize_xy: 80
+stepsize_z: 80

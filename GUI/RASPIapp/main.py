@@ -86,22 +86,29 @@ class Fluidiscope(BoxLayout):
 
     # do a measurement (e.g. SNAP, experiment)
     def measurement_control(self, instance):
-        if (fg.config['experiment']['active'] == 0):
+        if instance.uid == self.ids['btn_snap'].uid:
+            fg.config['experiment']['imaging_cause'] = 'SNAP'
+        else: 
+            fg.config['experiment']['imaging_cause'] = 'MEAS'
+        # set active etc
+        if fg.config['experiment']['active'] == 0:
             fg.config['experiment']['active'] = 1
             toolbox.run_measurement(self, instance)
-
+            if instance.uid == self.ids['btn_snap'].uid:
+                fg.config['experiment']['active'] = 0
         else:
             fg.config['experiment']['active'] = 0
             fg.config['experiment']['success'] = False
             toolbox.abort_measurement(self, instance)
-            instance.text = "Start Measurement"
+            if not instance.uid == self.ids['btn_snap']:
+                instance.text = "Start Measurement"
 
-    def snapshot(self, instance):
-        fg.config['experiment']['imaging_method'] = toolbox.get_imaging_method(self)
-        toolbox.activate(instance)
-        toolbox.take_image(self, instance)
-        fg.config['experiment']['success'] = True
-        toolbox.switch_start_condition(self, instance)
+    #def snapshot(self, instance):
+    #    fg.config['experiment']['imaging_method'] = toolbox.get_imaging_method(self)
+    #    toolbox.activate(instance)
+    #    toolbox.take_image(self, instance)
+    #    fg.config['experiment']['success'] = True
+    #    toolbox.switch_start_condition(self, instance)
 
     def autofocus(self, instance):
         toolbox.change_activation_status(instance)
@@ -117,7 +124,7 @@ class Fluidiscope(BoxLayout):
 
     def btn_function_move_motor(self, instance):
         if fg.my_dev_flag:
-            print('I am delivering data to the arduino by pidgeon. Takes a while...')
+            print("I am I am delivering data to the arduino by pidgeon. Takes a while...")
         if not 'pb_motor' in fg.EVENT:
             toolbox.move_motor(self, instance)
             toolbox.select_method(self, instance, "motor_mov_buttons")
@@ -139,8 +146,8 @@ class Fluidiscope(BoxLayout):
     def buttons_light(self, instance):
         toolbox.buttons_light(self,instance)
 
-    def buttons_light_fluo(self,instance):
-        toolbox.buttons_light_fluo(self,instance)
+    #def buttons_light_fluo(self,instance):
+    #    toolbox.buttons_light_fluo(self,instance)
 
     def colorpicker_selected_color(self, instance):
         toolbox.selected_color(self, instance)
@@ -165,7 +172,7 @@ class Fluidiscope(BoxLayout):
 
     def buttons_motor(self, instance):
         if fg.my_dev_flag:
-            print 'I am delivering data to the arduino by pidgeon. Takes a while...'
+            print('I am delivering data to the arduino by pidgeon. Takes a while...')
         else:
             toolbox.motor_change_status(instance)
         toolbox.select_method(self, instance, "motor_buttons")
@@ -214,11 +221,11 @@ class Fluidiscope(BoxLayout):
             # callback = FluidiscopeApp().get_running_app().stop()
             # Clock.schedule_once(callback, 1.5)
             # touch.ud['event'] = callback
-            print ''
+            pass
 
     def delete_clock(self, instance, touch, *args):
         # Clock.unschedule(touch.ud['event'])
-        print ''
+        pass
 
     def btn_end_program(self):
         toolbox.end_fluidiscope(FluidiscopeApp())

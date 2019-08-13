@@ -62,3 +62,7 @@ def load_config():
         test_text = "from backup "
         fg.config = fluidiscopeIO.load_config(fg.config_file)
     print("Configuration file {0}loaded".format(test_text))
+
+    # add further security changes
+    # should always be empty if no imaging technique is chosen
+    fg.config['experiment']['active_methods'] = []

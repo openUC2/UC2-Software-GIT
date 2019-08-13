@@ -282,7 +282,7 @@
                 #spacing: [2,0]
                 id: btn_light_fluo
                 text: "FLUO"
-                on_press: root.buttons_light_fluo(self)
+                on_press: root.buttons_light(self)
             FluidSlide3:
                 id: slider_light_intensity
                 name: "slider_light_intensity_name"
@@ -394,11 +394,12 @@
                                 text: "Custom"
                                 on_press: root.select_imaging_method(self)
                             FluidLineVert:
+                                # nothing in here
                             FluidButton:
                                 size_hint_x: 0.25
-                                id: btn_imaging_technique_fluo
+                                id: btn_imaging_technique_fluor
                                 text: "Fluor"
-                                on_press: root.buttons_light_fluo(self)
+                                on_press: root.select_imaging_method(self)
                     BoxLayout:
                         size_hint_y: 0.2
                         orientation: 'vertical'
@@ -529,7 +530,7 @@
                             id: btn_snap
                             text: "SNAP"
                             disabled: True
-                            on_press: root.snapshot(self)
+                            on_press: root.measurement_control(self)
                         FluidButton:
                             id: btn_lastim
                             text: "LASTIM"

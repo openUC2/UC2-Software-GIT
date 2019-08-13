@@ -280,8 +280,8 @@ def end_fluidiscope(app):
 
 def select_method(self, instance, aimed_component_group):
     if aimed_component_group == "light_buttons":
-        method_dictionary = {'FULL': 0, 'PRE': 1, 'CUS': 2} #instance.text: 0,
-        switch_entries = ["btn_light_full", "btn_light_preset_pattern", "btn_light_custom_pattern"]
+        method_dictionary = {'FULL': 0, 'PRE': 1, 'CUS': 2, 'FLUO': 3} #instance.text: 0,
+        switch_entries = ["btn_light_full", "btn_light_preset_pattern", "btn_light_custom_pattern", "btn_light_fluo"]
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
         if instance.uid == self.ids['btn_light_preset_pattern'].uid:
             counter_active_methods = ['btn_light_set_2_clear','btn_light_set_2_fill','slider_light_set_2_NA','btn_light_set_2_pattern_run','btn_light_set_2_pattern_1','btn_light_set_2_pattern_2','btn_light_set_2_pattern_3','btn_light_set_2_pattern_4']
@@ -324,22 +324,30 @@ def select_method(self, instance, aimed_component_group):
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
         counter_active_methods = ["scr_motor_set_cal_min", "scr_motor_set_cal_zero","scr_motor_set_cal_max"]
     elif aimed_component_group == "imaging_method":
-        method_dictionary = {"Bright": 0, "qDPC": 1, "Custom": 2}
-        switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3"]
+        method_dictionary = {"Bright": 0, "qDPC": 1, "Custom": 2, "Fluor": 3}
+        #hswitch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_fluor"]
+        switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_fluor"]
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
-        inactive_methods.extend(["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
-                                  "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",])
-        counter_active_methods = ["btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
-    elif aimed_component_group == "imaging_method_fluo":
-        active_method = "btn_imaging_technique_fluo"
-        switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3"]
-        if not any([self.ids[x].fl_active for x in switch_entries]):
-            inactive_methods =["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
-                                    "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",]
+        inactive_methods = [] # implemented to allow for multiple selection
+        if len(fg.config['experiment']['active_methods']) == 0:            
+            inactive_methods.extend(["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
+                                    "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",])
             counter_active_methods = ["btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
-        else:
-            inactive_methods = None
-            counter_active_methods = None
+        elif len(fg.config['experiment']['active_methods']) == 1 and check_active(instance):
+            inactive_methods.extend(["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
+                                    "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",])
+            counter_active_methods = ["btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
+        imaging_methods_change(self, instance)
+    #elif aimed_component_group == "imaging_method_fluo":
+    #    active_method = "btn_imaging_technique_fluo"
+    #    switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3"]
+    #    if not any([self.ids[x].fl_active for x in switch_entries]):
+    #        inactive_methods =["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
+    #                                "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",]
+    #        counter_active_methods = ["btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
+    #    else:
+    #        inactive_methods = None
+    #        counter_active_methods = None
     elif aimed_component_group == "select_imaging_time_entry":
         method_dictionary = {"MEAS\nITER": 0, "TOTAL\nDURAT": 1}
         switch_entries = ["btn_imaging_measiter", "btn_imaging_totaldurat"]
@@ -357,11 +365,14 @@ def select_method(self, instance, aimed_component_group):
     else:
         pass
     # if list inactive_methods is not empty
-    if inactive_methods:
-        change_enable_status_chain(self, check_active(instance), inactive_methods[:])
+    try:
+        if inactive_methods:
+            change_enable_status_chain(self, check_active(instance), inactive_methods[:])
     # if list counter_active_methods is not empty
-    if counter_active_methods:
-        change_enable_status_chain(self, not check_active(instance), counter_active_methods[:])
+        if counter_active_methods:
+            change_enable_status_chain(self, not check_active(instance), counter_active_methods[:])
+    except Exception as exc:
+        print("Had exception: __{}__, but continued".format(exc))
     # change activation status of clicked instance (button)
     change_activation_status(instance)
     clear_notification_labels(self)
@@ -371,9 +382,15 @@ def select_method(self, instance, aimed_component_group):
 
     if fg.my_dev_flag:
         warn_dev_mode(self)
-
+    print('Selected methods: {}.'.format(fg.config['experiment']['active_methods']))
+    print('this time selected method: {}.'.format(active_method))
     return active_method
 
+def imaging_methods_change(self, instance):
+    if instance.text in fg.config['experiment']['active_methods']:
+        fg.config['experiment']['active_methods'].remove(instance.text)
+    else:
+        fg.config['experiment']['active_methods'].append(instance.text)
 
 def show_notification_labels(self, instance):
     is_snapshot = instance.text in ['SNAP', 'BG', 'FG']
@@ -419,21 +436,15 @@ def get_imaging_method(self):
         imaging_technique = self.ids['btn_imaging_technique_2'].text
     elif check_active(self.ids['btn_imaging_technique_3']):
         imaging_technique = self.ids['btn_imaging_technique_3'].text
+    elif check_active(self.ids['btn_imaging_technique_fluor']):
+        imaging_technique = self.ids['btn_imaging_technique_fluor'].text
     elif check_active(self.ids['btn_take_background']):
         imaging_technique = self.ids['btn_take_background'].text
     elif check_active(self.ids['btn_take_foreground']):
         imaging_technique = self.ids['btn_imaging_technique_3'].text
     else:
         imaging_technique = None
-    # additionally: add fluo
-    if check_active(self.ids['btn_imaging_technique_fluo']):
-        imaging_technique2 = self.ids['btn_imaging_technique_fluo'].text
-    else: 
-        imaging_technique2 = None
-    if imaging_technique == None:
-        imaging_technique = imaging_technique2
-        imaging_technique2 = None
-    return [imaging_technique, imaging_technique2]
+    return imaging_technique
 
 
 def experiment_duration_format(value,direction):
@@ -492,28 +503,19 @@ def imaging_set_time_init(self):
 
 
 def slider_change(self,instance):
-    print '%s value has changed to %s' % (instance.name, str(instance.value))
+    print('%s value has changed to %s' % (instance.name, str(instance.value)))
     #fg.ledarr.send("RECT+0+0+8+8+1", int(instance.value), int(instance.value), int(instance.value))
-    fg.ledarr.send("FLUO", int(instance.value))
-    fg.config['light']['intensity_expt'] = int(instance.value)
+    if check_active(self.ids['btn_light_fluo']):
+        fg.fluo.send("FLUO", int(instance.value))
+        print('Fluo active, sent FLUO+{}.'.format(int(instance.value)))
+    fg.config['light']['intensity'] = int(instance.value)
 
 def buttons_light(self,instance):
     if fg.my_dev_flag:
         print 'I am delivering data to the arduino by pidgeon. Takes a while...'
     light_change_status(self, instance)
     select_method(self, instance, "light_buttons")
-
-def buttons_light_fluo(self,instance):
-    if instance.uid == self.ids['btn_imaging_technique_fluo'].uid:
-        print("Clicked fluo(R) button...")
-        select_method(self, instance, "imaging_method_fluo")
-    elif instance.uid == self.ids['btn_light_fluo'].uid:
-        print("Clicked fluo button...")
-        light_fluo_change_status(self, instance)
-        change_activation_status(instance)
-    else: 
-        print("Pressed button with unexpected behaviour: {}".format(instance.name))
-    
+   
 
 #############################
 #                           #
@@ -535,63 +537,70 @@ def run_measurement(self, instance):
     # prepare folder
     fluidiscopeIO.prepareFolder()
 
+    # put data into config-dictionary
+    set_measurement_parameter(self)
+
     # clear arduino and set to flyby (= do not save patterns)
     if not fg.my_dev_flag:
         fg.ledarr.send("CLEAR")
         time.sleep(0.04)
         fg.ledarr.send("FLYBY", 1)
-
     # set status of autofocus to False
     #fg.config['experiment']['is_autofocus_request'] = False
     #fg.config['experiment']['is_autofocus_busy'] = False
+    if instance.uid == self.ids['btn_snap'].uid:
+        select_method(self, instance, "take_image")
+        activate(instance)
+        take_image(self)
+        abort_measurement(self, instance)
+    else: 
+        # rewrite button-text if necessary
+        if instance.text == "Start Measurement":
+            instance.text = "Stop Measurement"
 
-    # rewrite button-text if necessary
-    if instance.text == "Start Measurement":
-        instance.text = "Stop Measurement"
+        # put values into display:
+        update_measurement_status_display(self)
 
-    # put data into config-dictionary
-    set_measurement_parameter(self)
+        # activate and deactivate according buttons
+        select_method(self, instance, "take_image")
+        activate(instance)
 
-    # put values into display:
-    update_measurement_status_display(self)
+        # let the device settle for a bit
+        time.sleep(0.2)
+        # schedule callback-function
 
-    # activate and deactivate according buttons
-    select_method(self, instance, "take_image")
-    activate(instance)
-
-    # let the device settle for a bit
-    time.sleep(0.2)
-    # schedule callback-function
-
-    #if imaging_callback(self, instance):
-    if 'meas' in fg.EVENT:
-        pass
-        event_delete(fg.EVENT['meas'])
-        event_delete(fg.EVENT['meas_disp'])
-    else:
-        # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
-        update_interval = 1 # for timer display refresh
-        fg.EVENT['meas'] = Clock.schedule_interval(partial(imaging_callback, self, instance),fg.config['experiment']['interval'])# in seconds
-        fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(update_measurement_status_display_timer, self, update_interval),update_interval) # in seconds
-        #if 'autofocus' in fg.EVENT:
-        #    print("autofocus_measure angelegt mit time {}".format(fg.config['autofocus']['time_interval_min']*60))
-        #    fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(run_autofocus,instance),fg.config['autofocus']['time_interval_min']*60) # in seconds
-        #if 'autofocus' in fg.EVENT:
-        #   fg.EVENT['autofocus_measure'].cancel()
-        #    Clock.unschedule(fg.EVENT['autofocus_measure'])
-        print("not implemented yet")
+        #if imaging_callback(self, instance):
+        if 'meas' in fg.EVENT:
+            pass
+            event_delete(fg.EVENT['meas'])
+            event_delete(fg.EVENT['meas_disp'])
+        else:
+            # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
+            update_interval = 1 # for timer display refresh
+            fg.EVENT['meas'] = Clock.schedule_interval(partial(imaging_callback, self, instance),fg.config['experiment']['interval'])# in seconds
+            fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(update_measurement_status_display_timer, self, update_interval),update_interval) # in seconds
+            #if 'autofocus' in fg.EVENT:
+            #    print("autofocus_measure angelegt mit time {}".format(fg.config['autofocus']['time_interval_min']*60))
+            #    fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(run_autofocus,instance),fg.config['autofocus']['time_interval_min']*60) # in seconds
+            #if 'autofocus' in fg.EVENT:
+            #   fg.EVENT['autofocus_measure'].cancel()
+            #    Clock.unschedule(fg.EVENT['autofocus_measure'])
+            #print("not implemented yet")
 
 def set_measurement_parameter(self):
-    fg.config['experiment']['imaging_method'] = get_imaging_method(self)[0]
-    fg.config['experiment']['imaging_method_2'] = get_imaging_method(self)[1]
-    fg.config['experiment']['imaging_num'] = 0
-    fg.config['experiment']['time_left'] = fg.config['experiment']['duration']
-    fg.config['experiment']['time_passed'] = 0
-    fg.config['experiment']['images_total'] = int(
-        fg.config['experiment']['duration'] / fg.config['experiment']['interval'] + 1)  # 1 image directly taken on start
-    fg.config['experiment']['images_left'] = fg.config['experiment']['images_total']
-    fg.config['experiment']['images_taken'] = 0
-    fg.config['experiment']['success'] = False
+    fg.config['light']['intensity_expt'] = fg.config['light']['intensity']
+    if fg.config['experiment']['imaging_cause'] == 'SNAP':
+        fg.config['experiment']['snap_num'] += 1
+    else:
+        fg.config['experiment']['imaging_method'] = get_imaging_method(self)
+        fg.config['experiment']['imaging_num'] = 0
+        fg.config['experiment']['time_left'] = fg.config['experiment']['duration']
+        fg.config['experiment']['time_passed'] = 0
+        fg.config['experiment']['images_total'] = int(
+            fg.config['experiment']['duration'] / fg.config['experiment']['interval'] + 1)  # 1 image directly taken on start
+        fg.config['experiment']['images_left'] = fg.config['experiment']['images_total']
+        fg.config['experiment']['images_taken'] = 0
+        fg.config['experiment']['success'] = False
 
 def update_measurement_parameters(self):
     fg.config['experiment']['images_left'] -= 1
@@ -625,19 +634,23 @@ def update_measurement_status_display_timer(self, interval, *rargs):
 def abort_measurement(self, instance):
     deactivate(instance)
     imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-                          "Custom": "btn_imaging_technique_3", "Fluor": "btn_imaging_technique_fluo"}
-
+                          "Custom": "btn_imaging_technique_3", "Fluor": "btn_imaging_technique_fluor"}
+    change_enable_status(instance, False)
+    while not fg.config['experiment']['active_methods'] == []:
+        key = fg.config['experiment']['active_methods'].pop(0)
+        deactivate(self.ids[imaging_method_dic[key]])
     for key in imaging_method_dic:
         change_enable_status(self.ids[imaging_method_dic[key]], True)
 
-    change_enable_status(instance, False)
-    deactivate(self.ids[imaging_method_dic[fg.config['experiment']['imaging_method']]])
+    activate_methods = ["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
+                                "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",]
+    change_enable_status_chain(self, True, activate_methods)
+    if not instance.uid == self.ids['btn_snap'].uid:
+        event_delete('meas')
+        event_delete('meas_disp')
 
-    event_delete('meas')
-    event_delete('meas_disp')
-
-    fg.config['experiment']['last_expt_num'] = fg.expt_num
-    show_notification_labels(self, instance)
+        fg.config['experiment']['last_expt_num'] = fg.expt_num
+        show_notification_labels(self, instance)
 
 
 def event_delete(event_name):
@@ -646,125 +659,119 @@ def event_delete(event_name):
     fg.EVENT.pop(event_name,None)
     print("Event: ~{0}~ was canceled and safely deleted.".format(event_name))
 
-def take_snapshot(self, instance):
-    take_image(self, instance)
+# not used anymore?? ---------------------------------------
+#def take_snapshot(self, instance):
+#    take_image(self, instance.text)
+#
+#    if instance.text in ["SNAP", "BG", "FG"]:  # switch color
+#        imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
+#                              "Custom": "btn_imaging_technique_3"}
+#        select_method(self, instance, "take_image")
+#        change_enable_status(self.ids[imaging_method_dic[fg.config['experiment']['imaging_method']]], True)
+#
+#    fg.ledarr.send("CLEAR")
+# ----------------------------------------------------------
 
-    if instance.text in ["SNAP", "BG", "FG"]:  # switch color
-        imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-                              "Custom": "btn_imaging_technique_3"}
-        select_method(self, instance, "take_image")
-        change_enable_status(self.ids[imaging_method_dic[fg.config['experiment']['imaging_method']]], True)
-
-    fg.ledarr.send("CLEAR")
-
-
+def filename_take_image_now_refine(filename='',imaging_cause='MEAS', file_format='.jpg'):
+    if imaging_cause == 'MEAS':
+        filename += '-' + str(fg.config['experiment']['imaging_num'])
+    elif imaging_cause == 'SNAP':
+        filename += '-' + str(fg.config['experiment']['snap_num'])
+    else: 
+        filename += '-' + str(fg.config['experiment']['autofocus_num'])
+    return filename + file_format
+    
 #really just takes an image
-def take_image_now(self,instance, filename):
-    if isinstance(instance,str):
-        if instance=='autofocus':
-            rawCapture = camera_capture(filename,'autofocus')#,format='rgb'
+def take_image_now(self,imaging_cause='MEAS', filename='', method='CUS'):
+    # get correct filename
+    filename = filename_take_image_now_refine(filename=filename,imaging_cause=imaging_cause, file_format='.jpg')
+    # start 
+    print("This is _take_image_now_-Func saving to: {}".format(filename))
+    if fg.my_dev_flag:
+        print("Image taken -- DEV-MODE --.")
+    else: 
+        # prepare camera
+        camera_set_parameter(method=method)
+        # select for imaging cause -> 
+        if imaging_cause == 'AF':
+            fg.camera.capture(rawCapture,'rgb')
             image=rawCapture.array[:,:,fg.config['autofocus']['use_channel']]
             return image
         else:
-            raise AssertionError("Somehow ended up in str-format test for Take_image_now Routine, but object to compare was not autofocus, but instead {}.".format(instance))
-    else:
-        camera_capture(filename)
-        return True
+            fg.camera.capture(filename)
+            return True
 
-
-def take_image(self, instance,*args): # , *rargs
-    now = str(datetime.now().strftime("%H%M%S"))
+def take_image(self, *args): 
+    '''
+    Method that switches through different imaging modalities. Does hold the respective algorithms.
+    '''
     set_active_again = False
-    active_mode = ''
-    # fg.motors.send("DRVZ+400")
-
-    # set image_name
-    if isinstance(instance,str):
-        if instance == 'autofocus':
-            image_name = args[0]
-    else:
-        if instance.text in ["SNAP", "BG", "FG"]:
-            image_name = "{0}_{1}_".format(fg.today, now)
-            image_name += fg.config['experiment']['imaging_method']
-        else:
-            image_name = "{0}_".format(fg.today)
-            if fg.config['experiment']['imaging_method_2']:
-                image_name_2 += fg.config['experiment']['imaging_method_2']
-                image_name_2 += "_{0}".format(fg.config['experiment']['imaging_num'])
-            image_name += fg.config['experiment']['imaging_method']
-            image_name += "_{0}".format(fg.config['experiment']['imaging_num'])
-
-    #if rargs[0] in locals(): # case of autofocus
-    #    image_name = "{0}_".format(fg.today)
-    #    image_name += fg.config['experiment']['imaging_method']
-    #    image_name += "_{0}".format(fg.config['experiment']['imaging_num'])
-
-    if not fg.my_dev_flag:
-        myRounds = 2 if file_name_write_2 else 1
-        for myc in range(0,myRounds):
-            if myc ==0:
-                imaging_method = fg.config['experiment']['imaging_method']
-                file_name_write = uni.Path(fg.expt_path, image_name) 
-            else:
-                imaging_method = fg.config['experiment']['imaging_method_2']
-                file_name_write = uni.Path(fg.expt_path, image_name_2) 
-            print("file_name_write = " + file_name_write)
+    active_modes = [] 
+    if fg.config['experiment']['imaging_cause'] == 'AF': # case of autofocus
+        image_name = set_image_name(im_cause='AF',method='CUS')
+        file_name_write = uni.Path(fg.expt_path, image_name) 
+        time.sleep(0.1)
+        fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False)
+        time.sleep(fg.config['imaging']['speed'])
+        tin_returnval = take_image_now(self, 'AF', file_name_write)
+        fg.ledarr.send("CLEAR")
+    else: 
+        for myl in range(0,len(fg.config['experiment']['active_methods'])):
+            active_method = fg.config['experiment']['active_methods'][myl] # active method
+            print("Using method {} of {}: {}.".format(myl,len(fg.config['experiment']['active_methods'])-1,active_method))
+            image_name = set_image_name(im_cause=fg.config['experiment']['imaging_cause'],method=active_method)
+            file_name_write = uni.Path(fg.expt_path, image_name) 
+            #print("file_name_write = " + file_name_write)
             # make sure preview is off
             set_active_again = False
             if check_active(self.ids['btn_preview']):
                 camera_preview(False)
                 set_active_again = True
-            for x in ['btn_light_full','btn_light_preset_pattern','btn_light_custom_pattern']:
+            for x in ['btn_light_full','btn_light_preset_pattern','btn_light_custom_pattern','btn_light_fluo']:
                 if check_active(self.ids[x]):
                     buttons_light(self, self.ids[x])
-                    active_mode = x
+                    active_modes.append(x)
             try:
-                fg.ledarr.send("CLEAR")
-                prepare_imaging_settings()
-
-                # 2) Decide what images to take
-                col = int(fg.config['light']['intensity_expt'])
-                #print("Color: " + str(col))
-                if hasattr(instance,'text'):
-                    if instance.text in ["BG", "FG"]:
+                if active_method == 'Fluor':
+                    # swith to customized LED field
+                    fg.fluo.send("FLUO",fg.config['light']['intensity_expt'])
+                    file_name_write_fluo = file_name_write + '-INT_' + str(fg.config['light']['intensity_expt'])
+                    time.sleep(fg.config['experiment']['i2c_send_delay'])
+                    #time.sleep(fg.config['imaging']['speed'])
+                    tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write_fluo)
+                    fg.fluo.send("FLUO",0)
+                    time.sleep(fg.config['experiment']['i2c_send_delay'])
+                else:
+                    fg.ledarr.send("CLEAR")
+                    # 2) Decide what images to take
+                    col = int(fg.config['light']['intensity_expt'])
+                    #print("Color: " + str(col))
+                    if active_method in ["BG", "FG"]:
                         # imaging
-                        if instance.text == "BG":
-                            tin_returnval = take_image_now(self,instance, file_name_write)
+                        if active_method == "BG":
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                         else:
                             fg.ledarr.send("NA+2")
                             fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,instance, file_name_write)
-
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                     else:
-                        if imaging_method == 'Bright':
-
+                        if active_method == 'Bright':
                             fg.ledarr.send("NA+3")
                             fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,instance, file_name_write)
-
-                        elif imaging_method == "qDPC":
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
+                        elif active_method == "qDPC":
                             pattern_list = prepare_illu_pattern_list()
-                            Clock.schedule_once(partial(pattern_disp_callback,self,instance,pattern_list,True,file_name_write,fg.config['imaging']['speed']),0)
-
-
-                        elif imaging_method== "Custom":
+                            #Clock.schedule_once(partial(
+                            tin_returnval = pattern_disp_func(self,pattern_list,True,file_name_write,fg.config['imaging']['speed'])
+                        elif active_method== "Custom":
                             # swith to customized LED field
                             time.sleep(0.1)
-                            fluidiscopeIO.update_matrix(self, instance, ignore_NA=True, sync_only=False)
+                            fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,instance, file_name_write)
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("CLEAR")
-
-                        elif imaging_method== "Fluor":
-                            # swith to customized LED field
-                            time.sleep(0.1)
-                            fg.fluo.send("FLUO",fg.config['light']['intensity'])
-                            file_name_write_fluo = file_name_write + 'INT_' + str(fg.config['light']['intensity'])
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,instance, file_name_write_fluo)
-                            fg.fluo.send("FLUO",0)
                         else:
                             # set now with small NA image
                             file_name_write = uni.Path(fg.expt_path, image_name)
@@ -772,32 +779,47 @@ def take_image(self, instance,*args): # , *rargs
                             # time.sleep(0.5)
                             fg.ledarr.send("RECT+3+3+2+2+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,instance, file_name_write)
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
-                else: #case of autofocus
-                    time.sleep(0.1)
-                    fluidiscopeIO.update_matrix(self, instance, ignore_NA=True, sync_only=False)
-                    time.sleep(fg.config['imaging']['speed'])
-                    tin_returnval = take_image_now(self, instance, file_name_write)
-                    fg.ledarr.send("CLEAR")
             finally:
-                if hasattr(instance,'text'):
-                    if instance.text not in ['SNAP', 'BG', 'FG']:
-                        fg.config['experiment']['imaging_num'] += 1
-                fg.config['experiment']['expt_last_image'] = file_name_write + fg.config['imaging']['extension']
-                fg.ledarr.send("CLEAR")
-    else:
-        tin_returnval = 1
+                pass
+        if active_method in ['Bright','qDPC','Custom','Fluor']:
+            fg.config['experiment']['imaging_num'] += 1
+        fg.config['experiment']['expt_last_image'] = file_name_write + fg.config['imaging']['extension']
+        fg.ledarr.send("CLEAR")
     if set_active_again:
         camera_preview(True)
-        if not (active_mode == ''):
+        for x in active_modes:
             buttons_light(self, self.ids[x])
-
+        
     # True -> normal images taken;
     # image -> case of autofocus
     return tin_returnval
 
     #print("fg.config['experiment']['expt_last_image']" + fg.config['experiment']['expt_last_image'])
+
+
+def set_image_name(im_cause=None,method=None,mytime=None): 
+    '''
+    Creating the image_name for the used method. 
+    :param:
+    -------
+    :im_cause: <STRING> defines the reason for the image
+    -> AF, SNAP, MEAS, BG
+    :method: <STRING> that sets the input method
+    -> FULL, PRE, CUS, FLUO
+    :mytime: <STRING> that gives the time of start of the experiment
+    -> hhmmss
+    '''
+    now = str(datetime.now().strftime("%H%M%S"))
+    image_name = "{}-".format(fg.today)
+    if not im_cause == None:
+        image_name += "{}-".format(im_cause)
+    if not method == None: 
+        image_name += "{}-".format(method)
+    if not mytime == None: 
+        image_name += "{}-".format(now)
+    return image_name
 
 
 def resizeImage(infile, resize_factor=5): # used to show image in preview
@@ -812,31 +834,57 @@ def resizeImage(infile, resize_factor=5): # used to show image in preview
         return fname
 
 
-def prepare_imaging_settings():
+def camera_set_parameter(method='CUS'):
     if not fg.my_dev_flag:
         print("Autofocus is set to False!")
 
-        fg.camera.resolution = tuple(fg.config['cam']['resolution'])
-        fg.camera.contrast = fg.config['cam']['contrast']
-        fg.camera.sharpness = fg.config['cam']['sharpness']
-        fg.camera.brightness = fg.config['cam']['brightness']
-        fg.camera.saturation = fg.config['cam']['saturation']
-        fg.camera.ISO = fg.config['cam']['iso']
-        fg.camera.video_stabilization = fg.config['cam']['videoStabilization']
-        fg.camera.exposure_compensation = fg.config['cam']['exposureCompensation']
-        fg.camera.exposure_mode = fg.config['cam']['exposureMode']
-        fg.camera.meter_mode = fg.config['cam']['meterMode']
-        fg.camera.awb_mode = fg.config['cam']['awbMode']
-        if fg.config['cam']['awbMode'] == 'off':
-            fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128)) # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config['cam']['awbGain']
-        fg.camera.image_effect = fg.config['cam']['imageEffects']
-        fg.camera.color_effects = fg.config['cam']['colorEffects']
-        fg.camera.rotation = fg.config['cam']['rotation']
-        fg.camera.hflip = fg.config['cam']['hflip']
-        fg.camera.vflip = fg.config['cam']['vflip']
-        fg.camera.crop = tuple(fg.config['cam']['crop'])
-        fg.camera.shutter_speed = fg.config['cam']['shutterSpeed']
-
+        if method in ['CUS','qDPC','Bright','BG','FG']:
+            method_key = 'cam'
+            fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
+            fg.camera.contrast = fg.config[method_key]['contrast']
+            fg.camera.sharpness = fg.config[method_key]['sharpness']
+            fg.camera.brightness = fg.config[method_key]['brightness']
+            fg.camera.saturation = fg.config[method_key]['saturation']
+            fg.camera.ISO = fg.config[method_key]['iso']
+            fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
+            fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
+            fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
+            fg.camera.meter_mode = fg.config[method_key]['meterMode']
+            fg.camera.awb_mode = fg.config[method_key]['awbMode']
+            if fg.config[method_key]['awbMode'] == 'off':
+                fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128)) # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config[method_key]['awbGain']
+            fg.camera.image_effect = fg.config[method_key]['imageEffects']
+            fg.camera.color_effects = fg.config[method_key]['colorEffects']
+            fg.camera.rotation = fg.config[method_key]['rotation']
+            fg.camera.hflip = fg.config[method_key]['hflip']
+            fg.camera.vflip = fg.config[method_key]['vflip']
+            fg.camera.crop = tuple(fg.config[method_key]['crop'])
+            fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
+        elif method == 'Fluor':
+            method_key = 'cam_fluo'
+            fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
+            fg.camera.contrast = fg.config[method_key]['contrast']
+            fg.camera.sharpness = fg.config[method_key]['sharpness']
+            fg.camera.brightness = fg.config[method_key]['brightness']
+            fg.camera.saturation = fg.config[method_key]['saturation']
+            fg.camera.ISO = fg.config[method_key]['iso']
+            fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
+            fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
+            fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
+            fg.camera.meter_mode = fg.config[method_key]['meterMode']
+            fg.camera.awb_mode = fg.config[method_key]['awbMode']
+            if fg.config[method_key]['awbMode'] == 'off':
+                fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128)) # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config[method_key]['awbGain']
+            fg.camera.image_effect = fg.config[method_key]['imageEffects']
+            fg.camera.color_effects = fg.config[method_key]['colorEffects']
+            fg.camera.rotation = fg.config[method_key]['rotation']
+            fg.camera.hflip = fg.config[method_key]['hflip']
+            fg.camera.vflip = fg.config[method_key]['vflip']
+            fg.camera.crop = tuple(fg.config[method_key]['crop'])
+            fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
+        print("Camera shutter_speed={}, exposure_speed={} at ISO=.".format(fg.camera.shutter_speed, fg.camera.exposure_speed, fg.camera.iso))
+        print("Camera preparation done for method=".format(method))
+    return True
 
 def crop_image():
     pass
@@ -857,14 +905,14 @@ def camera_capture(filename,*rargs):
         # fg.ledarr.send("CLEAR")
 
 
-def imaging_callback(self, instance, *largs):
+def imaging_callback(self, *largs):
     print '\nThis is the imaging callback speaking !\n<> Images are now taken!'
 
     # skip imaging step during autofocus
     if not fg.config['experiment']['is_autofocus_busy']:
         # take image
-        
-        take_image(self, instance)
+        fg.config['experiment']['imaging_method']='MEAS'
+        take_image(self)
         deact_me = False
         if (fg.config['experiment']['time_left']-fg.config['experiment']['interval']) >= 0:
             # update config entries
@@ -966,7 +1014,7 @@ def autofocus_callback(self, instance, *rargs):
 
 
 def switch_start_condition(self, instance):
-    dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2", "Custom": "btn_imaging_technique_3", "FLUO":"btn_imaging_technique_fluo"}
+    dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2", "Custom": "btn_imaging_technique_3", "FLUO":"btn_imaging_technique_fluor"}
     deactivate(instance)
 
     if "Measurement" in instance.text:
@@ -1021,36 +1069,36 @@ def switch_notify_color(self, color):
 #                           #
 #############################
 def light_change_status(self, instance):
-    col = int(fg.config['light']['intensity_expt'])
-    pattern='CUS'
-    if check_active(instance):
-        chk_experiment_created(self,instance,instance.text)
-        fg.ledarr.send("CLEAR")
-    else:
-        if instance.text == 'FULL':
-            fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
-        elif instance.uid == self.ids['btn_light_preset_pattern'].uid or instance.uid == self.ids['btn_light_custom_pattern'].uid:
-            if instance.uid == self.ids['btn_light_preset_pattern'].uid:
-                for idx in range(1, 5):
-                    if fg.config['light_patterns']['active_p' + str(idx)] == 1:
-                        pattern = 'p' + str(idx)
-                        break
-            fluidiscopeIO.update_matrix(self, instance, ignore_NA=True, sync_only=False, pattern=pattern)
-            self.ids["sm"].current = 'scr_light_set_2'
-            self.ids["btn_scr_name"].text = 'LI\nGHT\nOPT\n2'
-            #if instance.uid == self.ids['btn_light_preset_pattern'].uid:
-                #select_method(self,instance)
-            fluidiscopeIO.settings_save_restore(self, instance, True)
-        else:
-            pass
-
-def light_fluo_change_status(self,instance):
-    print("change_status")
-    if check_active(instance):
-        fg.ledarr.send("FLUO", 0) #memes ON-setting
+    if instance.text=='FLUO':
+        if check_active(instance):
+            chk_experiment_created(self,instance,instance.text)
+            fg.fluo.send("FLUO",0)
+        else: 
+            fg.config['light']['intensity']=int(self.ids['slider_light_intensity'].value)            
+            fg.fluo.send("FLUO", fg.config['light']['intensity']) #memes ON-setting
     else: 
-        fg.ledarr.send("FLUO", int(self.ids['slider_light_intensity'].value)) #memes ON-setting
-        fg.config['light']['intensity']=int(self.ids['slider_light_intensity'].value)
+        col = int(fg.config['light']['intensity_expt'])
+        pattern='CUS'
+        if check_active(instance):
+            chk_experiment_created(self,instance,instance.text)
+            fg.ledarr.send("CLEAR")
+        else:
+            if instance.text == 'FULL':
+                fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
+            elif instance.uid == self.ids['btn_light_preset_pattern'].uid or instance.uid == self.ids['btn_light_custom_pattern'].uid:
+                if instance.uid == self.ids['btn_light_preset_pattern'].uid:
+                    for idx in range(1, 5):
+                        if fg.config['light_patterns']['active_p' + str(idx)] == 1:
+                            pattern = 'p' + str(idx)
+                            break
+                fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False, pattern=pattern)
+                self.ids["sm"].current = 'scr_light_set_2'
+                self.ids["btn_scr_name"].text = 'LI\nGHT\nOPT\n2'
+                #if instance.uid == self.ids['btn_light_preset_pattern'].uid:
+                    #select_method(self,instance)
+                fluidiscopeIO.settings_save_restore(self, instance, True)
+            else:
+                pass
 
 def setNA(userNA):
     if 1 <= userNA <= 4:
@@ -1110,13 +1158,12 @@ def convert_color(in_color,in_opacity):
     return [in_color[0]/255.0,in_color[0]/255.0,in_color[0]/255.0,in_opacity]
 
 def matrix_switch(self, instance):
-    if not fg.my_dev_flag:
-        fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
     if instance.text == "FILL": # not relevant anymore ->  or instance.text == "ON":
         fill_matrix(self, instance)
     elif instance.text == "CLEAR": # not relevant anymore -> or instance.text == "OFF":
-        fg.config['light']['user'] = [[0] * 8 for i in range(8)]
-        fluidiscopeIO.update_matrix(self, instance, ignore_NA=True)
+        fg.config['light']['user'] = [[[0,0,0],] * 8 for i in range(8)]
+        fluidiscopeIO.update_matrix(self, ignore_NA=True)
 
 
 def fill_matrix(self, instance, ignore_NA=False):
@@ -1136,7 +1183,7 @@ def fill_matrix(self, instance, ignore_NA=False):
         for col in range(coords[3]):
             fg.config['light']['user'][row + coords[0]][col + coords[1]] = 1
 
-    fluidiscopeIO.update_matrix(self, instance, ignore_NA=True)
+    fluidiscopeIO.update_matrix(self, ignore_NA=True)
 
 
 def light_set_patterns(self,instance):
@@ -1158,7 +1205,7 @@ def light_set_patterns(self,instance):
             if instance.value == 0 and check_active(self.ids['btn_light_set_2_pattern_off']):
                 change_activation_status(self.ids['btn_light_set_2_pattern_off'])
                 self.ids['btn_light_set_2_pattern_off'].text = 'ON'
-            fluidiscopeIO.update_matrix(self, instance, ignore_NA=True, sync_only=False, pattern=instance.text.lower())
+            fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False, pattern=instance.text.lower())
     elif instance.uid == self.ids['btn_light_set_2_pattern_off'].uid:
         sum_active_patterns=0
         for myc in range(1,5):
@@ -1195,18 +1242,18 @@ def prepare_illu_pattern_list():
     print(pattern_list)
     return pattern_list
 
-def pattern_disp_callback(self,instance,pattern_list,imaging=False,file_name_write='',time_sleep=0.1,*rargs):
+def pattern_disp_func(self,pattern_list,imaging=False,file_name_write='',time_sleep=0.1,*rargs):
     for mypat in pattern_list:
         time.sleep(0.04) # giving the arduino time to clear buffer
         file_name_write_dpc = file_name_write + '_MYPAT_P' + mypat
-        if not fg.my_dev_flag:
-            fluidiscopeIO.update_matrix(self, instance, ignore_NA=True, sync_only=False, pattern='p'+mypat)
-            time.sleep(time_sleep) # waiting for the light to be active
-            camera_capture(file_name_write_dpc)
-            fg.ledarr.send("CLEAR")
-        else:
-            print("Pattern_disp! I would have shown: " + mypat)
-    
+        #if not fg.my_dev_flag:
+        fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False, pattern='p'+mypat)
+        time.sleep(time_sleep) # waiting for the light to be active
+        take_image_now(file_name_write_dpc,imaging_cause=fg.config['experiment']['imaging_cause'],filename=file_name_write_dpc)
+        fg.ledarr.send("CLEAR")
+        #else:
+        #    print("Pattern_disp! I would have shown: " + mypat)
+    return True
 
 #############################
 #                           #
