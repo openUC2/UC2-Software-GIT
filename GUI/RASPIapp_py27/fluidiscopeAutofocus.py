@@ -6,7 +6,7 @@ import fluidiscopeToolbox as toolbox
 # general imports
 import unipath as uni
 from datetime import datetime
-import cv2
+#import cv2
 from os import listdir
 from glob import glob
 # math toolboxes

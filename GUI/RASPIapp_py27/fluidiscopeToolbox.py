@@ -19,7 +19,7 @@ if os.name == 'nt':
     pass
 else:
     import usb
-    import cv2 as cv
+    #import cv2 as cv
     from PIL import Image
 import numpy as np
 from fractions import Fraction
@@ -1699,14 +1699,14 @@ def get_slope(x, y):
     return m
 
 
-def measure_contrast(image):
+#def measure_contrast(image):
     # process the image and get the edges
-    ksiz = 5  # gaussian blur diameter
-    my_blur = cv2.blur(image, (ksiz, ksiz))
-    my_edges = cv2.Canny(my_blur, 50, 150)
-    my_focus_val = cv2.mean(my_edges)[0]
+    #ksiz = 5  # gaussian blur diameter
+    #my_blur = cv2.blur(image, (ksiz, ksiz))
+    #my_edges = cv2.Canny(my_blur, 50, 150)
+    #my_focus_val = cv2.mean(my_edges)[0]
 
-    return my_focus_val, my_blur, my_edges
+    #return my_focus_val, my_blur, my_edges
 
 ######################
 #                    #

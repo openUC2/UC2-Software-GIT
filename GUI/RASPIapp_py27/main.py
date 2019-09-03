@@ -37,6 +37,7 @@ from I2CDevice import I2CDevice
 if not fg.my_dev_flag:
     import picamera
 
+
 # Initialization
 fluidiscopeInit.arduino_init()
 #    fg.camera = 1
