@@ -103,7 +103,7 @@ ENV/
 # Pycharm
 .idea/
 
-# my Local Test-Folder
+# TestFILES
 test/
 .vscode/
 software/.vscode/
@@ -115,6 +115,11 @@ software/i2cdevice.py
 software/reconstruction/dummy1.py
 software/data/
 old_non_traced/
+
+# NewClassTestFiles
+GUI/RASPIappV2
+
+
 
 # external contents
 external/
