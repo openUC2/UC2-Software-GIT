@@ -74,9 +74,11 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     // MQTT Topics
     public static final String topic_prefix = "uc2/microscope/";
-    public static final String topic_z_stage_zval = "zstage/zval";
+    public static final String topic_z_stage_zval_fwd = "zstage/fwd/zval";
+    public static final String topic_z_stage_zval_bwd = "zstage/bwd/zval";
     public static final String topic_z_stage_ledval = "zstage/ledval";
-    public static final String topic_s_stage_sval = "sstage/sval";
+    public static final String topic_s_stage_sval_fwd = "sstage/fwd/sval";
+    public static final String topic_s_stage_sval_bwd = "sstage/bwd/sval";
     public static final String topic_led_matrix = "ledmatrix/ledval";
     public static final String topic_debug = "lens/left/led";
     public static String experiment_id = "1";
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval, "-10");
+                    publishMessage(topic_s_stage_sval_bwd, "10");
                 }
                 return true;
             }
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval, "-1");
+                    publishMessage(topic_s_stage_sval_bwd, "1");
                 }
                 return true;
             }
@@ -238,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval, "10");
+                    publishMessage(topic_s_stage_sval_fwd, "10");
                 }
                 return true;
             }
@@ -247,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval, "1");
+                    publishMessage(topic_s_stage_sval_fwd, "1");
                 }
                 return true;
             }
@@ -259,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval, "-10");
+                    publishMessage(topic_z_stage_zval_bwd, "10");
                 }
                 return true;
             }
@@ -268,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval, "-1");
+                    publishMessage(topic_z_stage_zval_bwd, "1");
                 }
                 return true;
             }
@@ -277,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval, "10");
+                    publishMessage(topic_z_stage_zval_fwd, "10");
                 }
                 return true;
             }
@@ -286,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval, "1");
+                    publishMessage(topic_z_stage_zval_fwd, "1");
                 }
                 return true;
             }

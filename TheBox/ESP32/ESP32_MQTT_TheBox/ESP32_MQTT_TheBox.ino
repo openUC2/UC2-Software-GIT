@@ -18,7 +18,7 @@ const char* password = "HHMI@Newton"; //"youseetoo";//
   on Wins use "ipconfig"
   on Linux use "ifconfig" to get its IP address */
 const char* mqtt_server = "10.9.1.62";//"192.168.43.151";//"10.9.1.62";//"192.168.43.88";
-String CLIENT_ID = "ESP32Client"+String(random(0xffff), HEX);
+String CLIENT_ID = "ESP32Client" + String(random(0xffff), HEX);
 
 
 /* create an instance of PubSubClient client */
@@ -27,22 +27,23 @@ PubSubClient client(espClient);
 
 /* Define the pins for the components*/
 int LED_MATRIX_PIN = 22;
-int LED_FLUO_PIN = 2;
+int LED_FLUO_PIN = 26;
 
 
 //Stepper STP_X(STEPS,5,21,18,19);
-int z_stage_pin[] = {5, 21, 18, 19};
-int s_stage_pin[] = {27,25,32,4};
+int z_stage_pin[] = {27, 25, 32, 4}; //{5, 21, 18, 19};
+int s_stage_pin[] = {27, 25, 32, 4};
 
 // Define a unique number
-String setup_id = "1";
+String setup_id = "2";
 
 ///* topics - DON'T FORGET TO REGISTER THEM! */
-String TOPIC_S_STAGE_SVAL = "uc2/microscope/"+setup_id+"/sstage/sval";
-String TOPIC_LED_FLUO = "uc2/microscope/"+setup_id+"/ledmatrix/ledval";
-String TOPIC_LED_MATRIX_VAL = "uc2/microscope/"+setup_id+"/ledmatrix/ledval";
-String TOPIC_Z_STAGE_ZVAL = "uc2/microscope/"+setup_id+"/zstage/zval";
-
+String TOPIC_S_STAGE_SVAL_BWD = "uc2/microscope/" + setup_id + "/sstage/bwd/sval";
+String TOPIC_S_STAGE_SVAL_FWD = "uc2/microscope/" + setup_id + "/sstage/fwd/sval";
+String TOPIC_LED_FLUO = "uc2/microscope/" + setup_id + "/zstage/ledval";
+String TOPIC_LED_MATRIX_VAL = "uc2/microscope/" + setup_id + "/ledmatrix/ledval";
+String TOPIC_Z_STAGE_ZVAL_BWD = "uc2/microscope/" + setup_id + "/zstage/bwd/zval";
+String TOPIC_Z_STAGE_ZVAL_FWD = "uc2/microscope/" + setup_id + "/zstage/fwd/zval";
 
 // default values for x/z lens' positions
 int led_fluo_int = 0;
@@ -69,30 +70,10 @@ Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, LED_MATRIX_PIN,
                             NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
                             NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
                             NEO_GRB            + NEO_KHZ400);
-int max_intensity_matrix = 125; 
+int max_intensity_matrix = 125;
 
 
 void setup() {
-
-  /* set led and laser as output to control led on-off */
-  pinMode(LED_MATRIX_PIN, OUTPUT);
-  pinMode(LED_FLUO_PIN, OUTPUT);
-
-  
-  // Debug Matrix
-  LED_NA3();
-  delay(1000);
-  LED_NA0();
-
-  matrix.begin();
-  matrix.setTextWrap(false);
-  matrix.setBrightness(150);
-
-
-  // Visualize, that ESP is on!
-  digitalWrite(LED_FLUO_PIN, HIGH);
-  delay(1000);
-  digitalWrite(LED_FLUO_PIN, LOW);
 
   // MOTOR
   pinMode(s_stage_pin[0], OUTPUT);
@@ -105,18 +86,37 @@ void setup() {
   pinMode(z_stage_pin[2], OUTPUT);
   pinMode(z_stage_pin[3], OUTPUT);
 
+  /* set led and laser as output to control led on-off */
+  pinMode(LED_MATRIX_PIN, OUTPUT);
+  pinMode(LED_FLUO_PIN, OUTPUT);
+  matrix.begin();
+
 
   /* setup the PWM ports and reset them to 0*/
   ledcSetup(PWM_CHANNEL_LED_FLUO, pwm_frequency, pwm_resolution);
   ledcAttachPin(LED_FLUO_PIN, PWM_CHANNEL_LED_FLUO);
   ledcWrite(PWM_CHANNEL_LED_FLUO, 0);
 
+  // Debug Matrix
+  LED_NA3();
+  delay(1000);
+  LED_NA0();
+
+  // Visualize, that ESP is on!
+  ledcWrite(PWM_CHANNEL_LED_FLUO, 1000);
+  //digitalWrite(LED_FLUO_PIN, HIGH);
+  delay(1000);
+  ledcWrite(PWM_CHANNEL_LED_FLUO, 0);
+  //digitalWrite(LED_FLUO_PIN, LOW);
+
+
+
   Serial.begin(115200);
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  
+
 
   WiFi.begin(ssid, password);
 
@@ -174,13 +174,13 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
 
   Serial.print("Value is : [");
   Serial.print(payload_int);
-  Serial.print("]");
+  Serial.println("]");
 
 
   // Catch the value for movement of lens in X-direction (right)
   if (String(topic) == TOPIC_LED_FLUO) {
     //dacWrite(25, (int)payload_int);
-    led_fluo_int = abs((int)payload_int);
+    led_fluo_int = abs((int)round(payload_int / 10));
     ledcWrite(PWM_CHANNEL_LED_FLUO, led_fluo_int);
     Serial.print("Fluo Intensity is set to: ");
     Serial.print(led_fluo_int);
@@ -188,39 +188,57 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
   }
 
   // Catch the value for stepment of lens in X-direction
-  if (String(topic) == TOPIC_S_STAGE_SVAL) {
+  if (String(topic) == TOPIC_Z_STAGE_ZVAL_BWD) {
+    // Drive motor X in positive direction
+    z_stage_val = ((int)payload_int);
+    drive_left(highSpeed, z_stage_pin, abs(z_stage_val) * 10);
+    stop(z_stage_pin);
+    Serial.print("Z-Stage Motor is running for: ");
+    Serial.print((int)payload_int);
+    Serial.println();
+  }
+
+
+  // Catch the value for stepment of lens in X-direction
+  if (String(topic) == TOPIC_Z_STAGE_ZVAL_FWD) {
+    // Drive motor X in positive direction
+    z_stage_val = ((int)payload_int);
+    drive_right(highSpeed, z_stage_pin, abs(z_stage_val) * 10);
+    stop(z_stage_pin);
+    Serial.print("Z-Stage Motor is running for: ");
+    Serial.print((int)payload_int);
+    Serial.println();
+  }
+
+
+
+
+  // Catch the value for stepment of lens in X-direction
+  if (String(topic) == TOPIC_S_STAGE_SVAL_FWD) {
     // Drive motor X in positive direction
     s_stage_val = ((int)payload_int);
-    if (s_stage_val > 0) {
-    drive_left(highSpeed, s_stage_pin, abs(s_stage_val)*10);
-  }
-  else {
-    drive_right(highSpeed, s_stage_pin, abs(s_stage_val));
-  }
-  stop(s_stage_pin);
-  Serial.print("S-Stage Motor is running for: ");
-  Serial.print((int)payload_int);
+
+    drive_left(highSpeed, s_stage_pin, abs(s_stage_val) * 10);
+    stop(s_stage_pin);
+    Serial.print("S-Stage Motor is running for: ");
+    Serial.print((int)payload_int);
     Serial.println();
   }
 
   // Catch the value for stepment of lens in X-direction
-  if (String(topic) == TOPIC_Z_STAGE_ZVAL) {
+  if (String(topic) == TOPIC_S_STAGE_SVAL_BWD) {
     // Drive motor X in positive direction
-    z_stage_val = ((int)payload_int);
-    if (z_stage_val > 0) {
-    drive_left(highSpeed, z_stage_pin, abs(z_stage_val)*10);
-  }
-  else {
-    drive_right(highSpeed, z_stage_pin, abs(z_stage_val));
-  }
-  stop(z_stage_pin);
-  Serial.print("S-Stage Motor is running for: ");
-  Serial.print((int)payload_int);
+    s_stage_val = ((int)payload_int);
+
+    drive_right(highSpeed, s_stage_pin, abs(s_stage_val) * 10);
+    stop(z_stage_pin);
+    Serial.print("S-Stage Motor is running for: ");
+    Serial.print((int)payload_int);
     Serial.println();
   }
 
 
-    // Catch the value for movement of lens in X-direction (right)
+  // Catch the value for movement of lens in X-direction (right)
   if (String(topic) == TOPIC_LED_MATRIX_VAL) {
     //dacWrite(25, (int)payload_int);
     led_matrix_na = abs((int)payload_int);
@@ -229,7 +247,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
     if (led_matrix_na == 2) LED_NA2();
     if (led_matrix_na == 3) LED_NA3();
     if (led_matrix_na == 4) LED_NA4();
-   
+
     Serial.print("NA is set to: ");
     Serial.print(led_matrix_na);
     Serial.println();
@@ -247,10 +265,12 @@ void mqttconnect() {
     if (client.connect(CLIENT_ID.c_str())) {//if (client.connect(clientId.c_str(), "username", "pi")) {
       Serial.println("connected");
       /* subscribe topic with default QoS 0*/
-      client.subscribe(TOPIC_S_STAGE_SVAL.c_str());
+      client.subscribe(TOPIC_S_STAGE_SVAL_FWD.c_str());
+      client.subscribe(TOPIC_S_STAGE_SVAL_BWD.c_str());
       client.subscribe(TOPIC_LED_FLUO.c_str());
       client.subscribe(TOPIC_LED_MATRIX_VAL.c_str());
-      client.subscribe(TOPIC_Z_STAGE_ZVAL.c_str());
+      client.subscribe(TOPIC_Z_STAGE_ZVAL_FWD.c_str());
+      client.subscribe(TOPIC_Z_STAGE_ZVAL_BWD.c_str());
 
     } else {
       Serial.print("faiLED_MATRIX_PIN, status code =");
@@ -451,7 +471,7 @@ void LED_NA1() {
   };
 
   drawPattern(logo);
-  }
+}
 
 void LED_NA2() {
   // This 8x8 array represents the LED matrix pixels.
@@ -504,9 +524,9 @@ void LED_NA4() {
   };
 
   drawPattern(logo);
-  }
+}
 
-  void drawPattern(int logo[8][8]){
+void drawPattern(int logo[8][8]) {
   for (int row = 0; row < 8; row++) {
     for (int column = 0; column < 8; column++) {
       if (logo[row][column] == 1) {
@@ -520,6 +540,6 @@ void LED_NA4() {
     }
   }
   matrix.show();
-  }
+}
 
 
