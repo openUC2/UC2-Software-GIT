@@ -11,6 +11,12 @@
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 
+
+// Define a unique setup number
+String setup_id = "2";
+#define IS_Z_STAGE 1 // either it's the s- or the z-stage
+
+
 /* change it with your ssid-password */
 const char* ssid = "GUEST_JRC";//"Blynk";"UC2";//
 const char* password = "HHMI@Newton"; //"youseetoo";//
@@ -30,12 +36,15 @@ int LED_MATRIX_PIN = 22;
 int LED_FLUO_PIN = 26;
 
 
-//Stepper STP_X(STEPS,5,21,18,19);
-int z_stage_pin[] = {27, 25, 32, 4}; //{5, 21, 18, 19};
-int s_stage_pin[] = {27, 25, 32, 4};
+// don't listen to the wrong signal! 
+#if IS_Z_STAGE == 1
+  int z_stage_pin[] = {27, 25, 32, 4}; //
+  int s_stage_pin[] = {100, 100, 100, 100};
+#else
+  int s_stage_pin[] = {27, 25, 32, 4}; //
+  int z_stage_pin[] = {100, 100, 100, 100};
+#endif
 
-// Define a unique number
-String setup_id = "2";
 
 ///* topics - DON'T FORGET TO REGISTER THEM! */
 String TOPIC_S_STAGE_SVAL_BWD = "uc2/microscope/" + setup_id + "/sstage/bwd/sval";
@@ -231,7 +240,7 @@ void receivedCallback(char* topic, byte* payload, unsigned int length) {
     s_stage_val = ((int)payload_int);
 
     drive_right(highSpeed, s_stage_pin, abs(s_stage_val) * 10);
-    stop(z_stage_pin);
+    stop(s_stage_pin);
     Serial.print("S-Stage Motor is running for: ");
     Serial.print((int)payload_int);
     Serial.println();

@@ -164,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         // Read old IP ADress if available and set it to the GUI
         serverUri = sharedPref.getString("IP_ADDRESS", serverUri);
+        experiment_id = sharedPref.getString("ID_NUMBER", experiment_id);
         EditTextIPAddress.setText(serverUri);
         EditTextExperimentalID.setText(experiment_id);
 
@@ -188,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     // Save the IP address for next start
                     editor.putString("IP_ADDRESS", serverUri);
+                    editor.putString("ID_NUMBER", serverUri);
                     editor.commit();
 
                 }
