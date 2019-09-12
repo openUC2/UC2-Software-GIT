@@ -31,6 +31,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.util.Random;
 
 
 /*
@@ -63,7 +64,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     final String mqttUser = "username";
     final String mqttPass = "pi";
 
-    final String clientId = "Mobile";
+    // Assign Random ID for the Client
+    Random rand = new Random();
+    String rand_id = String.format("%04d%n", rand.nextInt(100));
+    final String clientId = "ANDROID"+rand_id;
 
     boolean is_vibration = false;
     // TAG
@@ -189,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     // Save the IP address for next start
                     editor.putString("IP_ADDRESS", serverUri);
-                    editor.putString("ID_NUMBER", serverUri);
+                    editor.putString("ID_NUMBER", experiment_id);
                     editor.commit();
 
                 }
@@ -337,6 +341,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private void initialConfig() {
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), "tcp://"+serverUri, clientId);
+        Log.e(TAG, "My ip is: tcp://"+serverUri);
+        Log.e(TAG, "My client ID is: tcp://"+clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {

@@ -13,7 +13,7 @@
 
 
 // Define a unique setup number
-String setup_id = "2";
+String setup_id = "4";
 #define IS_Z_STAGE 1 // either it's the s- or the z-stage
 
 
@@ -125,6 +125,9 @@ void setup() {
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
+
+  Serial.print("I am setup #: ");
+  Serial.println(setup_id);
 
 
   WiFi.begin(ssid, password);
