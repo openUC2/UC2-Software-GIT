@@ -59,15 +59,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     MqttAndroidClient mqttAndroidClient;
 
     // Server uri follows the format tcp://ipaddress:port
-    String serverUri = "192.168.43.88";
+    String serverUri = "10.9.1.62";
 
-    final String mqttUser = "username";
-    final String mqttPass = "pi";
 
     // Assign Random ID for the Client
     Random rand = new Random();
-    String rand_id = String.format("%04d%n", rand.nextInt(100));
-    final String clientId = "ANDROID"+rand_id;
+    String rand_id = String.format("%04d", rand.nextInt(1000));
+    final String clientId = "AND123"+rand_id;
 
     boolean is_vibration = false;
     // TAG
@@ -213,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     // Save the IP address for next start
                     editor.putString("IP_ADDRESS", serverUri);
+                    //editor.putString("IP_ADDRESS", serverUri);
                     editor.commit();
 
                 }
@@ -375,8 +374,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
-        mqttConnectOptions.setUserName(mqttUser);
-        mqttConnectOptions.setPassword(mqttPass.toCharArray());
+        //mqttConnectOptions.setUserName(mqttUser);
+        //mqttConnectOptions.setPassword(mqttPass.toCharArray());
         mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setCleanSession(false);
 
