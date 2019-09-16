@@ -33,7 +33,8 @@ def on_disconnect(client, userdata, rc):
 
 # Variables ------------------------------------------------------------------------------------------
 setup_name = "S0"
-broker = "192.168.43.239"
+broker = "10.9.2.116"  # "192.168.43.151"  # "10.9.1.62"  # "192.168.43.239"
+
 mqttclient_name = "raspi1"
 mqttclient_pass = "1ipsar"
 mqttclient_ID = "Raspi1"
@@ -66,4 +67,9 @@ except Exception as err:  # e.g. arises when port errors exist etc
     print("MQTTClient: Connection failed")
     print(err)
 
+mqttclient.subscribe("S0/MOTz1/MOV", qos=1)
 mqttclient.publish("S0/MOTz1/MOV", "1", qos=1, retain=False)
+
+time.sleep(2)
+print("waiting for flush")
+time.sleep(2)

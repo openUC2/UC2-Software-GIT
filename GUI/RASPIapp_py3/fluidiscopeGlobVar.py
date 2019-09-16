@@ -38,7 +38,7 @@ else:
 started_first_exp = False
 
 i2c = False
-setup_number = 0
+setup_number = 1
 VERSION = '0.3'
 config = []
 EVENT = {}

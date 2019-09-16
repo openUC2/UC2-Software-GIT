@@ -19,9 +19,9 @@ interval_autofocus: 3600.0
 is_autofocus: false
 is_autofocus_busy: false
 is_autofocus_request: false
-last_expt_date: '20190904'
+last_expt_date: '20190911'
 last_expt_num: 17
-path_last_expt: C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPIapp_py3\data\20190904\expt_001
+path_last_expt: C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPIapp_py3\data\20190911\expt_001
 snap_num: 0
 success: false
 time_left: 74

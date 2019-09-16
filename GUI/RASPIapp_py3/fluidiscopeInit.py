@@ -12,13 +12,14 @@ import unipath as uni
 
 if fg.i2c:
     from I2CDevice import I2CDevice
+    from I2CBus import I2CBus
 else:
     from MQTTDevice import MQTTDevice
     import paho.mqtt.client as mqtt
 
 if not fg.my_dev_flag:
     import picamera
-    from I2CBus import I2CBus
+
 
 # Initialization routine of Fluidiscope
 
@@ -38,12 +39,17 @@ def arduino_init():
 
 
 def mqtt_init():
+    # connect to server
     setup_name = "S" + str(fg.setup_number)
-    mqtt_connect_to_server(broker="192.168.43.239", mqttclient_name="raspi1",
+    mqtt_connect_to_server(broker="10.9.2.116", mqttclient_name="raspi1",
                            mqttclient_pass="1ipsar", mqttclient_ID="Raspi1", port=1883, keepalive=60)
-    fg.ledarr = MQTTDevice(setup_name, "LEDarr1")
-    fg.motors = MQTTDevice(setup_name, "MOT1")
-    fg.fluo = MQTTDevice(setup_name, "LEDfl1")
+    # register Raspberry
+    fg.raspi = MQTTDevice(setup_name, "RASP1")
+    # instanciate devices
+    fg.ledarr = MQTTDevice(setup_name,  "LEDarr1")
+    fg.motors = [MQTTDevice(setup_name, "MOT1"), MQTTDevice(
+        setup_name, "MOT1"), MQTTDevice(setup_name, "MOT2")]
+    fg.fluo = MQTTDevice(setup_name, "MOT2")
 
 
 def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_ID, port=1883, keepalive=60):
@@ -130,6 +136,7 @@ def GUI_define_sizes():
     Config.set('graphics', 'height', '480')
     Config.set('graphics', 'borderless', 'True')
     Config.write()
+    pass
 
 
 def load_config():

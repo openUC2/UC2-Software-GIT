@@ -38,7 +38,8 @@ from kivy.utils import platform
 #from kivy.adapters.listadapter import ListAdapter
 
 if not (fg.my_dev_flag):
-    from I2CDevice import I2CDevice
+    if fg.i2c:
+        from I2CDevice import I2CDevice
     from picamera.array import PiRGBArray
     from picamera import PiCamera
 
@@ -1148,11 +1149,11 @@ def light_settings_activate(self, instance):
         else:
             instance.fl_value = [0,0,0]
             instance.value = 0
-            if not fg.my_dev_flag:
-                fg.ledarr.send("PXL", pos_nbr, list(instance.fl_value))
+            fg.ledarr.send("PXL", pos_nbr, list(instance.fl_value))
             #fluidiscopeIO.update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern=pattern)
-        fg.config[key_name[0]][key_name[1]][pos_nbr / 8][pos_nbr % 8] = [instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]] # if not, then handling kivy.properties.ObservableList to list
-        print(fg.config[key_name[0]][key_name[1]][pos_nbr / 8][pos_nbr % 8][:])
+        #print("key_name1={},key_name2={},pos_nbr/8={},pos_nbr%8={},instance.fl_value1={},instance.fl_value2={},instance.fl_value3={}".format(key_name[0],key_name[1],pos_nbr // 8,pos_nbr % 8,instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]))
+        fg.config[key_name[0]][key_name[1]][pos_nbr // 8][pos_nbr % 8] = [instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]] # if not, then handling kivy.properties.ObservableList to list
+        print(fg.config[key_name[0]][key_name[1]][pos_nbr // 8][pos_nbr % 8][:])
 
 def convert_color(in_color,in_opacity):
     return [in_color[0]/255.0,in_color[0]/255.0,in_color[0]/255.0,in_opacity]
@@ -1304,7 +1305,7 @@ def move_motor(self, instance):
     # manage progress-bar
     if not limit_reached:
         if not fg.i2c:
-            fg.motors.send(cmd, stepsize)
+            fg.motors[fg.config['motor']['active_motor']].send(cmd, stepsize)
         refresh_progress_bar = 0.2
         fg.config['motor']['calibration_z_pos'] += stepsize
         if instance.text == '<<':

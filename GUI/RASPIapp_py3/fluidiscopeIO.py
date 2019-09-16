@@ -17,7 +17,7 @@ if os.name == 'nt':
 else:
     from ruamel import yaml
 
-if not fg.my_dev_flag:
+if not fg.my_dev_flag and fg.i2c:
     from I2CDevice import I2CDevice
 
 
