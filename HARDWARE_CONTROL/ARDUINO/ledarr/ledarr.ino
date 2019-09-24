@@ -29,7 +29,7 @@ char *ptr_stop = NULL;
 //Device Identifier
 const char *DEVICE_ID = "LEDARR";
 
-const int nCommands = 14;
+const int nCommands = 15;
 const char *COMMANDSET[nCommands] = {"NA", "PXL", "HLINE", "VLINE", "RECT", "CIRC", "LEFT", "RIGHT", "TOP", "BOTTOM", "CLEAR", "PRESET", "SETPRE", "FLYBY","ALIVE"};
 const char *INSTRUCTS[nCommands] = {"1", "4", "4", "4", "8", "6", "3", "3", "3", "3", "0", "1", "1", "1","1"};
 
