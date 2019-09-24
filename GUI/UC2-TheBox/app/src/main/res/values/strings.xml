@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">IoT MQTT Controller</string>
-    <string name="button_lights_text">Toggle Lights</string>
-    <string name="text_lights">Lights Status:</string>
-    <string name="no_internets">Network not available</string>
-</resources>
