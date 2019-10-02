@@ -12,7 +12,22 @@ Making **open-science** great again!
 ## Introduction
 For a general introduction on UC2 please check our [CAD-repository](https://github.com/bionanoimaging/UC2-GIT). Our basic belief centers around simple and clean modularity which - combined with creativity and curiosity - can lead to unthought achievements. 
 
-# Getting Started
+
+
+# Getting Started using the Android APP 
+
+We have prepared a very basic control app for **TheBox** to have basic control over the hardware modules. The information can be found [here](./GUI/Android/UC2-TheBox).
+
+<p align="center">
+<img src="./GUI/Android/UC2-TheBox/images/Android_GUI.png" width="200" alt="">
+</p> 
+
+# Getting Started using the Raspberry Pi GUI
+
+<p align="center">
+<img src="./images/UC2_Raspi_Gui_1.png" width="400" alt="">
+</p> 
+
 
 ## GUIv1
 Our first version for the modular microscope centered around the Raspberry Pi (the hub) controlling [Arduinos](./HARDWARE_CONTROL/ARDUINO/) using I2C-protocol. The Arduinos are then connected to elements (or drivers) like an [8x8 LED-array](./HARDWARE_CONTROL/ARDUINO/ledarr) or [stepper-motors](./HARDWARE_CONTROL/ARDUINO/motors). For image acquisition the [RaspberryPi Camera module v2](https://www.raspberrypi.org/documentation/hardware/camera/) is controlled via picam-package in Python. 
@@ -40,6 +55,7 @@ Further, we rely on some extra Arduino-libraries that can be found in the [libra
 	
 	* GUI
 		* RASPIapp (GUI to control e.g. the Incubator Microscope) 
+		* Android APP
 	* HARDWARE_CONTROL
 		* ARDUINO
 		* ESP32
@@ -47,6 +63,7 @@ Further, we rely on some extra Arduino-libraries that can be found in the [libra
 	* WORKSHOPS
 		* 01_INLINE_HOLOGRAMM
 		* 02_LIGHTSHEET
+	* SCRIPTS
 		
 
 ## Get Involved!

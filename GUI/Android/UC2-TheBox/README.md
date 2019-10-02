@@ -1,39 +1,42 @@
-# ESP8266 remote controller via MQTT
+# UC2 remote controller via the MQTT-protocol
 
-This is a simple *Android* app that allow us to control this [ESP8266 program](https://github.com/ismenc/esp8266-mqtt-control) with an attached relay. This allows us to remote turn on any electric device.
+This is the Android Remote Control for ***TheBox*** was on this [repository](https://github.com/ismenc/esp8266-mqtt-control) with an attached relay. This allows us to remote turn on any electric device.
 <p align="center">
-<img src="https://image.ibb.co/nFUKQH/IMG_20180317_231717_1.jpg" width="300" alt="">
-<img src="https://image.ibb.co/g4Ckzc/ezgif_com_optimize.gif" width="220" alt="">
+<img src="./images/Android_GUI.png" width="200" alt="">
 </p>
 
-This app is very very simple and needs some validations and things to work on.
+You can enter the IP-address of the local MQTT-Broker (e.g. Mosquitto), then hit Go! It automatically subscribes to all topics necessary by the actuators in "TheBox". It gives basic control functions to the following parts:
 
-- - - -
+- The S-Stage found [here](https://github.com/bionanoimaging/UC2-GIT/tree/master/CAD/ASSEMBLY_CUBE_Z-STAGE_v2)
+- The Z-Stage found [here](https://github.com/bionanoimaging/UC2-GIT/tree/master/CAD/ASSEMBLY_CUBE_S-STAGE_v2)
+- The LED-Array found [here](https://github.com/bionanoimaging/UC2-GIT/tree/master/CAD/ASSEMBLY_CUBE_LED_Matrix_v2)
 
-# Navigation
-<br>
+## Diagram
 
-> [:octocat: GitHub Repository](https://github.com/ismenc/android-mqtt-controller)<br>
-> [:globe_with_meridians: ESP8266 application](https://github.com/ismenc/esp8266-mqtt-control)<br>
-> [:arrow_down: Releases](https://github.com/ismenc/android-mqtt-controller/releases)<br>
-> [:memo: Issues](https://github.com/ismenc/android-mqtt-controller/issues)<br>
+The general control scheme looks like this:
+<p align="center">
+<img src="./images/MQTT_GUI.png" width="500" alt="">
+</p>
+
+## Code for ESP32
+The code for the ESP32's in order to control the motors and LEDS can be found [here](./../../../HARDWARE_CONTROL/ESP32).
+
+## Signed APK
+The latest version of the signed **APK** of the app can be downloaded [here](./app/build/outputs/apk/debug/app-debug.apk)
+
+## Tutorial to make it work
+
+1. Install the free App **MQTT Broker App** from the [Play Store](https://play.google.com/store/apps/details?id=server.com.mqtt&hl=de)
+2. Install the UC2 controler APP using this [link](./app/build/outputs/apk/debug/app-debug.apk)
+3. Setup the WiFi-Acces Point (AP) on your Android Phone (Sometimes called wifi-sharing or Hotspot) under **Settings** -> **Tethering&mobile Hotspot** -> **WiFi Hotspot**
+4. The settings should be the following: 
+5. SSID: **Blynk**
+6. Password: **12345678**
+7. Start the Hotspot 
+8. Open the **MQTT Broker App** and hit start 
+9. A message "*mqtt>Broker URL - 0.0.0.0:1883*" appears -> Great! 
+10. Open the **UC2 Controler APP** and enter the IP-address as *0.0.0.0* and hit **Go!**
+11. A message which says **Connected** should appear 
+12. All set! 
 
 
-- - - -
-
-# How can I collaborate?
-
-<details>
-     <summary>Instructions</summary>
- <p>
-  <!-- alternative placement of p shown above -->
-
-  1. :v: Fork this repository and clone through terminal `git clone <url>`.
-  2. :open_file_folder: Set the directory on the cloned folder `cd <folder>`.
-  3. :memo: Modify the project as you wish.
-  4. :sparkles: Stage the changes `git add *` and create new commit: `git commit -am "Summary of changes"`.
-  5. :arrow_up: Upload your work: `git push origin master`.
-  6. :email: Feel free to initiate a pull request :D
-
-:octocat: Si deseas aprender Git, visita mi [guía sobre Git](https://github.com/ismenc/seminario-git).
-      </p></details>
