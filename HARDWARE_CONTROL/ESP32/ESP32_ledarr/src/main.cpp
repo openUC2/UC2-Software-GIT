@@ -15,6 +15,7 @@
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
 #include "SPI.h"
+#include <sstream>
 // ----------------------------------------------------------------------------------------------------------------
 //                          Global Defines
 #define MAX_CMD 3
@@ -22,34 +23,42 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 26
-#define LEDARR_PIN 22
+#define LEDARR_PIN 26
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
-// ~~~~ Device ~~~~ 
-const char *deviceData = "ESP32-LEDarr on Setup 1.";
+// saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
+std::string SETUP = "S004";
+std::string COMPONENT = "LAR01";
+std::string DEVICE = "ESP32";
+std::string DEVICENAME;
+std::string CLIENTNAME;
+std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "GUEST_JRC";
-const char *password = "HHMI@Newton";
+const char *ssid = "UC2-F8Team";        //"Blynk";"UC2";
+const char *password = "_lachmannUC2"; //"12345678";"youseetoo";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "10.9.2.116";
-const char *MQTT_CLIENTID = "S1_LED_ESP32";
-const char *MQTT_USER = "ESP32";
+const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
+const char *MQTT_CLIENTID;
+const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
 const int MQTT_SUBS_QOS = 0;
+//const int MAX_CONN = 10; // maximum tries to connect
 const unsigned long period = 80000; // 80s
 unsigned long time_now = 0;
-// topics to listen/publish to
-const char *topicREC = "/S1/LEDarr1/REC";
-const char *topicSTATUS = "/S1/LEDarr1/STATUS";
-const char *topicANNOUNCE = "/S1/LEDarr1/ANNOUNCE";
+// topics to listen to
+
+std::string stopicREC = "/" + SETUP + "/" + COMPONENT + "/RECM";
+std::string stopicSTATUS = "/" + SETUP + "/" + COMPONENT + "/STAT";
+std::string stopicANNOUNCE = "/" + SETUP + "/" + COMPONENT + "/ANNO";
+
+// Deliminators for CMDs (published via payload-string)
 const char *delim_inst = "+";
 const int delim_len = 1;
-
 // ~~~~ LED ~~~~
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, LEDARR_PIN,
                                                NEO_MATRIX_TOP + NEO_MATRIX_RIGHT + NEO_MATRIX_COLUMNS +
@@ -90,6 +99,22 @@ void uc2wait(int period)
         //wait approx. [period] ms
     };
 }
+void setup_device_properties()
+{
+    //std::time_t result = std::time(nullptr);
+    //srand(result); // init randomizer with pseudo-random seed on boot
+    //int randnum = rand() % 10000;
+    int rand_number = random(1, 100000);
+    std::stringstream srn;
+    srn << rand_number;
+    DEVICENAME = DEVICE + "_" + srn.str(); // random number generated up to macro MAX_RAND
+    CLIENTNAME = SETUP + "_" + COMPONENT + "_" + DEVICENAME;
+    SETUP_INFO = "This is:" + DEVICENAME + " on /" + SETUP + "/" + COMPONENT + ".";
+    MQTT_CLIENTID = DEVICENAME.c_str(); //"S1_MOT2_ESP32"
+    //Serial.print("MQTT_CLIENTID=");Serial.println(MQTT_CLIENTID);
+    MQTT_USER = DEVICE.c_str();
+    Serial.println(SETUP_INFO.c_str());
+}
 void setup_wifi()
 {
     uc2wait(10);
@@ -107,23 +132,23 @@ void setup_wifi()
     }
 
     Serial.println("");
-    Serial.print("WiFi connected to IP:");
+    Serial.print("WiFi connected with IP:");
     Serial.println(WiFi.localIP());
 }
 
 int separateMessage(byte *message, unsigned int length)
 {
 
-    Serial.println("Seperating Message.");
-    Serial.print("Message=");
+    //Serial.println("Seperating Message.");
+    //Serial.print("Message=");
     char messageSep[length];
     for (int myc = 0; myc < length; myc++)
     {
         messageSep[myc] = (char)message[myc];
-        Serial.print(messageSep[myc]);
+        //Serial.print(messageSep[myc]);
     }
     messageSep[length] = NULL;
-    Serial.println("");
+    //Serial.println("");
     Serial.print("Mess=");
     std::string mess(messageSep);
     Serial.println(mess.c_str());
@@ -134,42 +159,42 @@ int separateMessage(byte *message, unsigned int length)
     {
         if (!found_cmd)
         {
-            Serial.print("CMD-del@");
-            Serial.println(pos);
+            //Serial.print("CMD-del@");
+            //Serial.println(pos);
             CMDS = mess.substr(0, pos);
-            Serial.print("CMDS=");
+            //Serial.print("CMDS=");
             CMD = CMDS.c_str();
-            Serial.println(CMD);
+            //Serial.println(CMD);
             found_cmd = true;
         }
         else
         {
             INSTS.push_back(atoi(mess.substr(0, pos).c_str()));
-            Serial.print("INST[");
-            Serial.print(i);
-            Serial.print("]=");
-            Serial.println(INSTS[i]);
+            //Serial.print("INST[");
+            //Serial.print(i);
+            //Serial.print("]=");
+            //Serial.println(INSTS[i]);
             i++;
         }
         mess.erase(0, pos + delim_len);
     }
     if (!found_cmd)
     {
-        Serial.print("CMD-del@");
-        Serial.println(pos);
+        //Serial.print("CMD-del@");
+        //Serial.println(pos);
         CMDS = mess.substr(0, pos);
-        Serial.print("CMDS=");
+        //Serial.print("CMDS=");
         CMD = CMDS.c_str();
-        Serial.println(CMD);
+        //Serial.println(CMD);
         found_cmd = true;
     }
     else if (mess.length() > 0)
     {
         INSTS.push_back(atoi(mess.substr(0, pos).c_str()));
-        Serial.print("INST[");
-        Serial.print(i);
-        Serial.print("]=");
-        Serial.println(INSTS[i]);
+        //Serial.print("INST[");
+        //Serial.print(i);
+        //Serial.print("]=");
+        //Serial.println(INSTS[i]);
         i++;
     }
     else
@@ -265,6 +290,21 @@ void drawRect(int x, int y, int w, int h, bool fill)
     if ((y + h) > (nrows - offset_x))
         h = nrows - offset_x - y;
 
+    Serial.print("Corrected val for Rect = ");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.print(y);
+    Serial.print(",");
+    Serial.print(w);
+    Serial.print(",");
+    Serial.print(h);
+    Serial.print(",");
+    Serial.print(rgb.r);
+    Serial.print(",");
+    Serial.print(rgb.g);
+    Serial.print(",");
+    Serial.print(rgb.b);
+    Serial.println(".");
     if (fill)
         matrix.fillRect(x, y, w, h, matrix.Color(rgb.r, rgb.g, rgb.b));
     else
@@ -273,18 +313,32 @@ void drawRect(int x, int y, int w, int h, bool fill)
     matrix.show();
 }
 
+void setRGB(int r, int g, int b)
+{
+    rgb.r = r;
+    rgb.g = g;
+    rgb.b = b;
+}
+
 void setNA(int select)
 {
-    if (select > 4)
+    if (select<5 & select> 0)
     {
-        select = 4;
+        ledNA = select;
+        Serial.print("NA set to: ");
+        Serial.print(ledNA);
+        Serial.println(".");
+        setRGB(255, 255, 255);
+        Serial.println("Call drawRect with: [0,0,8,8,255,255,255]. ");
+        drawRect(0, 0, 8, 8, true);
     }
-    if (select < 1)
+    else
     {
-        select = 1;
+        select = 0;
+        ledNA = select;
         matrix.fillScreen(0);
+        matrix.show();
     }
-    ledNA = select;
 }
 
 void updateColor(uint8_t r, uint8_t g, uint8_t b)
@@ -296,11 +350,11 @@ void updateColor(uint8_t r, uint8_t g, uint8_t b)
 
 void callback(char *topic, byte *message, unsigned int length)
 {
-    Serial.println("Callback-func called.");
+    //Serial.println("Callback-func called.");
     // test topics
-    if (strcmp(topic, topicREC) == 0)
+    if (std::string(topic) == stopicREC)
     {
-        Serial.println(topicREC);
+        //Serial.println(stopicREC.c_str());
         int nINST = separateMessage(message, length);
         if (strcmp(CMD, COMMANDSET[0]) == 0)
         {
@@ -382,13 +436,13 @@ void callback(char *topic, byte *message, unsigned int length)
             Serial.print("CMD not found.");
         }
     }
-    else if (strcmp(topic, topicSTATUS) == 0)
+    else if (std::string(topic) == stopicSTATUS)
     {
-        Serial.println(topicSTATUS);
+        Serial.println(stopicSTATUS.c_str());
     }
-    else if (strcmp(topic, topicANNOUNCE) == 0)
+    else if (std::string(topic) == stopicANNOUNCE)
     {
-        Serial.println(topicANNOUNCE);
+        Serial.println(stopicANNOUNCE.c_str());
     }
     else
     {
@@ -403,16 +457,21 @@ void reconnect()
     // Loop until we're reconnected
     while (!client.connected())
     {
+        Serial.print("MQTT_CLIENTID=");
+        Serial.println(MQTT_CLIENTID);
+        Serial.print("topicSTATUS=");
+        Serial.println(stopicSTATUS.c_str());
         Serial.print("Attempting MQTT connection...");
         // Attempt to connect
-        if (client.connect(MQTT_CLIENTID, topicSTATUS, 2, 1, "0"))
+
+        if (client.connect(MQTT_CLIENTID, stopicSTATUS.c_str(), 2, 1, "0"))
         {
             // client.connect(MQTT_CLIENTID,MQTT_USER,MQTT_PASS,"esp32/on",2,1,"off")
             Serial.println("connected");
             // Subscribe
-            client.subscribe(topicREC);
-            client.publish(topicSTATUS, "1");
-            client.publish(topicANNOUNCE, deviceData);
+            client.subscribe(stopicREC.c_str());
+            client.publish(stopicSTATUS.c_str(), "1");
+            client.publish(stopicANNOUNCE.c_str(), SETUP_INFO.c_str());
         }
         else
         {
@@ -432,6 +491,9 @@ void setup()
     Serial.begin(115200);
     // check for connected motors
     //status = bme.begin();
+    setup_device_properties();
+    Serial.print("VOID SETUP -> topicSTATUS=");
+    Serial.println(stopicSTATUS.c_str());
     setup_wifi();
     client.setServer(MQTT_SERVER, 1883);
     client.setCallback(callback);
@@ -463,7 +525,7 @@ void loop()
     client.loop();
     if (time_now + period < millis())
     {
-        client.publish(topicSTATUS, "1");
+        client.publish(stopicSTATUS.c_str(), "1");
         time_now = millis();
     }
 }

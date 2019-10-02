@@ -75,13 +75,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     private final String PREFERENCE_FILE_KEY = "myAppPreference";
 
     // MQTT Topics
-    public static final String topic_prefix = "uc2/microscope/";
-    public static final String topic_z_stage_zval_fwd = "zstage/fwd/zval";
-    public static final String topic_z_stage_zval_bwd = "zstage/bwd/zval";
-    public static final String topic_z_stage_ledval = "zstage/ledval";
-    public static final String topic_s_stage_sval_fwd = "sstage/fwd/sval";
-    public static final String topic_s_stage_sval_bwd = "sstage/bwd/sval";
-    public static final String topic_led_matrix = "ledmatrix/ledval";
+    // environment variables
+    public static final String topic_prefix_setup = "/S004/";
+    public static final String topic_prefix_dev1 = "MOT01/";
+    public static final String topic_prefix_dev2 = "MOT02/";
+    public static final String topic_prefix_dev3 = "LAR01/";
+    public static final String topic_postfix_send = "RECM";
+    public static final String topic_z_stage =  topic_prefix_dev1 + topic_postfix_send;
+    public static final String topic_s_stage = topic_prefix_dev2 + topic_postfix_send;
+    //public static final String topic_z_stage_zval_bwd = "/S1/LEDarr1/REC";
+    public static final String topic_z_stage_ledval = topic_prefix_dev1 + topic_postfix_send;
+    //public static final String topic_s_stage_sval = topic_prefix_setup + topic_prefix_dev2 + topic_postfix_send;
+    //public static final String topic_s_stage_sval_fwd = "sstage/fwd/sval";
+    //public static final String topic_s_stage_sval_bwd = "sstage/bwd/sval";
+    public static final String topic_led_matrix =topic_prefix_dev3 + topic_postfix_send;
     public static final String topic_debug = "lens/left/led";
     public static String experiment_id = "1";
 
@@ -227,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval_bwd, "10");
+                    publishMessage(topic_s_stage, "DRVX+10");
                 }
                 return true;
             }
@@ -236,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval_bwd, "1");
+                    publishMessage(topic_s_stage, "DRVX+1");
                 }
                 return true;
             }
@@ -245,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval_fwd, "10");
+                    publishMessage(topic_s_stage, "DRVX+-10");
                 }
                 return true;
             }
@@ -254,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage_sval_fwd, "1");
+                    publishMessage(topic_s_stage, "DRVX+-10");
                 }
                 return true;
             }
@@ -266,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval_bwd, "10");
+                    publishMessage(topic_z_stage, "DRVZ+50");
                 }
                 return true;
             }
@@ -275,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval_bwd, "1");
+                    publishMessage(topic_z_stage, "DRVZ+5");
                 }
                 return true;
             }
@@ -284,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval_fwd, "10");
+                    publishMessage(topic_z_stage, "DRVZ+-50");
                 }
                 return true;
             }
@@ -293,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage_zval_fwd, "1");
+                    publishMessage(topic_z_stage, "DRVZ+-5");
                 }
                 return true;
             }
@@ -309,12 +316,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             // For left Lens in Y
             val_z_stage_ledval = progress;
             updateGUI();
-            publishMessage(topic_z_stage_ledval, String.valueOf(val_z_stage_ledval));
+            publishMessage(topic_z_stage_ledval, "NA+" + String.valueOf(val_z_stage_ledval));
         } else if (bar.equals(seekbar_ledmatrix_naval)) {
             // For left Lens in Z
             val_ledmatrix_naval = progress;
             updateGUI();
-            publishMessage(topic_led_matrix, String.valueOf(val_ledmatrix_naval));
+            publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
     }}
 
     public void updateGUI() {
@@ -424,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
-            mqttAndroidClient.publish(topic_prefix + experiment_id + "/" + pub_topic, message);
+            mqttAndroidClient.publish(topic_prefix_setup + pub_topic, message);
             //addToHistory("Message Published");
             if (!mqttAndroidClient.isConnected()) {
                 //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");

@@ -10,7 +10,7 @@ import sys
 import os
 if(1):
     # Set Kivy-PARAMETERS
-    #os.environ['KIVY_WINDOW'] = 'sdl2'
+    # os.environ['KIVY_WINDOW'] = 'sdl2'
     # time.sleep(1)
     from kivy.app import App
     from kivy.lang import Builder
