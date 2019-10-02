@@ -40,16 +40,19 @@ def arduino_init():
 
 def mqtt_init():
     # connect to server
-    setup_name = "S" + str(fg.setup_number)
-    mqtt_connect_to_server(broker="10.9.2.116", mqttclient_name="raspi1",
-                           mqttclient_pass="1ipsar", mqttclient_ID="Raspi1", port=1883, keepalive=60)
+    import random
+    setup_name = "S" + fg.setup_number
+    device_ID = "RASPI_" + str(random.randint(0, 100000))
+    device_MQTT_name = "RAS01"
+    mqtt_connect_to_server(broker="0.0.0.0", mqttclient_name="raspi1",
+                           mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
     # register Raspberry
-    fg.raspi = MQTTDevice(setup_name, "RASP1")
+    fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
     # instanciate devices
-    fg.ledarr = MQTTDevice(setup_name,  "LEDarr1")
-    fg.motors = [MQTTDevice(setup_name, "MOT1"), MQTTDevice(
-        setup_name, "MOT1"), MQTTDevice(setup_name, "MOT2")]
-    fg.fluo = MQTTDevice(setup_name, "MOT2")
+    fg.ledarr = MQTTDevice(setup_name,  "LAR01")
+    fg.motors = [MQTTDevice(setup_name, "MOT02"), MQTTDevice(
+        setup_name, "MOT02"), MQTTDevice(setup_name, "MOT01")]
+    fg.fluo = MQTTDevice(setup_name, "MOT01")
 
 
 def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_ID, port=1883, keepalive=60):

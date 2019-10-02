@@ -18,9 +18,9 @@ class MQTTDevice(object):
     # common commands
     com_cmds = {"STATUS": "STATUS", "LOGOFF": "LOGOFF", "NAME": "NAME"}
     # MQTT-data
-    topic_send = "REC"  # topic for commands received by device
-    topic_status = "STATUS"
-    topic_announce = "ANNOUNCE"
+    topic_send = "RECM"  # topic for commands received by device
+    topic_status = "STAT"
+    topic_announce = "ANNO"
 
     def __init__(self, setup, device):
         self.setup = setup
