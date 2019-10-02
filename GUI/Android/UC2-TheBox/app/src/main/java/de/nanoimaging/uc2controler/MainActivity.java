@@ -34,27 +34,9 @@ import java.nio.ByteOrder;
 import java.util.Random;
 
 
-/*
- +====================== Android MQTT Controller =======================+
- |                                                                      |
- |           Simple remote control app for IoT purposes                 |
- |         This app comunicates with a remote cloud MQTT broker         |
- |            Participate, find help, info, and more at:                |
- |                                                                      |
- |   -------> https://github.com/ismenc/esp8266-mqtt-control <-------   |
- |   -----> https://github.com/ismenc/android-mqtt-controller <------   |
- |                                                                      |
- +======================================================================+
- */
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
-    /*
-     * Todo Replace togglebutton with button
-     * Todo Method that checks the lights status over MQTT
-	 * Todo On button click, check lights status and then switch status
-     * Todo Minor validations and use cases
-	 * Todo Move methods to MqttUtil for better modularization
-     */
+
 
     MqttAndroidClient mqttAndroidClient;
 
@@ -93,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     public static String experiment_id = "1";
 
     // PWM settings
-    int PWM_resolution = 32768 - 1; // bitrate of the PWM signal
+    int PWM_resolution = 255 - 1; // bitrate of the PWM signal
     int NA_val = 4;
 
     int val_z_stage_ledval = 0;
@@ -234,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage, "DRVX+10");
+                    publishMessage(topic_s_stage, "DRVX+50");
                 }
                 return true;
             }
@@ -243,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage, "DRVX+1");
+                    publishMessage(topic_s_stage, "DRVX+5");
                 }
                 return true;
             }
@@ -252,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage, "DRVX+-10");
+                    publishMessage(topic_s_stage, "DRVX+-50");
                 }
                 return true;
             }
@@ -261,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_s_stage, "DRVX+-10");
+                    publishMessage(topic_s_stage, "DRVX+-2");
                 }
                 return true;
             }
@@ -316,7 +298,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             // For left Lens in Y
             val_z_stage_ledval = progress;
             updateGUI();
-            publishMessage(topic_z_stage_ledval, "NA+" + String.valueOf(val_z_stage_ledval));
+            publishMessage(topic_z_stage_ledval, "FLUO+" + String.valueOf(val_z_stage_ledval));
         } else if (bar.equals(seekbar_ledmatrix_naval)) {
             // For left Lens in Z
             val_ledmatrix_naval = progress;

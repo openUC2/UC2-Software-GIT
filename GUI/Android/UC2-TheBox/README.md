@@ -39,4 +39,16 @@ The latest version of the signed **APK** of the app can be downloaded [here](./a
 11. A message which says **Connected** should appear 
 12. All set! 
 
+## Troubleshooting
+
+- Close the app and restart it (really remove the panel from the task manager)
+
+### MQTT-Commands sent externally
+
+You can send the commands using 3rd party apps for debugging. They use the following topics:
+
+- **Motor: Z-Stage**: ```MOT01/RECM DRVZ+-50```, *-100..100*
+- **Motor: S-Stage**: ```MOT02/RECM DRVZ+-50```, *-100..100*
+- **Fluo LED**: ```MOT01/RECM NA+10966```, *0..25600*
+- **LED-Array**: ```LAR01/RECM NA+1```, *0,1,2,3,4*
 
