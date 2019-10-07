@@ -45,10 +45,13 @@ The latest version of the signed **APK** of the app can be downloaded [here](./a
 
 ### MQTT-Commands sent externally
 
-You can send the commands using 3rd party apps for debugging. They use the following topics:
+You can send the commands using 3rd party apps for debugging. The general topic-structure is: 
+- ```/<S><INT3>/<DEV><INT2>/COMD```
+with S=Setup, DEV=Device, COMD=Command (delimited by "+" sign) and INT3=3 integers, INT2=2 integers. A COMD is built by a ```<COMMANDSEQUENCE>+<VAL1>+<VAL2>+...+<VALn>```. Here are some examples:
 
-- **Motor: Z-Stage**: ```MOT01/RECM DRVZ+-50```, *-100..100*
-- **Motor: S-Stage**: ```MOT02/RECM DRVZ+-50```, *-100..100*
-- **Fluo LED**: ```MOT01/RECM NA+10966```, *0..25600*
-- **LED-Array**: ```LAR01/RECM NA+1```, *0,1,2,3,4*
+- **Motor: Z-Stage**: ```/S013/MOT01/RECM DRVZ+-50```, *-100..100*
+- **Motor: S-Stage**: ```/S013/MOT02/RECM DRVZ+-50```, *-100..100*
+- **Fluo LED**: ```/S013/MOT01/RECM NA+10966```, *0..25600*
+- **LED-Array**: ```/S013/LAR01/RECM NA+1```, *0,1,2,3,4*
 
+The COMD ```STATS``` or ```ANNO``` are used for inter-device-communication and bug-fixing. 

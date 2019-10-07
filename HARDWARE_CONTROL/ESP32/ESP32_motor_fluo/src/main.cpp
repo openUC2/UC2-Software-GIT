@@ -44,7 +44,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
+const char *MQTT_SERVER = "192.168.178.35"; // 10.9.2.116
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
