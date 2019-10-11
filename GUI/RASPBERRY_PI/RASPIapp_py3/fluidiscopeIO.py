@@ -7,6 +7,7 @@ import fluidiscopeGlobVar as fg
 from fluidException import fluidException
 from copy import deepcopy
 import io
+import logging
 import os
 import datetime
 import re
@@ -19,6 +20,9 @@ else:
 
 if not fg.my_dev_flag and fg.i2c:
     from I2CDevice import I2CDevice
+
+# activate logging
+logger = logging.getLogger('UC2_io')
 
 
 def load_config(config_file):
@@ -39,22 +43,22 @@ def load_config(config_file):
                 tmp_dict[sub][x] = subconfig_load[x]
 
     except Exception as exc:
-        print(exc)
-        print("Unable to load config file.")
+        logger.error(exc)
+        logger.error("Unable to load config file.")
         tmp_dict = {}
 
     return tmp_dict
 
 
 def restore_config():
-    print("Trying to restore config file from backup.")
+    logger.debug("Trying to restore config file from backup.")
     try:
         backup_path = uni.Path(fg.config_path, "backup")
         backup_file = uni.Path(backup_path, "main_config.bak")
         backup_config = load_config(backup_file)
     except Exception as exc:
-        print("Error: " + str(exc))
-        print("Restore failed.")
+        logger.error("Error: " + str(exc))
+        logger.error("Restore failed.")
         exit()
 
     bak_files = [f for f in os.listdir(backup_path) if f.endswith(".bak")]
@@ -75,11 +79,11 @@ def restore_config():
         fluid_dump(fg.config_file, restored_main_load)
 
     except Exception as exc:
-        print("Error: " + str(exc))
-        print("Restore failed.")
+        logger.error("Error: " + str(exc))
+        logger.error("Restore failed.")
         exit()
 
-    print("Backup successfully restored.")
+    logger.debug("Backup successfully restored.")
 
 
 def load_user_config(userconfig):
@@ -89,10 +93,11 @@ def load_user_config(userconfig):
         completed_load = verify_user_config(user_load, default_dict)
         return completed_load
     except fluidException as e:
-        print('Invalid key "{0}" found. Loading default.'.format(e.args[0]))
+        logger.error(
+            'Invalid key "{0}" found. Loading default.'.format(e.args[0]))
         return default_dict
     except Exception as e:
-        print(e)
+        logger.error(e)
         return default_dict
 
 
@@ -122,9 +127,9 @@ def write_config():
             sub_file = uni.Path(fg.config_path, main_load[sub])
             fluid_dump(sub_file, fg.config[sub])
     except Exception as exc:
-        print(exc)
+        logger.error(exc)
         exit()
-    print("Config written.")
+    logger.debug("Config written.")
 
 
 def write_user_config(userconfig, *args):
@@ -134,7 +139,7 @@ def write_user_config(userconfig, *args):
         write_path = uni.Path(fg.config_path, fg.today)
 
     fluid_dump(write_path, userconfig)
-    print("User-config written.")
+    logger.debug("User-config written.")
 
 
 def fluid_load(read_file):
@@ -143,8 +148,8 @@ def fluid_load(read_file):
             data = yaml.safe_load(stream)
         return data
     except Exception as exc:
-        print(read_file)
-        print(exc)
+        logger.error(read_file)
+        logger.error(exc)
         exit()
 
 
@@ -192,7 +197,8 @@ def settings_save_restore(self, instance, restore):
                 try:
                     self.ids[prop_help].text = str(fg.config['cam'][key])
                 except:
-                    print("ID: {} not found. SKIPPED!".format(prop_help))
+                    logger.warning(
+                        "ID: {} not found. SKIPPED!".format(prop_help))
             else:
                 fg.config['cam'][key] = toolbox.textinput_convert(
                     self.ids[prop_help].text)
@@ -254,10 +260,10 @@ def settings_save_restore(self, instance, restore):
 
 def slider_setNA(self, instance):
     self.ids['slider_light_set_2_NA'].text = 'NA = ' + str(instance.value)
-    print("Instance.Value: " + str(instance.value))
+    logger.debug("Instance.Value: " + str(instance.value))
     toolbox.setNA(int(instance.value))
     toolbox.fill_matrix(self, instance)
-    print("NA set by slider: {0}".format(fg.config['light']['NA']))
+    logger.debug("NA set by slider: {0}".format(fg.config['light']['NA']))
 
 
 def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
@@ -296,7 +302,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
                         fg.ledarr.send("PXL", pos, list(
                             self.ids[prop_help].fl_value))
                         time.sleep(fg.config['experiment']['i2c_send_delay'])
-                        #print("sent:{0} of {1}".format(support_str,type(list(support_str))))
+                        #logger.debug("sent:{0} of {1}".format(support_str,type(list(support_str))))
     fg.config['light']['update_matrix_active'] = False
 
 
@@ -317,14 +323,18 @@ def prepareFolder():
     fg.config['experiment']['path_last_expt'] = fg.expt_path
 
     # create dir
-    try:
-        if not os.path.exists(fg.expt_path):
-            os.makedirs(fg.expt_path)
-            print('Folder: {0} created successfully'.format(fg.expt_path))
-    finally:
-        print('Folder check done!')
-
+    dir_test_existance(fg.expt_path)
     return fg.config
+
+
+def dir_test_existance(mydir):
+    try:
+        if not os.path.exists(mydir):
+            os.makedirs(mydir)
+            logger.debug(
+                'Folder: {0} created successfully'.format(mydir))
+    finally:
+        logger.debug('Folder check done!')
 
 
 def format_num(x):
@@ -343,15 +353,15 @@ def dumpclean(obj):
     if type(obj) == dict:
         for k, v in obj.items():
             if hasattr(v, '__iter__'):
-                print(k)
+                logger.debug(k)
                 dumpclean(v)
             else:
-                print('%s : %s' % (k, v))
+                logger.debug('%s : %s' % (k, v))
     elif type(obj) == list:
         for v in obj:
             if hasattr(v, '__iter__'):
                 dumpclean(v)
             else:
-                print(v)
+                logger.debug(v)
     else:
-        print(obj)
+        logger.debug(obj)

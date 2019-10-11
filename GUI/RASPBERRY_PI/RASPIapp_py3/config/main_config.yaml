@@ -5,4 +5,5 @@ experiment: experiment_properties.yaml
 imaging: imaging_properties.yaml
 light: light_properties.yaml
 light_patterns: light_patterns.yaml
+logging: logging.yaml
 motor: motor_properties.yaml

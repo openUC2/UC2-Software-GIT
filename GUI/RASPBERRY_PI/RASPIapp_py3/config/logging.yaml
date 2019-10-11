@@ -1,0 +1,63 @@
+formatters:
+  complete_time:
+    datefmt: '%Y%m%d %H:%M:%S'
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: complete_time
+    level: WARNING
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    filename: .\log\startup.txt
+    formatter: complete_time
+    level: DEBUG
+loggers:
+  UC2_autofocus:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_init:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_init_load:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_io:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_main:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_mqtt:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+  UC2_toolbox:
+    handlers:
+    - console
+    - file
+    level: DEBUG
+    propagate: false
+root:
+  handlers:
+  - console
+  level: DEBUG
+version: 1
