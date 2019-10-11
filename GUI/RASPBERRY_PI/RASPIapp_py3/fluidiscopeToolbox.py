@@ -130,6 +130,14 @@ def scr_switch(self, instance):
             self.ids["sm"].current = 'scr_autofocus_set'
             self.ids["btn_scr_name"].text = 'AUT\nOFO\nCUS'
         fluidiscopeIO.settings_save_restore(self, instance, True)
+    elif self.ids["btn_tomography_settings"].uid == instance.uid:
+        if check_active(instance):
+            chk_experiment_created(self, instance, instance.text)
+        else:
+            self.ids["sm"].current = 'scr_tomo'
+            self.ids["btn_scr_name"].text = 'TO\nMO'
+        change_activation_status(instance)
+        fluidiscopeIO.settings_save_restore(self, instance, True)
     # special buttons
     ##
     ###
@@ -788,14 +796,7 @@ def take_image(self, *args):
                                 time.sleep(fg.config['imaging']['speed'])
                                 tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], fnwh)
                                 fg.ledarr.send("CLEAR")
-                        elif active_method== "Custom":
-                            # swith to customized LED field
-                            time.sleep(0.1)
-                            fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False)
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
-                            fg.ledarr.send("CLEAR")
-                        else:
+                        elif active_method== "RECT":
                             # set now with small NA image
                             file_name_write = uni.Path(fg.expt_path, image_name)
                             # fluidiscopeIO.update_matrix(self, instance, ignoreNA=True, sync_only=False)
@@ -804,6 +805,11 @@ def take_image(self, *args):
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
+                        else:
+                            # 
+                            image_name += "-Tomo"
+                            file_name_write = uni.Path(fg.expt_path, image_name)
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write,method='')
             finally:
                 pass
         if active_method in ['Bright','qDPC','Custom','Fluor']:
@@ -972,11 +978,26 @@ def tomography_settings(self, instance):
     
     logger.debug("Got to tomography settings")
 
-def tomography_activation(self, instance):
+def tomography_startmeas(self, instance):
     pass
 
-def tomograhy_callback(self, instance):
-    pass
+def tomograhy_callback(self, instance, acquire_images=False):
+    for imnbr in range(fg.config['experiment']['tomography_steps']):
+        if acquire_images: 
+            take_image(self)
+        move_motor(self,instance,fg.config['experiment']['tomography_direction'],fg.config['experiment']['tomography_stepsize'])
+
+def tomography_btn_logic(self, instance): 
+    '''
+    Additional Click-logic of the tomography-page is contained here.
+    '''
+    dict_names_btnset = ['tomo_btn_set_0','tomo_btn_set_1','tomo_btn_set_2','tomo_btn_set_3','tomo_btn_set_4','tomo_btn_set_5']
+    dict_uids_btnset = [None] * len(dict_names_btnset)
+    print(dict_uids_btnset)
+    for myc in range(len(dict_names_btnset)):
+        dict_uids_btnset[myc] = self.ids[dict_names_btnset[myc]].uid
+    if instance.uid in (dict_uids_btnset):
+        print(instance.value)
 # ----------------------------------------------------------------
 #                      AUTOFOCUS Functions
 
@@ -1328,21 +1349,26 @@ def motor_steps_settings(self, instance):
     self.ids["lbl_motor_stepsize"].text = str(fg.config["motor"][key_stepsize])
 
 
-def move_motor(self, instance):
+def move_motor(self, instance, motor_sel, motor_stepsize=None):
+    # prepare selection of right motor
     testdict = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}
-    cmd = testdict[fg.config['motor']['active_motor']]
+    cmd = testdict[motor_sel]
     limit_reached = False
-    if fg.config['motor']['active_motor'] in [0,1]:
+    if motor_sel in [0,1]:
         stepsize_app = '_xy'
     else:
         stepsize_app = '_z'
-
-    stepsize = floor(fg.config['motor']['stepsize'+stepsize_app] /
+    # convert motor-stepsize given the CONFIG-Factor
+    if motor_stepsize == None:
+        stepsize = floor(fg.config['motor']['stepsize'+stepsize_app] /
+                     fg.config['motor']['conversion_factor'+stepsize_app])
+    else:
+        stepsize = floor(motor_stepsize /
                      fg.config['motor']['conversion_factor'+stepsize_app])
     if instance.text == '<<':
         stepsize *= -1
-    # move motor
-    if fg.config['motor']['active_motor'] == 2:
+    # actually move motor
+    if motor_sel == 2:
         if stepsize < 0:
             limit_key = 'calibration_z_min'
         else:
@@ -1354,7 +1380,7 @@ def move_motor(self, instance):
     # manage progress-bar
     if not limit_reached:
         if not fg.i2c:
-            fg.motors[fg.config['motor']['active_motor']].send(cmd, stepsize)
+            fg.motors[motor_sel].send(cmd, stepsize)
         refresh_progress_bar = 0.2
         fg.config['motor']['calibration_z_pos'] += stepsize
         if instance.text == '<<':

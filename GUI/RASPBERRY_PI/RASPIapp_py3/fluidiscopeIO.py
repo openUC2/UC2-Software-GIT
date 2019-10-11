@@ -166,8 +166,8 @@ def fluid_dump(write_file, data):
 
 
 def settings_save_restore(self, instance, restore):
-    chk = [False] * 19
-
+    chk = [False] * 20
+    # -----------------------------------------------
     chk[0] = self.ids['scr_cam_set_1_btn_save'].uid
     chk[1] = self.ids['scr_cam_set_1_btn_restore'].uid
     chk[2] = self.ids['btn_cam_set_1'].uid
@@ -187,7 +187,8 @@ def settings_save_restore(self, instance, restore):
     chk[16] = self.ids['scr_autofocus_set_btn_restore'].uid
     chk[17] = self.ids['btn_autofocus_set'].uid
     chk[18] = self.ids['btn_autofocus_opt'].uid
-
+    chk[19] = self.ids['btn_tomography_settings'].uid
+    # -----------------------------------------------
     chk = [x == instance.uid for x in chk]
 
     if any(chk[:3]):
@@ -253,6 +254,15 @@ def settings_save_restore(self, instance, restore):
                 self.ids[prop_help].text = str(fg.config['autofocus'][key])
             else:
                 fg.config['autofocus'][key] = toolbox.textinput_convert(
+                    self.ids[prop_help].text)
+    elif chk[19]:
+        key_prefix = 'tomography_lbl_'
+        key_dict = ['tm_backlash','tm_motor','tm_takeimage','tm_startPOS','tm_endPOS','tm_steps','tm_stepsize','tm_steptime','tm_totalTime']
+        for key in key_dict:
+            if restore:
+                self.ids[key_prefix+key].text = str(fg.config['experiment'][key])
+            else:
+                fg.config['experiment'][key] = toolbox.textinput_convert(
                     self.ids[prop_help].text)
     if not restore:
         write_config()

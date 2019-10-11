@@ -158,18 +158,27 @@ def logging_load_config():
     # with open(fg.config[''], 'r') as fd:
     #    myconfig = yaml.safe_load(fd.read())
     # create logpath if necessary
+    # get and check path
+    from kivy.logger import Logger
+    from shutil import copy2
+    kivy_logfile = Logger.handlers[1].filename
     log_path = os.getcwd() + "\\log\\"
     fluidiscopeIO.dir_test_existance(log_path)
-    # put into config
-    logging.config.dictConfig(fg.config['logging'])
     # get time and date
     logging_filename = "uc2-{}.log".format(
         time.strftime("%Y%m%d_%H%M%S", time.localtime()))
+    log_path_full = os.path.abspath(
+        log_path + logging_filename)
+    # copy existing logs
+    copy2(kivy_logfile, log_path_full)
+    # put into config
+    logging.config.dictConfig(
+        fg.config['logging'])
+
     # create logger
     logger = logging.getLogger('UC2_init_load')
     logger.handlers[1].close()
-    logger.handlers[1].baseFilename = os.path.abspath(
-        log_path + logging_filename)
+    logger.handlers[1].baseFilename = log_path_full
 
     # finish
     logger.debug("Logging successfully initialized to -> " + logging_filename)

@@ -92,8 +92,11 @@ class Fluidiscope(BoxLayout):
     def btn_tomography_settings(self, instance):
         toolbox.tomography_settings(self, instance)
 
-    def tomography_activation(self, instance):
-        toolbox.tomography_activation(self, instance)
+    def tomography_btn_logic(self, instance):
+        toolbox.tomography_btn_logic(self, instance)
+
+    def tomography_startmeas(self, instance):
+        toolbox.tomography_startmeas(self, instance)
 
     def btn_camera_live_settings(self, instance):
         toolbox.camera_live_settings(self, instance)
@@ -128,6 +131,10 @@ class Fluidiscope(BoxLayout):
         toolbox.change_activation_status(instance)
         toolbox.autofocus(self, instance)
 
+    # tomography modes
+    def tomography_btn_set(self, instance):
+        pass
+
     # motor functions
     def btn_motor_movement_direction(self, instance):
         toolbox.btn_motor_refresh_text(self, instance)
@@ -141,7 +148,8 @@ class Fluidiscope(BoxLayout):
             logger.debug(
                 "I am I am delivering data to the arduino by pidgeon. Takes a while...")
         if not 'pb_motor' in fg.EVENT:
-            toolbox.move_motor(self, instance)
+            toolbox.move_motor(
+                self, instance, fg.config['motor']['active_motor'])
             toolbox.select_method(self, instance, "motor_mov_buttons")
 
     def motor_calibrate(self, instance):
