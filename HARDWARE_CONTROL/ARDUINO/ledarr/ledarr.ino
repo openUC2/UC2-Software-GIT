@@ -1,13 +1,13 @@
 // old
 #include <Arduino.h>
-#include <WSWire.h>
+#include <Wire.h>
 #include <string.h>
 #include "Adafruit_GFX.h"
 #include "Adafruit_NeoMatrix.h"
 #include "Adafruit_NeoPixel.h"
 #include <SPI.h>
 
-#define SLAVE_ADDRESS 0x07
+#define SLAVE_ADDRESS 0x09
 #define CLOCK_FREQUENCY 100000 //choose according to frequency of I2C-Master
 #define HEARTBEAT_INTERVAL 300000
 #define LED 13
@@ -298,12 +298,18 @@ void setup()
   strlcat(busy_msg, delim_strt, sizeof(busy_msg));
   strlcat(busy_msg, "BUSY", sizeof(busy_msg));
   strlcat(busy_msg, delim_stop, sizeof(busy_msg));
+
+
 }
 
 void loop()
 {
   if(receiveFlag)
   {
+      drawRect(1, 1, 4, 4, true);
+  
+  drawRect(1, 1, 4, 4, false);
+  
     busy = true;
     int nINST = separateCommand();
     executeCommand(nINST);
