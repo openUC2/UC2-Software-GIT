@@ -291,21 +291,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
-
-    @Override
-    public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-        if (bar.equals(seekbar_z_stage_ledval)) {
-            // For left Lens in Y
-            val_z_stage_ledval = progress;
-            updateGUI();
-            publishMessage(topic_z_stage_ledval, "FLUO+" + String.valueOf(val_z_stage_ledval));
-        } else if (bar.equals(seekbar_ledmatrix_naval)) {
-            // For left Lens in Z
-            val_ledmatrix_naval = progress;
-            updateGUI();
-            publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
-    }}
-
     public void updateGUI() {
         // Update all slides if value has been changed
         textView_z_stage_ledval.setText("LED (fluo): " + String.format("%05d", val_z_stage_ledval));
@@ -317,10 +302,33 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
 
+    @Override
+    public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
+        if (bar.equals(seekbar_z_stage_ledval)) {
+            // For left Lens in Y
+            val_z_stage_ledval = progress;
+            updateGUI();
+            //publishMessage(topic_z_stage_ledval, "FLUO+" + String.valueOf(val_z_stage_ledval));
+        } else if (bar.equals(seekbar_ledmatrix_naval)) {
+            // For left Lens in Z
+            val_ledmatrix_naval = progress;
+            updateGUI();
+            //publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
+    }}
+
+
+    @Override
+    public void onStartTrackingTouch(SeekBar bar) {
+        if (bar.equals(seekbar_z_stage_ledval)) {
+            // For left Lens in Y
+            publishMessage(topic_z_stage_ledval, "FLUO+" + String.valueOf(val_z_stage_ledval));
+        } else if (bar.equals(seekbar_ledmatrix_naval)) {
+            // For left Lens in Z
+            publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
+        }
     }
+
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
