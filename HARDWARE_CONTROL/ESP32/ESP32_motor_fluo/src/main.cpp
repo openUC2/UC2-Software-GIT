@@ -31,7 +31,7 @@
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
 std::string SETUP = "S004";
-std::string COMPONENT = "MOT01"; // LAR01 //LED01 //
+std::string COMPONENT = "MOT01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
 std::string CLIENTNAME;
@@ -44,7 +44,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.34"; // 10.9.2.116
+const char *MQTT_SERVER = "192.168.178.20"; // 10.9.2.116
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";

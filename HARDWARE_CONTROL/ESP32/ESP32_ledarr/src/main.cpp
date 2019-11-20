@@ -36,13 +36,13 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2-F8Team";        //"Blynk";"UC2";
+const char *ssid = "UC2-F8Team";       //"Blynk";"UC2";
 const char *password = "_lachmannUC2"; //"12345678";"youseetoo";
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
+const char *MQTT_SERVER = "192.168.178.49"; // 10.9.2.116
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
