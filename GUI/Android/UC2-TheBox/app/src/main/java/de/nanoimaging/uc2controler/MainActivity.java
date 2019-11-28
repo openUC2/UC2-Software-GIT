@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     // MQTT Topics
     // environment variables
-    public static final String topic_prefix_setup = "/S004/";
+    public static final String topic_prefix_setup = "/S006/";
     public static final String topic_prefix_dev1 = "MOT01/";
     public static final String topic_prefix_dev2 = "MOT02/";
     public static final String topic_prefix_dev3 = "LAR01/";

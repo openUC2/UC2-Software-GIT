@@ -1,28 +1,9 @@
-## Disclaimer
-By using this install script you agree to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) available in the following [repository](https://github.com/jjhelmus/berryconda).
+# Small Scripts to help setting-up or fix your RasPi
 
+## Setting up Python UC2env
+The description on how to setup the python environment with Berryconda (a Anaconda derivate for RasPi) can be found [here](./SETUP_UC2env). 
 
-## Installing
-* Download all files of this directory
-* Run 01-UC2_Prerequisites.sh by typing into your terminal:
-```
-$ ./01-UC2_Prerequisites.sh
-```
-* wait until installation completes
-* close current and open *new* terminal window
-* check whether installation was successful by typing into new opened terminal window:
-```
-$ which conda
-```
-* you should see a directory as output
-* if you get no output at all then something went wrong
-* if everything's fine proceed by typing
-```
-$ source 02-UC2_Berryconda.sh
-```
-* your final terminal output should look like this (last line):
-
-![Berryconda done](https://github.com/bionanoimaging/UC2-Software-GIT/blob/master/SCRIPTS/2019-08-07-062835_1824x984_scrot.png)
-
-## Acknowledgements
-Thanks to https://github.com/jjhelmus/berryconda for making Python 3.6 easily available for RaspberryPi.
+## Fixing the date-error
+Typically RasPi refuses to get new updates or even access to internet if time-settings are heavily wrong. Adding ntp as well as ntpd services to invoke auto-updates do only work from time to time, hence we chose to offer two ways: 
+1. enter date and time manually (works offline) -> [here](./FIX_date)
+2. add cron-job to get correct time (needs internet connection) -> [here](./FIX_date)

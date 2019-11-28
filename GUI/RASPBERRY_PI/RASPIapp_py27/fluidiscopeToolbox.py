@@ -586,7 +586,6 @@ def run_measurement(self, instance):
             #   fg.EVENT['autofocus_measure'].cancel()
             #    Clock.unschedule(fg.EVENT['autofocus_measure'])
             #print("not implemented yet")
-
 def set_measurement_parameter(self):
     fg.config['light']['intensity_expt'] = fg.config['light']['intensity']
     if fg.config['experiment']['imaging_cause'] == 'SNAP':
@@ -841,6 +840,7 @@ def camera_set_parameter(method='CUS'):
         if method in ['CUS','qDPC','Bright','BG','FG']:
             method_key = 'cam'
             fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
+            '''
             fg.camera.contrast = fg.config[method_key]['contrast']
             fg.camera.sharpness = fg.config[method_key]['sharpness']
             fg.camera.brightness = fg.config[method_key]['brightness']
@@ -858,8 +858,9 @@ def camera_set_parameter(method='CUS'):
             fg.camera.rotation = fg.config[method_key]['rotation']
             fg.camera.hflip = fg.config[method_key]['hflip']
             fg.camera.vflip = fg.config[method_key]['vflip']
+            '''
             fg.camera.crop = tuple(fg.config[method_key]['crop'])
-            fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
+            #fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
         elif method == 'Fluor':
             method_key = 'cam_fluo'
             fg.camera.resolution = tuple(fg.config[method_key]['resolution'])

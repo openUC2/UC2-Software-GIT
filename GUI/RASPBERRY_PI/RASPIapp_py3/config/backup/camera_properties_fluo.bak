@@ -11,7 +11,7 @@ crop:
 - 1.0
 - 1.0
 exposureCompensation: 0
-exposureMode: off
+exposureMode: false
 hflip: []
 imageEffects: none
 iso: 100

@@ -8,31 +8,32 @@ import logging
 import io
 import sys
 import os
-if(1):
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.config import Config
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.widget import Widget
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.textinput import TextInput
+from kivy.clock import Clock
+from kivy.clock import mainthread
+from functools import partial
+from kivy.utils import platform
+from kivy.core.window import Window
+from kivy.properties import NumericProperty, StringProperty, ListProperty
+import fluidiscopeGlobVar as fg
+import fluidiscopeInit
+import fluidiscopeToolbox as toolbox
+import fluidiscopeIO
+if(0):
     # Set Kivy-PARAMETERS
     # os.environ['KIVY_WINDOW'] = 'sdl2'
     # time.sleep(1)
-    from kivy.app import App
-    from kivy.lang import Builder
-    from kivy.config import Config
-    from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
-    from kivy.uix.boxlayout import BoxLayout
-    from kivy.uix.widget import Widget
-    from kivy.uix.button import Button
-    from kivy.uix.label import Label
-    from kivy.uix.popup import Popup
-    from kivy.uix.textinput import TextInput
-    from kivy.clock import Clock
-    from kivy.clock import mainthread
-    from functools import partial
-    from kivy.utils import platform
-    from kivy.core.window import Window
-    from kivy.properties import NumericProperty, StringProperty, ListProperty
-    import fluidiscopeGlobVar as fg
-    import fluidiscopeInit
-    import fluidiscopeToolbox as toolbox
-    import fluidiscopeIO
-# Fluidiscope
+    pass
+    # Fluidiscope
 if fg.i2c:
     from I2CDevice import I2CDevice
 
@@ -40,13 +41,15 @@ if not fg.my_dev_flag:
     import picamera
 
 # Initialization
-fluidiscopeInit.controller_init()
-#    fg.camera = 1
-#    fg.ledarr = "LEDARR"
-#    fg.motors = "MOTORS"
-
 fluidiscopeInit.load_config()
+fluidiscopeInit.logging_init()
+fluidiscopeInit.controller_init()
 fluidiscopeInit.GUI_define_sizes()
+
+# activate main-logger
+logger = logging.getLogger('UC2_main')
+
+# GUI classes
 
 
 class Fluidiscope(BoxLayout):
@@ -64,10 +67,7 @@ class Fluidiscope(BoxLayout):
 
     # imaging functions
     def btn_function_preview(self, instance):
-        if not instance.fl_active:
-            print(instance.fl_active)
-        toolbox.camera_preview_change_status(self, instance)
-        toolbox.change_activation_status(instance)
+        return toolbox.preview_switch(self, instance)
 
     def experiment_duration_format(self, instance, value):
         return toolbox.experiment_duration_format(self, instance, value)
@@ -83,11 +83,23 @@ class Fluidiscope(BoxLayout):
 
     # change autofocus to true/false
     def btn_function_autofocus(self, instance):
-        print("Autofocus-00a1- autofocus-btn clicked.")
+        logger.debug("Autofocus-00a1- autofocus-btn clicked.")
         toolbox.autofocus(self, instance)
 
     def select_imaging_method(self, instance):
         toolbox.select_method(self, instance, "imaging_method")
+
+    def btn_tomography_settings(self, instance):
+        toolbox.tomography_settings(self, instance)
+
+    def tomography_btn_logic(self, instance):
+        toolbox.tomography_btn_logic(self, instance)
+
+    def tomography_startmeas(self, instance):
+        toolbox.tomography_startmeas(self, instance)
+
+    def btn_camera_live_settings(self, instance):
+        toolbox.camera_live_settings(self, instance)
 
     # do a measurement (e.g. SNAP, experiment)
     def measurement_control(self, instance):
@@ -119,6 +131,10 @@ class Fluidiscope(BoxLayout):
         toolbox.change_activation_status(instance)
         toolbox.autofocus(self, instance)
 
+    # tomography modes
+    def tomography_btn_set(self, instance):
+        pass
+
     # motor functions
     def btn_motor_movement_direction(self, instance):
         toolbox.btn_motor_refresh_text(self, instance)
@@ -129,9 +145,11 @@ class Fluidiscope(BoxLayout):
 
     def btn_function_move_motor(self, instance):
         if fg.my_dev_flag:
-            print("I am I am delivering data to the arduino by pidgeon. Takes a while...")
+            logger.debug(
+                "I am I am delivering data to the arduino by pidgeon. Takes a while...")
         if not 'pb_motor' in fg.EVENT:
-            toolbox.move_motor(self, instance)
+            toolbox.move_motor(
+                self, instance, fg.config['motor']['active_motor'])
             toolbox.select_method(self, instance, "motor_mov_buttons")
 
     def motor_calibrate(self, instance):
@@ -172,7 +190,8 @@ class Fluidiscope(BoxLayout):
 
     def buttons_motor(self, instance):
         if fg.my_dev_flag:
-            print('I am delivering data to the arduino by pidgeon. Takes a while...')
+            logger.debug(
+                'I am delivering data to the arduino by pidgeon. Takes a while...')
         else:
             toolbox.motor_change_status(instance)
         toolbox.select_method(self, instance, "motor_buttons")
