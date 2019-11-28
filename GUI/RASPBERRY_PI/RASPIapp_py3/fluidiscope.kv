@@ -92,14 +92,14 @@
 
 # add value to identify active object easily
 <FluidToggleGroup@GridLayout>:
+    bwidth: 2
     current_active: 2
-    border_color: 0,0,0, 1
-    border_width: 2
+    bcolor: 0,0,0,1
     canvas.before:
         Color:
-            rgba: self.border_color
+            rgba: self.bcolor
         Line:
-            width: self.border_width
+            width: 2
             rectangle: self.x, self.y, self.width, self.height
 
 <FluidLabel@Label>:
@@ -141,7 +141,7 @@
         Color:
             rgba: self.border_color
         Line:
-            width: self.border_width
+            width: 1 #self.border_width
             rectangle: self.x, self.y, self.width, self.height 
 # CUSTOM SCREENS
 #<FluidPopupCopy@Popup>:

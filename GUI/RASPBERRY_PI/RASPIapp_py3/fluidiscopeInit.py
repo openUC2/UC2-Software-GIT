@@ -162,13 +162,14 @@ def logging_load_config():
     from kivy.logger import Logger
     from shutil import copy2
     kivy_logfile = Logger.handlers[1].filename
-    log_path = os.getcwd() + "\\log\\"
+    log_path = os.getcwd() + "/log/"
     fluidiscopeIO.dir_test_existance(log_path)
     # get time and date
     logging_filename = "uc2-{}.log".format(
         time.strftime("%Y%m%d_%H%M%S", time.localtime()))
     log_path_full = os.path.abspath(
         log_path + logging_filename)
+    print("Filepath is: {}".format(log_path_full))
     # copy existing logs
     copy2(kivy_logfile, log_path_full)
     # put into config

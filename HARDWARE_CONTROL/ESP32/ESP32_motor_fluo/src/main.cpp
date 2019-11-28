@@ -30,21 +30,21 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S004";
-std::string COMPONENT = "MOT01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
+std::string SETUP = "S004";      //S006->Aurelie; S004->Barbora
+std::string COMPONENT = "MOT02"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
 std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2-F8Team";       //"Blynk";"UC2";
-const char *password = "_lachmannUC2"; //"12345678";"youseetoo";
+const char *ssid = "UC2-F8Team";       //"Blynk";"UC2"; "UC2-F8Team"; "UC2_wifi01" -> Aurelie
+const char *password = "_lachmannUC2"; //"12345678";"youseetoo"; "_lachmannUC2"; "2345678901"
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.20"; // 10.9.2.116
+const char *MQTT_SERVER = "192.168.178.78"; // 10.9.2.116 // 192.168.178.20 -> ipht // "192.168.43.1" -> Aurelie
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -225,6 +225,7 @@ void callback(char *topic, byte *message, unsigned int length)
         int nINST = separateMessage(message, length);
         if (strcmp(CMD, COMMANDSET[0]) == 0)
         {
+            //Serial.print(INSTS[0] * 10);
             stepperX.Move((int)(INSTS[0] * 10));
         }
         else if (strcmp(CMD, COMMANDSET[1]) == 0)
