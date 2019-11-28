@@ -21,22 +21,6 @@ That says, setting up the image on a 3B+ with this script and then use the very 
 
 **The shell script UC2_install.sh assumes running on a fresh Rasbian Stretch Desktop image. We take no responsibility for any damage or loss introduced by this script.**
 
-## Security
-
-Raspbian ships with a commonly well-known default username and password. Although you was prompted to change the password for the default user pi,
-immediately after first boot, the commonly known user name keeps being quite a security issue (attack-vector) in combination with active SSH. Remember,
-intruders to your RaspberryPi are at this point intruders to your whole local network probably trusting the RaspberryPi. 
-
-**For security reasons we therefore highly recommend to create a new user with a new password prior to running this script!** 
-
-* Open a terminal window and create a new user with a name of your choice with: (replace without brackets; non-caps)
-```
-$ sudo adduser <yournewusername> --gecos ""
-```
-* You will be prompted to choose a new password for the newly created user
-* Please reboot when done. Re-login to user pi is no problem and expected by the script
-* Installation will switch to the newly created user's profile by itself
-* FYI: The install script itself does *never* know your or any logged-in user's password!
 
 ## Installing
 
@@ -77,6 +61,23 @@ $ sudo raspi-config
 	* enable SSH
 	* enable I2C
 	* enable Camera
+
+## Security
+
+Raspbian ships with a commonly well-known default username and password. Although you was prompted to change the password for the default user pi,
+immediately after first boot, the commonly known user name keeps being quite a security issue (attack-vector) in combination with active SSH. Remember,
+intruders to your RaspberryPi are at this point intruders to your whole local network probably trusting the RaspberryPi. 
+
+**For security reasons we therefore highly recommend to create a new user with a new password prior to running this script!** 
+
+* Open a terminal window and create a new user with a name of your choice with: (replace without brackets; non-caps)
+```
+$ sudo adduser <yournewusername> --gecos ""
+```
+* You will be prompted to choose a new password for the newly created user
+* Please reboot when done. Re-login to user pi is no problem and expected by the script
+* Installation will switch to the newly created user's profile by itself
+* FYI: The install script itself does *never* know your or any logged-in user's password!
 
 ### Details
 If you created a new user as recommended this new user will be equipped with sudo rights by the script and the installation will switch 
