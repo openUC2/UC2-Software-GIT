@@ -99,9 +99,22 @@ $ ./02-UC2_CreateEnvironment.sh
 Thanks to https://github.com/jjhelmus/berryconda for making Python 3.6 easily available for RaspberryPi.
 
 ## Installing Kivy 
-* Make sure the conda **UC2env** env is **active**
-```source activate UC2env``` 
-* Install Kivy-dependencies as described within 1. and 2. bullet-point of [official Kivy-homepage](https://kivy.org/doc/stable/installation/installation-rpi.html) as preparation to use our GUI. 
+* **Activate** the conda **UC2env** environment 
+```
+$ source activate UC2env
+``` 
+* **Install** Kivy-dependencies as described within 1. and 2. bullet-point of [official Kivy-homepage](https://kivy.org/doc/stable/installation/installation-rpi.html) as preparation to use our GUI. 
+```
+sudo apt update
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+   pkg-config libgl1-mesa-dev libgles2-mesa-dev \
+   python-setuptools libgstreamer1.0-dev git-core \
+   gstreamer1.0-plugins-{bad,base,good,ugly} \
+   gstreamer1.0-{omx,alsa} python-dev libmtdev-dev \
+   xclip xsel libjpeg-dev
+python -m pip install --upgrade --user pip setuptools
+python -m pip install --upgrade --user Cython==0.29.10 pillow   
+```
 * Then decide for building kivy on the system to get best performance with touch-screen and Window-provider even from within berryconda-environment. 
 * Change to folder `cd ~/UC2/` and run: 
 ```
