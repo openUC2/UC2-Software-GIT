@@ -72,8 +72,8 @@ and reboot
 * you will find a new shell script in your folder with the right berryconda version
 * make it runable and run it (here we make use of the star-operator)
 ```
-chmod +x Berryconda3-2.0.0-*.sh
-./Berryconda3-2.0.0-*.sh
+$ chmod +x Berryconda3-2.0.0-*.sh
+$ ./Berryconda3-2.0.0-*.sh
 ```
 * wait until installation completes
 * close current and open *new* terminal window
@@ -86,6 +86,10 @@ $ which conda
 * if everything's fine proceed by typing
 ```
 $ source 01-UC2_Berryconda.sh
+```
+After everything is set you can start the actual UC2 software installation by typing 
+```
+$ ./02-UC2_CreateEnvironment.sh
 ```
 * your final terminal output should look like this (last line):
 
