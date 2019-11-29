@@ -19,7 +19,7 @@
     ```
 6. *Fix date and time* manually if necessary. Download our [small FIX_date script](../../SCRIPTS/FIX_date/date_manfix.py) for ease of input and enter the date as suggested from commandline. If this does not work, the date can also be fixed directly in the terminal using: 
     ```
-sudo date -s "Tue Oct 30 16:07:41 CET 2018"
+    $ sudo date -s "Tue Oct 30 16:07:41 CET 2018"
     ```
 7. *Change username and disable root.* First, give a root passwd with `sudo passwd root`. <br\> Then, reboot into a shell so that no process of pi-user is already started on boot. Do: `sudo raspi-config`-> `boot options` -> `Desktop/CLI` (Raspi4) -> `boot console` -> `finish` -> `reboot`. After reboot, *login* as `root` and:
     ```
