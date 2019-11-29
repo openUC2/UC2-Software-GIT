@@ -5,10 +5,10 @@
 {:toc}
 
 ## Install and prepare RasPian 
-1. Download ["Raspbian <NBR> with desktop"](https://downloads.raspberrypi.org/raspbian_latest), but without recommended software 
+1. **Download** ["Raspbian <NBR> with desktop"](https://downloads.raspberrypi.org/raspbian_latest), but without recommended software 
 2. Flash raspian onto SD card by using e.g. [Win32DiskImager](http://sourceforge.net/projects/win32diskimager/files/latest/download) or [Etcher](https://www.balena.io/etcher/)
-3. *Insert SD-card* into RasPi, start -> setup country info (Germany->German->Berlin->"Use English language"). Make sure, that your keyboard-input works as intended. Please find further information on how to setup RasPi on the [Official Homepage](https://www.raspberrypi.org/documentation/).
-4. *Activate interfaces* and configure device. In a terminal enter `sudo raspi-config`, go to *Interfacing Options* and activate [SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/), the [Picam](https://www.raspberrypi.org/documentation/configuration/camera.md) and (optional) the [I2C-interface](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c). 
+3. **Insert SD-card** into RasPi, start -> setup country info (Germany->German->Berlin->"Use English language"). Make sure, that your keyboard-input works as intended. Please find further information on how to setup RasPi on the [Official Homepage](https://www.raspberrypi.org/documentation/).
+4. **Activate interfaces** and configure device. In a terminal enter `sudo raspi-config`, go to *Interfacing Options* and activate [SSH](https://www.raspberrypi.org/documentation/remote-access/ssh/), the [Picam](https://www.raspberrypi.org/documentation/configuration/camera.md) and (optional) the [I2C-interface](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c). 
 5. (OPTIONAL:) 
     If e.g. 7" Touch-Screen is used: rotating the Screen might be necessary. In a Terminal enter (for 2x90° rotation)
     ```
@@ -17,11 +17,11 @@
     $ lcd_rotate=2
     $ sudo reboot now
     ```
-6. *Fix date and time* manually if necessary. Download our [small FIX_date script](../../SCRIPTS/FIX_date/date_manfix.py) for ease of input and enter the date as suggested from commandline. If this does not work, the date can also be fixed directly in the terminal using: 
+6. **Fix date and time** manually if necessary. Download our [small FIX_date script](../../SCRIPTS/FIX_date/date_manfix.py) for ease of input and enter the date as suggested from commandline. If this does not work, the date can also be fixed directly in the terminal using: 
     ```
     $ sudo date -s "Tue Oct 30 16:07:41 CET 2018"
     ```
-7. *Change username and disable root.* First, give a root passwd with `sudo passwd root`. <br\> Then, reboot into a shell so that no process of pi-user is already started on boot. Do: `sudo raspi-config`-> `boot options` -> `Desktop/CLI` (Raspi4) -> `boot console` -> `finish` -> `reboot`. After reboot, *login* as `root` and:
+7. **Change username and disable root.** First, give a root passwd with `sudo passwd root`. <br\> Then, reboot into a shell so that no process of pi-user is already started on boot. Do: `sudo raspi-config`-> `boot options` -> `Desktop/CLI` (Raspi4) -> `boot console` -> `finish` -> `reboot`. After reboot, *login* as `root` and:
     ```
     $ usermod -l <your-uc2name> pi
     $ usermod -m -d /home/<your-uc2name> <your-uc2name>
@@ -43,11 +43,11 @@
 For easy Python-environment handling, install the [Berryconda](https://github.com/jjhelmus/berryconda) derivate of [Anaconda](https://www.anaconda.com/). We prepared some convenient-scripts that you can download from our [SCRIPTS-section](../../SCRIPTS/SETUP_UC2env) to install Berryconda, setup a UC2env for development and activate it as standard.
 
 ### Disclaimer
-By using this install script you agree to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) available in the following [repository](https://github.com/jjhelmus/berryconda).
+By using this install script you **agree** to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) available in the following [repository](https://github.com/jjhelmus/berryconda).
 
 
 ### Installing
-* Download all files of the [SCRIPTS-section](../../SCRIPTS/SETUP_UC2env)
+* **Download all files** of the [SCRIPTS-section](../../SCRIPTS/SETUP_UC2env)
 For downloading with the command-line, just change the github-URL like shown below:
 
 ```
@@ -61,7 +61,7 @@ $ chmod +x 00-UC2_Prerequsities,sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment
 
 ```
 
-* Run 00-UC2_Prerequisites.sh by typing into your terminal:
+* **Run** 00-UC2_Prerequisites.sh by typing into your terminal:
 ```
 $ ./00-UC2_Prerequisites.sh
 ```
