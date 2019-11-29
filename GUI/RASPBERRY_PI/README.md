@@ -57,13 +57,23 @@ $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/
 ```
 * After downloading all 3 files, make files runable
 ```
-$ chmod +x 00-UC2_Prerequsities.sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
+$ chmod +x 00-UC2_Prerequsites.sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
 
 ```
-
 * **Run** 00-UC2_Prerequisites.sh by typing into your terminal:
 ```
 $ ./00-UC2_Prerequisites.sh
+```
+* after that **run** 01-UC2_Berryconda.sh
+```
+$ ./01-UC2_Berryconda.sh
+```
+and reboot
+* you will find a new shell script in your folder with the right berryconda version
+* make it runable and run it (here we make use of the star-operator)
+```
+chmod +x Berryconda3-2.0.0-*.sh
+./Berryconda3-2.0.0-*.sh
 ```
 * wait until installation completes
 * close current and open *new* terminal window
@@ -75,7 +85,7 @@ $ which conda
 * if you get no output at all then something went wrong
 * if everything's fine proceed by typing
 ```
-$ source 02-UC2_Berryconda.sh
+$ source 01-UC2_Berryconda.sh
 ```
 * your final terminal output should look like this (last line):
 
