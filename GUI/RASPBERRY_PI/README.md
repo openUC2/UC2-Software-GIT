@@ -79,7 +79,7 @@ $ source 02-UC2_Berryconda.sh
 ```
 * your final terminal output should look like this (last line):
 
-![Berryconda done](../../SCRIPTS/2019-08-07-062835_1824x984_scrot.png)
+![Berryconda done](../../SCRIPTS/SETUP_UC2ENV/2019-08-07-062835_1824x984_scrot.png)
 
 ### Acknowledgements
 Thanks to https://github.com/jjhelmus/berryconda for making Python 3.6 easily available for RaspberryPi.
