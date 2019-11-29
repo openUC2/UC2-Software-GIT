@@ -28,7 +28,7 @@ We have prepared a very basic control app for **TheBox** to have basic control o
 <img src="./images/UC2_Raspi_Gui_1.png" width="400" alt="">
 </p> 
 
-You find a detailed description for installation of our GUI on Raspberry_PI:  [here](./HARDWARE_CONTROL/RASPBERRY_PI)
+You find a detailed description for installation of our GUI on Raspberry_PI:  [here](./GUI/RASPBERRY_PI)
 
 ## GUIv1
 Our first version for the modular microscope centered around the Raspberry Pi (the hub) controlling [Arduinos](./HARDWARE_CONTROL/ARDUINO/) using I2C-protocol. The Arduinos are then connected to elements (or drivers) like an [8x8 LED-array](./HARDWARE_CONTROL/ARDUINO/ledarr) or [stepper-motors](./HARDWARE_CONTROL/ARDUINO/motors). For image acquisition the [RaspberryPi Camera module v2](https://www.raspberrypi.org/documentation/hardware/camera/) is controlled via picam-package in Python. 
