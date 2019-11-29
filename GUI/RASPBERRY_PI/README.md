@@ -51,13 +51,13 @@ By using this install script you **agree** to the following [license agreement](
 For downloading with the command-line, just change the github-URL like shown below:
 
 ```
-$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/00-UC2_Prerequisites.sh
-$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/01-UC2_Berryconda.sh
-$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/02-UC2_CreateEnvironment.sh
+$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/00-UC2_Prerequisites.sh
+$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/01-UC2_Berryconda.sh
+$ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/02-UC2_CreateEnvironment.sh
 ```
 * After downloading all 3 files, make files runable
 ```
-$ chmod +x 00-UC2_Prerequsities,sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
+$ chmod +x 00-UC2_Prerequsities.sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
 
 ```
 
