@@ -124,7 +124,7 @@ $ python -m pip install --user .
 ```
 Especially the installation of Cython and then building Kivy locally will take a while (>=60min, needed MEM<=500mb), so lean back and enjoy a coffee. Once Kivy is finished, configure the touch-screen of RasPi (if installed) as valid input-method. Hence, `nano ~/.kivy/config.ini`, search `[input]` and add `mtdev_%(name)s = probesysfs,provider=mtdev`.</br>
 Comments:
-- If you get the warning: *The scripts cygdb, cython and cyhonie are installed in '/home/YOURUC2NAME/.local/bin' which is not on PATH*, then try the following: 
+- If you get the warning: *The scripts cygdb, Cython and cyhonie are installed in '/home/YOURUC2NAME/.local/bin' which is not on PATH*, then try the following: 
     ```
     $ echo -e '#Adding Cython binary path to PATH' >> ~/.bashrc
     $ echo -e 'export "PATH="/home/YOURUC2NAME/.local/bin:$PATH"' >> ~/.bashrc
