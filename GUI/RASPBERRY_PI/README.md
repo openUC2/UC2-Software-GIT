@@ -118,7 +118,7 @@ python -m pip install --upgrade --user Cython==0.29.10 pillow
 * Then decide for building kivy on the system to get best performance with touch-screen and Window-provider even from within berryconda-environment. 
 * Change to folder `cd ~/UC2/` and run: 
 ```
-$ git clone https://github.com/kivy/kivy
+$ git clone -branch stable-1.11.0 https://github.com/kivy/kivy
 $ cd kivy
 $ python -m pip install --user .
 ```
