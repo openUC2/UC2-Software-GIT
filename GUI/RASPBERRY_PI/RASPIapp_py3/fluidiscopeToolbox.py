@@ -11,6 +11,7 @@ import re
 import glob
 import os
 import io
+import logging
 import sys
 import unipath as uni
 from distutils.dir_util import copy_tree
@@ -54,6 +55,8 @@ button_fontcolor_active = [0.0, 0.0, 0.0, 1.0]
 # TODO: FIX IT!
 fg.expt_num = 1
 
+# activate logging
+logger = logging.getLogger('UC2_toolbox')
 
 ##########################
 #                        #
@@ -127,6 +130,14 @@ def scr_switch(self, instance):
             self.ids["sm"].current = 'scr_autofocus_set'
             self.ids["btn_scr_name"].text = 'AUT\nOFO\nCUS'
         fluidiscopeIO.settings_save_restore(self, instance, True)
+    elif self.ids["btn_tomography_settings"].uid == instance.uid:
+        if check_active(instance):
+            chk_experiment_created(self, instance, instance.text)
+        else:
+            self.ids["sm"].current = 'scr_tomo'
+            self.ids["btn_scr_name"].text = 'TO\nMO'
+        change_activation_status(instance)
+        fluidiscopeIO.settings_save_restore(self, instance, True)
     # special buttons
     ##
     ###
@@ -141,7 +152,7 @@ def scr_switch(self, instance):
         #self.ids["btn_scr_name"].text = 'COPY\nDATA\n2'
         #self.ids['scr_copy_2_delete_check'].active = False
 
-        # print(self.ids['show_selected_path'].text)
+        # logger.debug(self.ids['show_selected_path'].text)
         #if len(self.ids['scr_copy_1_filechooser'].selection) > 0:
         #    fg.copy_path = self.ids['scr_copy_1_filechooser'].selection[0]
         #else:
@@ -187,7 +198,7 @@ def check_active(instance):
         else:
             return False
     except:
-        print("{0} has no fl_active".format(instance.uid))
+        logger.error("{0} has no fl_active".format(instance.uid))
 
 # activates [1] and deactivates [0] an element
 def change_activation_status(instance):
@@ -218,7 +229,7 @@ def activate(instance):
 def deactivate(instance):
     if check_active(instance):
         try:
-            print("Is active. Deactivating Button: {0}".format.instance.text)
+            logger.debug("Is active. Deactivating Button: {0}".format.instance.text)
         except Exception as e:
             pass
         change_activation_status(instance)
@@ -274,7 +285,7 @@ def end_fluidiscope(app):
             fg.ledarr.send("CLEAR")
             fg.camera.close()
     finally:
-        print("Closed camera")
+        logger.info("Closed camera")
 
     app.get_running_app().stop()
 
@@ -290,7 +301,7 @@ def select_method(self, instance, aimed_component_group):
                 if fg.config['light_patterns']['active_p'+str(idx)] == 1:
                     active_pattern = str(idx)
                     break
-            print("Select_method: active_pattern={0}".format(active_pattern))
+            logger.debug("Select_method: active_pattern={0}".format(active_pattern))
             active_method = [active_method, 'btn_light_set_2_pattern_' + active_pattern]
         elif instance.uid == self.ids['btn_light_custom_pattern'].uid:
             counter_active_methods = ['btn_light_set_2_clear', 'btn_light_set_2_fill','slider_light_set_2_NA']
@@ -312,8 +323,8 @@ def select_method(self, instance, aimed_component_group):
         fg.config["motor"]["active_motor"] = method_dictionary[instance.text]
         switch_entries = ["btn_motor_dir_x", "btn_motor_dir_y", "btn_motor_dir_z"]
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
-        counter_active_methods = ["btn_motor_up", "btn_motor_down", "btn_motor_stepsize_plus", "lbl_motor_stepsize",
-                                  "btn_motor_stepsize_minus"]
+        counter_active_methods = ["btn_motor_up", "btn_motor_down", "btn_motor_stepsize_plus", "btn_motor_stepsize_pplus","lbl_motor_stepsize",
+                                  "btn_motor_stepsize_minus","btn_motor_stepsize_mminus"]
     elif aimed_component_group == "motor_mov_buttons":
         method_dictionary = {"<<": 0, ">>": 1}
         switch_entries = ["btn_motor_down", "btn_motor_up"]
@@ -325,9 +336,9 @@ def select_method(self, instance, aimed_component_group):
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
         counter_active_methods = ["scr_motor_set_cal_min", "scr_motor_set_cal_zero","scr_motor_set_cal_max"]
     elif aimed_component_group == "imaging_method":
-        method_dictionary = {"Bright": 0, "qDPC": 1, "Custom": 2, "Fluor": 3}
+        method_dictionary = {"Bright": 0, "qDPC": 1, "Custom": 2, "FPM":3,"Fluor": 4}
         #hswitch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_fluor"]
-        switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_fluor"]
+        switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_4", "btn_imaging_technique_5"]
         [active_method, inactive_methods] = select_method_switches(instance, method_dictionary, switch_entries)
         inactive_methods = [] # implemented to allow for multiple selection
         if len(fg.config['experiment']['active_methods']) == 0:            
@@ -373,7 +384,7 @@ def select_method(self, instance, aimed_component_group):
         if counter_active_methods:
             change_enable_status_chain(self, not check_active(instance), counter_active_methods[:])
     except Exception as exc:
-        print("Had exception: __{}__, but continued".format(exc))
+        logger.error("Had exception: __{}__, but continued".format(exc))
     # change activation status of clicked instance (button)
     change_activation_status(instance)
     clear_notification_labels(self)
@@ -383,8 +394,8 @@ def select_method(self, instance, aimed_component_group):
 
     if fg.my_dev_flag:
         warn_dev_mode(self)
-    print('Selected methods: {}.'.format(fg.config['experiment']['active_methods']))
-    print('this time selected method: {}.'.format(active_method))
+    logger.debug('Selected methods: {}.'.format(fg.config['experiment']['active_methods']))
+    logger.debug('this time selected method: {}.'.format(active_method))
     return active_method
 
 def imaging_methods_change(self, instance):
@@ -405,7 +416,7 @@ def show_notification_labels(self, instance):
             msg = "Snapshot image taken ({0})".format(fg.config['experiment']['imaging_method'])
     else:
         if fg.config['experiment']['success']:
-            print("Notification: " + str(fg.expt_num))
+            logger.debug("Notification: " + str(fg.expt_num))
             switch_notify_color(self, button_color_active)
             msg = "Experiment #{0} completed successfully.".format(fg.expt_num)
         else:
@@ -437,8 +448,10 @@ def get_imaging_method(self):
         imaging_technique = self.ids['btn_imaging_technique_2'].text
     elif check_active(self.ids['btn_imaging_technique_3']):
         imaging_technique = self.ids['btn_imaging_technique_3'].text
-    elif check_active(self.ids['btn_imaging_technique_fluor']):
-        imaging_technique = self.ids['btn_imaging_technique_fluor'].text
+    elif check_active(self.ids['btn_imaging_technique_4']):
+        imaging_technique = self.ids['btn_imaging_technique_4'].text
+    elif check_active(self.ids['btn_imaging_technique_5']):
+        imaging_technique = self.ids['btn_imaging_technique_5'].text
     elif check_active(self.ids['btn_take_background']):
         imaging_technique = self.ids['btn_take_background'].text
     elif check_active(self.ids['btn_take_foreground']):
@@ -504,16 +517,16 @@ def imaging_set_time_init(self):
 
 
 def slider_change(self,instance):
-    print('%s value has changed to %s' % (instance.name, str(instance.value)))
+    logger.debug('%s value has changed to %s' % (instance.name, str(instance.value)))
     #fg.ledarr.send("RECT+0+0+8+8+1", int(instance.value), int(instance.value), int(instance.value))
     if check_active(self.ids['btn_light_fluo']):
         fg.fluo.send("FLUO", int(instance.value))
-        print('Fluo active, sent FLUO+{}.'.format(int(instance.value)))
+        logger.debug('Fluo active, sent FLUO+{}.'.format(int(instance.value)))
     fg.config['light']['intensity'] = int(instance.value)
 
 def buttons_light(self,instance):
     if fg.my_dev_flag:
-        print('I am delivering data to the arduino by pidgeon. Takes a while...')
+        logger.debug('I am delivering data to the arduino by pidgeon. Takes a while...')
     light_change_status(self, instance)
     select_method(self, instance, "light_buttons")
    
@@ -581,12 +594,12 @@ def run_measurement(self, instance):
             fg.EVENT['meas'] = Clock.schedule_interval(partial(imaging_callback, self, instance),fg.config['experiment']['interval'])# in seconds
             fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(update_measurement_status_display_timer, self, update_interval),update_interval) # in seconds
             #if 'autofocus' in fg.EVENT:
-            #    print("autofocus_measure angelegt mit time {}".format(fg.config['autofocus']['time_interval_min']*60))
+            #    logger.debug("autofocus_measure angelegt mit time {}".format(fg.config['autofocus']['time_interval_min']*60))
             #    fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(run_autofocus,instance),fg.config['autofocus']['time_interval_min']*60) # in seconds
             #if 'autofocus' in fg.EVENT:
             #   fg.EVENT['autofocus_measure'].cancel()
             #    Clock.unschedule(fg.EVENT['autofocus_measure'])
-            #print("not implemented yet")
+            #logger.debug("not implemented yet")
 
 def set_measurement_parameter(self):
     fg.config['light']['intensity_expt'] = fg.config['light']['intensity']
@@ -623,7 +636,7 @@ def update_measurement_status_display(self):
     self.ids['status_time_passed'].text = imaging_set_time_write(
         fg.config['experiment']['time_passed'])  # str(int(fg.config['experiment']['time_passed'] / 60)) + 'm'
     #if 'meas' in fg.EVENT:
-    #   print(fg.EVENT['meas'])
+    #   logger.debug(fg.EVENT['meas'])
 
 def update_measurement_status_display_timer(self, interval, *rargs):
     if not fg.config['experiment']['is_autofocus_busy']:
@@ -658,7 +671,7 @@ def event_delete(event_name):
     fg.EVENT[event_name].cancel()
     Clock.unschedule(fg.EVENT[event_name])
     fg.EVENT.pop(event_name,None)
-    print("Event: ~{0}~ was canceled and safely deleted.".format(event_name))
+    logger.debug("Event: ~{0}~ was canceled and safely deleted.".format(event_name))
 
 # not used anymore?? ---------------------------------------
 #def take_snapshot(self, instance):
@@ -687,9 +700,9 @@ def take_image_now(self,imaging_cause='MEAS', filename='', method='CUS'):
     # get correct filename
     filename = filename_take_image_now_refine(filename=filename,imaging_cause=imaging_cause, file_format='.jpg')
     # start 
-    print("This is _take_image_now_-Func saving to: {}".format(filename))
+    logger.debug("This is _take_image_now_-Func saving to: {}".format(filename))
     if fg.my_dev_flag:
-        print("Image taken -- DEV-MODE --.")
+        logger.debug("Image taken -- DEV-MODE --.")
     else: 
         # prepare camera
         camera_set_parameter(method=method)
@@ -719,14 +732,14 @@ def take_image(self, *args):
     else: 
         for myl in range(0,len(fg.config['experiment']['active_methods'])):
             active_method = fg.config['experiment']['active_methods'][myl] # active method
-            print("Using method {} of {}: {}.".format(myl,len(fg.config['experiment']['active_methods'])-1,active_method))
+            logger.debug("Using method {} of {}: {}.".format(myl,len(fg.config['experiment']['active_methods'])-1,active_method))
             image_name = set_image_name(im_cause=fg.config['experiment']['imaging_cause'],method=active_method)
             file_name_write = uni.Path(fg.expt_path, image_name) 
-            #print("file_name_write = " + file_name_write)
+            #logger.debug("file_name_write = " + file_name_write)
             # make sure preview is off
             set_active_again = False
             if check_active(self.ids['btn_preview']):
-                camera_preview(False)
+                camera_preview(self, False)
                 set_active_again = True
             for x in ['btn_light_full','btn_light_preset_pattern','btn_light_custom_pattern','btn_light_fluo']:
                 if check_active(self.ids[x]):
@@ -746,7 +759,7 @@ def take_image(self, *args):
                     fg.ledarr.send("CLEAR")
                     # 2) Decide what images to take
                     col = int(fg.config['light']['intensity_expt'])
-                    #print("Color: " + str(col))
+                    #logger.debug("Color: " + str(col))
                     if active_method in ["BG", "FG"]:
                         # imaging
                         if active_method == "BG":
@@ -773,7 +786,17 @@ def take_image(self, *args):
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("CLEAR")
-                        else:
+                        elif active_method== "FPM":
+                            # 1 image per LED
+                            fnwh = file_name_write
+                            for myc in range(64): 
+                                fnwh += "-" + str(myc).zfill(2)
+                                time.sleep(0.04) # fastened
+                                fg.ledarr.send("PXL", myc, col,col,col)
+                                time.sleep(fg.config['imaging']['speed'])
+                                tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], fnwh)
+                                fg.ledarr.send("CLEAR")
+                        elif active_method== "RECT":
                             # set now with small NA image
                             file_name_write = uni.Path(fg.expt_path, image_name)
                             # fluidiscopeIO.update_matrix(self, instance, ignoreNA=True, sync_only=False)
@@ -782,6 +805,11 @@ def take_image(self, *args):
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
+                        else:
+                            # 
+                            image_name += "-Tomo"
+                            file_name_write = uni.Path(fg.expt_path, image_name)
+                            tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], file_name_write,method='')
             finally:
                 pass
         if active_method in ['Bright','qDPC','Custom','Fluor']:
@@ -797,7 +825,7 @@ def take_image(self, *args):
     # image -> case of autofocus
     return tin_returnval
 
-    #print("fg.config['experiment']['expt_last_image']" + fg.config['experiment']['expt_last_image'])
+    #logger.debug("fg.config['experiment']['expt_last_image']" + fg.config['experiment']['expt_last_image'])
 
 
 def set_image_name(im_cause=None,method=None,mytime=None): 
@@ -837,7 +865,7 @@ def resizeImage(infile, resize_factor=5): # used to show image in preview
 
 def camera_set_parameter(method='CUS'):
     if not fg.my_dev_flag:
-        print("Autofocus is set to False!")
+        logger.debug("Autofocus is set to False!")
 
         if method in ['CUS','qDPC','Bright','BG','FG']:
             method_key = 'cam'
@@ -883,8 +911,8 @@ def camera_set_parameter(method='CUS'):
             fg.camera.vflip = fg.config[method_key]['vflip']
             fg.camera.crop = tuple(fg.config[method_key]['crop'])
             fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
-        print("Camera shutter_speed={}, exposure_speed={} at ISO=.".format(fg.camera.shutter_speed, fg.camera.exposure_speed, fg.camera.iso))
-        print("Camera preparation done for method=".format(method))
+        logger.debug("Camera shutter_speed={}, exposure_speed={} at ISO=.".format(fg.camera.shutter_speed, fg.camera.exposure_speed, fg.camera.iso))
+        logger.debug("Camera preparation done for method=".format(method))
     return True
 
 def crop_image():
@@ -893,7 +921,7 @@ def crop_image():
 
 def camera_capture(filename,*rargs):
     if not fg.my_dev_flag:
-        print("Camera capture: " + filename)
+        logger.debug("Camera capture: " + filename)
         filename = filename + fg.config['imaging']['extension']
         if len(rargs) > 0:
             if rargs[0] == 'autofocus':
@@ -906,8 +934,8 @@ def camera_capture(filename,*rargs):
         # fg.ledarr.send("CLEAR")
 
 
-def imaging_callback(self, *largs):
-    print('\nThis is the imaging callback speaking !\n<> Images are now taken!')
+def imaging_callback(self, instance, *largs):
+    logger.debug('\nThis is the imaging callback speaking !\n<> Images are now taken!')
 
     # skip imaging step during autofocus
     if not fg.config['experiment']['is_autofocus_busy']:
@@ -943,6 +971,36 @@ def imaging_callback(self, *largs):
             return False
 
 
+# ----------------------------------------------------------------
+#                      Tomographic-Functions
+
+def tomography_settings(self, instance):
+    
+    logger.debug("Got to tomography settings")
+
+def tomography_startmeas(self, instance):
+    pass
+
+def tomograhy_callback(self, instance, acquire_images=False):
+    for imnbr in range(fg.config['experiment']['tomography_steps']):
+        if acquire_images: 
+            take_image(self)
+        move_motor(self,instance,fg.config['experiment']['tomography_direction'],fg.config['experiment']['tomography_stepsize'])
+
+def tomography_btn_logic(self, instance): 
+    '''
+    Additional Click-logic of the tomography-page is contained here.
+    '''
+    dict_names_btnset = ['tomo_btn_set_0','tomo_btn_set_1','tomo_btn_set_2','tomo_btn_set_3','tomo_btn_set_4','tomo_btn_set_5']
+    dict_uids_btnset = [None] * len(dict_names_btnset)
+    print(dict_uids_btnset)
+    for myc in range(len(dict_names_btnset)):
+        dict_uids_btnset[myc] = self.ids[dict_names_btnset[myc]].uid
+    if instance.uid in (dict_uids_btnset):
+        print(instance.value)
+# ----------------------------------------------------------------
+#                      AUTOFOCUS Functions
+
 def autofocus(self, instance):
     '''
     Autofocus to be called from main-routine on button click.
@@ -966,20 +1024,20 @@ def set_autofocus(self, instance):
     :param instance:
     :return:
     '''
-    print("Autofocus-00a2- DevFlag={}".format(fg.my_dev_flag))
+    logger.debug("Autofocus-00a2- DevFlag={}".format(fg.my_dev_flag))
     #if not (fg.my_dev_flag):
     if check_active(instance):
-        print("Autofocus-00a2- now deactivating autofocus")
+        logger.debug("Autofocus-00a2- now deactivating autofocus")
         fg.config['experiment']['is_autofocus'] = False
         if instance.uid==self.ids['btn_autofocus'].uid:
             refresh_text_entry(instance, "Autofocus disabled!")
-        print("Autofocus-00a4- Autofocus disabled")
+        logger.debug("Autofocus-00a4- Autofocus disabled")
     else:
-        print("Autofocus-00a2- now setting autofocus")
+        logger.debug("Autofocus-00a2- now setting autofocus")
         fg.config['experiment']['is_autofocus'] = True
         if instance.uid==self.ids['btn_autofocus'].uid:
             refresh_text_entry(instance, "Autofocus enabled!")
-        print("Autofocus-00a4- Autofocus enabled")
+        logger.debug("Autofocus-00a4- Autofocus enabled")
 
 
 def run_autofocus(self,instance,key):
@@ -994,11 +1052,11 @@ def run_autofocus(self,instance,key):
             change_activation_status(instance)
     else:
         fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(run_autofocus, instance),fg.config['autofocus']['time_interval_min']*60)
-    print('Autofocus-01-Started autofocus routine.')
+    logger.debug('Autofocus-01-Started autofocus routine.')
 
 def autofocus_callback(self, instance, *rargs):
     # start autofocus if necessary and only if it is not already in progress
-    print("Autofocus-02-callback started.")
+    logger.debug("Autofocus-02-callback started.")
     if fg.config['experiment']['is_autofocus_request'] == True:
         if fg.config['experiment']['is_autofocus_busy'] == False:
             # only perform autofocus if it is not already doing so!
@@ -1057,10 +1115,10 @@ def switch_notify_color(self, color):
     '''
     fg.callback_counter -= 1
     if fg.callback_counter == 5:
-        print 'Last call of my callback, bye bye !'
+        logger.debug 'Last call of my callback, bye bye !'
 
         return False
-    print 'My callback is called'
+    logger.debug 'My callback is called'
     '''
 
 
@@ -1113,20 +1171,20 @@ def selected_color(self, instance):
     if fg.config['light']['color_picker_counter'] == 0:
         fg.config['light']['picked'] = [int(x * 255) for x in instance.color[0:3]]
         fg.config['light']['color_picked'] = [int(x * 255) for x in instance.color[0:3]]
-        # print "RGBA = ", str(fg.config_active['light_properties']['picked'])
+        # logger.debug "RGBA = ", str(fg.config_active['light_properties']['picked'])
         fg.config['light']['color_picker_counter'] += 1
     elif fg.config['light']['color_picker_counter'] < 4:
         fg.config['light']['color_picker_counter'] += 1
     else:
         fg.config['light']['color_picker_counter'] = 0
-    # print "color_picker_counter = %s" % str(fg.config_active['light_properties']['light_general_color_picker_counter'])
+    # logger.debug "color_picker_counter = %s" % str(fg.config_active['light_properties']['light_general_color_picker_counter'])
 
 
 def light_settings_activate(self, instance):
     change_activation_status(instance)
     pos_nbr = int(str(instance.name)[len('scr_light_set_2_grid_'):])
     send_allowed = True
-    print("pos-nbr: %s" % str(pos_nbr))
+    logger.debug("pos-nbr: %s" % str(pos_nbr))
     if check_active(self.ids['btn_light_preset_pattern']):
         pattern_list = [self.ids['btn_light_set_2_pattern_1'], self.ids['btn_light_set_2_pattern_2'],
                         self.ids['btn_light_set_2_pattern_3'], self.ids['btn_light_set_2_pattern_4']]
@@ -1151,9 +1209,9 @@ def light_settings_activate(self, instance):
             instance.value = 0
             fg.ledarr.send("PXL", pos_nbr, list(instance.fl_value))
             #fluidiscopeIO.update_matrix(self, instance, ignore_NA=False, sync_only=True, pattern=pattern)
-        #print("key_name1={},key_name2={},pos_nbr/8={},pos_nbr%8={},instance.fl_value1={},instance.fl_value2={},instance.fl_value3={}".format(key_name[0],key_name[1],pos_nbr // 8,pos_nbr % 8,instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]))
+        #logger.debug("key_name1={},key_name2={},pos_nbr/8={},pos_nbr%8={},instance.fl_value1={},instance.fl_value2={},instance.fl_value3={}".format(key_name[0],key_name[1],pos_nbr // 8,pos_nbr % 8,instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]))
         fg.config[key_name[0]][key_name[1]][pos_nbr // 8][pos_nbr % 8] = [instance.fl_value[0],instance.fl_value[1],instance.fl_value[2]] # if not, then handling kivy.properties.ObservableList to list
-        print(fg.config[key_name[0]][key_name[1]][pos_nbr // 8][pos_nbr % 8][:])
+        logger.debug(fg.config[key_name[0]][key_name[1]][pos_nbr // 8][pos_nbr % 8][:])
 
 def convert_color(in_color,in_opacity):
     return [in_color[0]/255.0,in_color[0]/255.0,in_color[0]/255.0,in_opacity]
@@ -1240,7 +1298,7 @@ def prepare_illu_pattern_list():
         mycs = str(myc)
         if fg.config['light_patterns']['active_p' + mycs] == 1:
             pattern_list.append(mycs)
-    print(pattern_list)
+    logger.debug(pattern_list)
     return pattern_list
 
 def pattern_disp_func(self,pattern_list,imaging=False,file_name_write='',time_sleep=0.1,*rargs):
@@ -1253,7 +1311,7 @@ def pattern_disp_func(self,pattern_list,imaging=False,file_name_write='',time_sl
         take_image_now(file_name_write_dpc,imaging_cause=fg.config['experiment']['imaging_cause'],filename=file_name_write_dpc)
         fg.ledarr.send("CLEAR")
         #else:
-        #    print("Pattern_disp! I would have shown: " + mypat)
+        #    logger.debug("Pattern_disp! I would have shown: " + mypat)
     return True
 
 #############################
@@ -1263,37 +1321,54 @@ def pattern_disp_func(self,pattern_list,imaging=False,file_name_write='',time_sl
 #############################
 
 def motor_steps_settings(self, instance):
-    # function is callable afer one of the motor-directions is chosen
+    '''
+    Function is callable afer one of the motor-directions is chosen and defines the stepsize.
+    '''
+    # get key-name
+    key_name = "stepsize_" 
     if check_active(self.ids['btn_motor_dir_x']):
-        key_stepsize = "stepsize_xy"
+        key_stepsize = key_name + "xy"
     elif check_active(self.ids['btn_motor_dir_y']):
-        key_stepsize = "stepsize_xy"
+        key_stepsize = key_name + "xy"
     elif check_active(self.ids['btn_motor_dir_z']):
-        key_stepsize = "stepsize_z"
-    if instance.uid == self.ids['btn_motor_stepsize_minus'].uid and (fg.config["motor"][key_stepsize] - fg.config["motor"]["change_amount"] >=0):
-        fg.config["motor"][key_stepsize] -= fg.config["motor"]["change_amount"]
-    elif instance.text == '+':
-        fg.config["motor"][key_stepsize] += fg.config["motor"]["change_amount"]
-    else :
+        key_stepsize = key_name + "z"
+    # define stepsize
+    if instance.uid == self.ids['btn_motor_stepsize_pplus'].uid:
+        stepsize_change = fg.config["motor"]["change_amount_big"]
+    elif instance.uid == self.ids['btn_motor_stepsize_plus'].uid:
+        stepsize_change = fg.config["motor"]["change_amount"]
+    elif instance.uid == self.ids['btn_motor_stepsize_minus'].uid:
+        stepsize_change = - fg.config["motor"]["change_amount"]
+    elif instance.uid == self.ids['btn_motor_stepsize_mminus'].uid:
+        stepsize_change = - fg.config["motor"]["change_amount_big"]
+    # check if limitations would not be reached
+    if (fg.config["motor"][key_stepsize] + stepsize_change >=0):
+        fg.config["motor"][key_stepsize] += stepsize_change
+    else:
         fg.config["motor"][key_stepsize] = 0
     self.ids["lbl_motor_stepsize"].text = str(fg.config["motor"][key_stepsize])
 
 
-def move_motor(self, instance):
+def move_motor(self, instance, motor_sel, motor_stepsize=None):
+    # prepare selection of right motor
     testdict = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}
-    cmd = testdict[fg.config['motor']['active_motor']]
+    cmd = testdict[motor_sel]
     limit_reached = False
-    if fg.config['motor']['active_motor'] in [0,1]:
+    if motor_sel in [0,1]:
         stepsize_app = '_xy'
     else:
         stepsize_app = '_z'
-
-    stepsize = floor(fg.config['motor']['stepsize'+stepsize_app] /
+    # convert motor-stepsize given the CONFIG-Factor
+    if motor_stepsize == None:
+        stepsize = floor(fg.config['motor']['stepsize'+stepsize_app] /
+                     fg.config['motor']['conversion_factor'+stepsize_app])
+    else:
+        stepsize = floor(motor_stepsize /
                      fg.config['motor']['conversion_factor'+stepsize_app])
     if instance.text == '<<':
         stepsize *= -1
-    # move motor
-    if fg.config['motor']['active_motor'] == 2:
+    # actually move motor
+    if motor_sel == 2:
         if stepsize < 0:
             limit_key = 'calibration_z_min'
         else:
@@ -1305,7 +1380,7 @@ def move_motor(self, instance):
     # manage progress-bar
     if not limit_reached:
         if not fg.i2c:
-            fg.motors[fg.config['motor']['active_motor']].send(cmd, stepsize)
+            fg.motors[motor_sel].send(cmd, stepsize)
         refresh_progress_bar = 0.2
         fg.config['motor']['calibration_z_pos'] += stepsize
         if instance.text == '<<':
@@ -1319,14 +1394,14 @@ def move_motor_display(self,instance, active_motor,stepsize,refresh_progress_bar
     else: # z-drive
         max_time = fg.config['motor']['standard_move_time_z'] * stepsize / fg.config['motor']['standard_move_dist_z']
     upd_val = 100 * refresh_progress_bar / max_time
-    print(str(upd_val))
+    logger.debug(str(upd_val))
     fg.EVENT['pb_motor'] = Clock.schedule_interval(partial(move_motor_display_update, self, instance, upd_val),refresh_progress_bar)
 
 
 def move_motor_display_update(self,instance,upd_val,event_obj,*rargs):
     if (self.ids['pb_motor_step'].value < 100):
         self.ids['pb_motor_step'].value += upd_val
-        print(self.ids['pb_motor_step'].value)
+        logger.debug(self.ids['pb_motor_step'].value)
     else:
         self.ids['pb_motor_step'].value = 0
         event_delete('pb_motor')
@@ -1380,7 +1455,7 @@ def refresh_text_entry(instance, new_text):
 # relay functions for dev-mode
 def devmode_switch(func):
     if fg.my_dev_flag:
-        print("%%DEVMODE---Function: {0} not evaluated---%%".format(func))
+        logger.debug("%%DEVMODE---Function: {0} not evaluated---%%".format(func))
     else:
         return func
 
@@ -1398,8 +1473,8 @@ def show_last_im(self, instance):
     subbox_1 = BoxLayout(size_hint_y=0.9)
     usr_src = str(fg.config['experiment']['expt_last_image'])
     # usr_src = '20180613_203118_Bright.jpg'
-    print("show last img src: " + usr_src)
-    print("Is File: " + str(os.path.isfile(usr_src)))
+    logger.debug("show last img src: " + usr_src)
+    logger.debug("Is File: " + str(os.path.isfile(usr_src)))
     # resize image and show smaller one -> try different factors
     usr_src = resizeImage(usr_src, resize_factor=5)
     widget_image = Image(source=usr_src)
@@ -1499,24 +1574,24 @@ def copyFilesWithProgress(src, dest):
                 numCopied += 1
 
                 p.calculateAndUpdate(numCopied, numFiles)
-        print
+        logger.debug
 '''
 
 
 def copytree(src, dst, overwrite_checked, symlinks=False, ignore=None):
     # function froM: https://stackoverflow.com/questions/1868714/how-do-i-copy-an-entire-directory-of-files-into-an-existing-directory-using-pyth#12514470
 
-    # print(dst)
+    # logger.debug(dst)
     # st = os.stat(dst)
     # uid = st.st_uid
-    # print(uid)
+    # logger.debug(uid)
     # # output: 0
     # userinfo = pwd.getpwuid(st.st_uid)
-    # print(userinfo)
+    # logger.debug(userinfo)
     # # output: pwd.struct_passwd(pw_name='root', pw_passwd='x', pw_uid=0,
     # #          pw_gid=0, pw_gecos='root', pw_dir='/root', pw_shell='/bin/bash')
     # ownername = pwd.getpwuid(st.st_uid).pw_name
-    # print(ownername)
+    # logger.debug(ownername)
 
     if not os.path.isdir(dst):
         os.makedirs(dst)
@@ -1596,7 +1671,7 @@ def query_path_info(path):
 # analyse object
 def analyze_object(instance):
     for attr in dir(instance):
-        print("obj.%s = %s" % (attr, getattr(instance, attr)))
+        logger.debug("obj.%s = %s" % (attr, getattr(instance, attr)))
 
 
 def textinput_convert(text_input):
@@ -1658,35 +1733,55 @@ def textinput_convert(text_input):
 ######################
 
 # do Preview
-def camera_preview(start):
-    if (start is True):  # and (fg.popup_last_im is False):
-        try:
-            fg.camera.start_preview()
-            fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']
-            fg.camera.preview.alpha = fg.config['imaging']['alpha']
-            fg.camera.preview.window = fg.config['imaging']['window']
-        finally:
-            print("Preview started")
+def preview_switch(self, instance):
+    if instance.uid == self.ids['btn_preview_big'].uid:
+        preview_size_switch(self, instance)
     else:
-        try:
-            fg.camera.stop_preview()
-        finally:
-            print("Preview stopped!")
+        preview_activation(self, instance)
+    change_activation_status(instance)
 
+def preview_size_switch(self, instance):
+    fg.config['imaging']['window_big_active'] = not(instance.fl_active) #status of button will be changed in SUPER-routine
+    fg.config['imaging']['window'] = fg.config['imaging']['window_small'] if instance.fl_active else fg.config['imaging']['window_big'] #set preview-window-size to small if big-window button was already active (and henc gets deactivated)
+    if self.ids['btn_preview'].fl_active:
+        camera_preview(self, True)
 
-def camera_preview_change_status(self, instance):
+def preview_activation(self, instance):
+        if not instance.fl_active:
+            logger.debug(instance.fl_active)
+        camera_preview_change_status(self, instance)
+    
+
+def camera_preview(self,start):
     if not (fg.my_dev_flag):
-        if check_active(instance):
-            camera_preview(False)
-            refresh_text_entry(instance, "Start preview")
-            #self.ids["btn_autofocus"].disabled = True
+        if (start is True):  # and (fg.popup_last_im is False):
+            try:
+                fg.camera.start_preview()
+                fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']
+                fg.camera.preview.alpha = fg.config['imaging']['alpha']
+                fg.camera.preview.window = fg.config['imaging']['window']
+            finally:
+                logger.debug("Preview started")
         else:
-            camera_preview(True)
-            refresh_text_entry(instance, "Stop preview")
-            #self.ids["btn_autofocus"].disabled = False
+            try:
+                fg.camera.stop_preview()
+            finally:
+                logger.debug("Preview stopped!")
     else:
         warn_dev_mode(self)
-		
+
+def camera_preview_change_status(self, instance):
+    if check_active(instance):
+        camera_preview(self,False)
+        refresh_text_entry(instance, "Start preview")
+        #self.ids["btn_autofocus"].disabled = True
+    else:
+        camera_preview(self,True)
+        refresh_text_entry(instance, "Stop preview")
+        #self.ids["btn_autofocus"].disabled = False
+
+def camera_live_settings(self, instance):
+    logger.debug("Got here.")
 
 def get_slope(x, y):
     # determine the slope of the current focus values
@@ -1696,7 +1791,7 @@ def get_slope(x, y):
     # y = np.array([-1, 0.2, 0.9, 2.1])
     A = np.vstack([x, np.ones(len(x))]).T
     m, c = np.linalg.lstsq(A, y)[0]
-    print(m, c)
+    logger.debug(m, c)
     return m
 
 

@@ -1,9 +1,10 @@
+import errno
+import fluidiscopeGlobVar as fg
+import logging
+import paho.mqtt.client as mqtt
 import os
 import sys
 import time
-import errno
-import fluidiscopeGlobVar as fg
-import paho.mqtt.client as mqtt
 
 
 class MQTTDevice(object):
@@ -21,6 +22,9 @@ class MQTTDevice(object):
     topic_send = "RECM"  # topic for commands received by device
     topic_status = "STAT"
     topic_announce = "ANNO"
+
+    # add logger
+    logger = logging.getLogger('UC2_mqtt')
 
     def __init__(self, setup, device):
         self.setup = setup
@@ -44,8 +48,8 @@ class MQTTDevice(object):
     def extractCommand(self, args):
         cmd = ""
         delim = MQTTDevice.delim_inst  # so that it is not different per instances
-        print("MQTTclient_extractCommand -> starting for: ")
-        print(args)
+        self.logger.debug(
+            "MQTTclient_extractCommand -> starting for: {}".format(args))
         for i, arg in enumerate(args):
             if type(arg) == list:
                 sep = [str(x) for x in arg]
@@ -62,8 +66,9 @@ class MQTTDevice(object):
                 cmd += str(arg)
            # if i > 0:
             cmd += delim
-            print("MQTTDevice_extractCommand -> i={}: topic_spec={}, cmd={}.".format(i,
-                                                                                     self.topic_base, cmd[:-1]))  # verbose output -> maybe rather put into logfile?
+            # print("MQTTDevice_extractCommand -> i={}: topic_spec={}, cmd={}.".format(i,self.topic_base, cmd[:-1]))  # verbose output -> maybe rather put into logfile?
+        self.logger.debug(
+            "MQTTDevice_extractCommand -> topic_spec={}, cmd={}.".format(self.topic_base, cmd[:-1]))
         return cmd[:-1]
 
     # def request(self):

@@ -23,6 +23,6 @@ resolution:
 rotation: 0
 saturation: 0
 sharpness: 0
-shutterSpeed: 750000
+shutterSpeed: 0
 vflip: false
 videoStabilization: false

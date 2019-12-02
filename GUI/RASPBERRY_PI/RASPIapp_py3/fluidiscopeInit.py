@@ -1,9 +1,12 @@
-import os
-import platform
 import datetime
-import time
+import logging
+import logging.config
+import platform
+import os
 import serial
 import socket
+import time
+import yaml
 
 from kivy.config import Config
 import fluidiscopeGlobVar as fg
@@ -21,7 +24,31 @@ if not fg.my_dev_flag:
     import picamera
 
 
-# Initialization routine of Fluidiscope
+# General Init ------------------------------------------------------------------------------
+
+def controller_init():
+    if fg.i2c:
+        arduino_init()
+    else:  # case of e.g. ESP32
+        mqtt_init()
+    camera_init()
+
+
+def camera_init():
+    try:
+        arch = os.uname()[4]
+    except:
+        arch = os.name
+    if "arm" in arch:
+        fg.camera = picamera.PiCamera()
+        #print("cam is online")
+        logger.debug("Cam is online.")
+
+
+def logging_init():
+    logging_load_config()
+
+    # I2C Functions ------------------------------------------------------------------------------
 
 
 def arduino_init():
@@ -70,17 +97,23 @@ def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_
     # start loop to process received messages
     fg.mqttclient.loop_start()
     try:
-        print("MQTTClient: connecting to broker ", broker)
+        logger.info("MQTTClient: connecting to broker ", broker)
+        #print("MQTTClient: connecting to broker ", broker)
         fg.mqttclient.connect(broker, port, keepalive)
         while not fg.mqttclient.connected_flag and not fg.mqttclient.bad_connection_flag:
-            print("MQTTClient: Waiting for established connection.")
+            logger.info("MQTTClient: Waiting for established connection.")
+            #print("MQTTClient: Waiting for established connection.")
             time.sleep(1)
         if fg.mqttclient.bad_connection_flag:
             fg.mqttclient.loop_stop()
-            print("MQTTClient: had bad-connection. Not trying to connect any further.")
+            logger.warning(
+                "MQTTClient: had bad-connection. Not trying to connect any further.")
+            #print("MQTTClient: had bad-connection. Not trying to connect any further.")
     except Exception as err:  # e.g. arises when port errors exist etc
-        print("MQTTClient: Connection failed")
-        print(err)
+        logger.error("MQTTClient: Connection failed")
+        logger.error(err)
+        #print("MQTTClient: Connection failed")
+        # print(err)
 
     # TODO: spawn Thread that checks for connection status
     # add:
@@ -92,46 +125,70 @@ def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_
 def on_connect(client, userdata, flags, rc):
     if rc == 0:  # connection established
         client.connected_flag = True
-        print("Connected with result code = {0}".format(rc))
+        logger.info("Connected with result code = {0}".format(rc))
+        #print("Connected with result code = {0}".format(rc))
     else:
-        print("Connection error")
+        logger.warning("Connection error")
+        #print("Connection error")
         client.bad_connection_flag = True
 
 
 def on_message(client, userdata, message):
     #print("on message")
     a = time.time()
-    print("Time on receive={0}".format(a))
+    logger.info("Time on receive={0}".format(a))
+    #print("Time on receive={0}".format(a))
     if message == "off":
         client.turnoff_flag = True
-    print("Received={0}\nTopic={1}\nQOS={2}\nRetain Flag={3}".format(
+    logger.info("Received={0}\nTopic={1}\nQOS={2}\nRetain Flag={3}".format(
         message.payload.decode("utf-8"), message.topic, message.qos, message.retain))
 
 
 def on_disconnect(client, userdata, rc):
     #logging.info("disconnecting reason: {0}".format)
-    print("disconnecting reason: {0}".format)
+    logger.warning("disconnecting reason: {0}".format)
     client.connected_flag = False
-    client.disconnect_flag = True
-# MQTT Functions end ---------------------------------------------------------------------------------
+    client.disconnect_flag = Trprinue
+
+# logging Functions ------------------------------------------------------------------------------
 
 
-def camera_init():
-    try:
-        arch = os.uname()[4]
-    except:
-        arch = os.name
-    if "arm" in arch:
-        fg.camera = picamera.PiCamera()
-        print("cam is online")
+def logging_load_config():
+    # read YAML
+    # with open(fg.config[''], 'r') as fd:
+    #    myconfig = yaml.safe_load(fd.read())
+    # create logpath if necessary
+    # get and check path
+    from kivy.logger import Logger
+    from shutil import copy2
+    kivy_logfile = Logger.handlers[1].filename
+    log_path = os.getcwd() + "/log/"
+    fluidiscopeIO.dir_test_existance(log_path)
+    # get time and date
+    logging_filename = "uc2-{}.log".format(
+        time.strftime("%Y%m%d_%H%M%S", time.localtime()))
+    log_path_full = os.path.abspath(
+        log_path + logging_filename)
+    print("Filepath is: {}".format(log_path_full))
+    # copy existing logs
+    copy2(kivy_logfile, log_path_full)
+    # put into config
+    logging.config.dictConfig(
+        fg.config['logging'])
+
+    # create logger
+    logger = logging.getLogger('UC2_init_load')
+    logger.handlers[1].close()
+    logger.handlers[1].baseFilename = log_path_full
+
+    # finish
+    logger.debug("Logging successfully initialized to -> " + logging_filename)
 
 
-def controller_init():
-    if fg.i2c:
-        arduino_init()
-    else:  # case of e.g. ESP32
-        mqtt_init()
-    camera_init()
+logger = logging.getLogger('UC2_init')
+logger.debug("Logging successfully initialized")
+
+# Further Functions ------------------------------------------------------------------------------
 
 
 def GUI_define_sizes():
