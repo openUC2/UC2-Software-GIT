@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -58,21 +59,24 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     // MQTT Topics
     // environment variables
-    public static final String topic_prefix_setup = "/S004/";
+    public static String experiment_id = "1";
+    public static String topic_prefix_setup = "/S004/";
     public static final String topic_prefix_dev1 = "MOT01/";
     public static final String topic_prefix_dev2 = "MOT02/";
     public static final String topic_prefix_dev3 = "LAR01/";
+    public static final String topic_prefix_delta1 = "DELTA01/";
     public static final String topic_postfix_send = "RECM";
     public static final String topic_z_stage =  topic_prefix_dev1 + topic_postfix_send;
     public static final String topic_s_stage = topic_prefix_dev2 + topic_postfix_send;
+    public static final String topic_deltastage = topic_prefix_delta1 + topic_postfix_send;
     //public static final String topic_z_stage_zval_bwd = "/S1/LEDarr1/REC";
     public static final String topic_z_stage_ledval = topic_prefix_dev1 + topic_postfix_send;
     //public static final String topic_s_stage_sval = topic_prefix_setup + topic_prefix_dev2 + topic_postfix_send;
     //public static final String topic_s_stage_sval_fwd = "sstage/fwd/sval";
     //public static final String topic_s_stage_sval_bwd = "sstage/bwd/sval";
-    public static final String topic_led_matrix =topic_prefix_dev3 + topic_postfix_send;
+    public static final String topic_led_matrix = topic_prefix_dev3 + topic_postfix_send;
     public static final String topic_debug = "lens/left/led";
-    public static String experiment_id = "1";
+
 
     // PWM settings
     int PWM_resolution = 255 - 1; // bitrate of the PWM signal
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     int val_z_stage_ledval = 0;
     int val_ledmatrix_naval = 0;
 
+    int tap_counter_ipadress_button = 0;
 
     // Seekbars
     private SeekBar seekbar_z_stage_ledval;
@@ -99,6 +104,22 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     Button button_s_stage_fwd_fine;
     Button button_s_stage_bwd_coarse;
     Button button_s_stage_bwd_fine;
+
+    Button button_deltastage_x_fwd_coarse;
+    Button button_deltastage_x_fwd_fine;
+    Button button_deltastage_x_bwd_coarse;
+    Button button_deltastage_x_bwd_fine;
+
+    Button button_deltastage_y_fwd_coarse;
+    Button button_deltastage_y_fwd_fine;
+    Button button_deltastage_y_bwd_coarse;
+    Button button_deltastage_y_bwd_fine;
+
+    Button button_deltastage_z_fwd_coarse;
+    Button button_deltastage_z_fwd_fine;
+    Button button_deltastage_z_bwd_coarse;
+    Button button_deltastage_z_bwd_fine;
+
 
     Button button_ip_address_go;
     Button button_load_localip;
@@ -133,11 +154,20 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         button_z_stage_fwd_fine = findViewById(R.id.button_z_stage_minus);
         button_z_stage_bwd_coarse = findViewById(R.id.button_z_stage_plusplus);
         button_z_stage_bwd_fine = findViewById(R.id.button_z_stage_plus);
-
-
+        button_deltastage_x_fwd_coarse = findViewById(R.id.button_deltastage_x_minusminus);
+        button_deltastage_x_fwd_fine = findViewById(R.id.button_deltastage_x_minus);
+        button_deltastage_x_bwd_coarse = findViewById(R.id.button_deltastage_x_plusplus);
+        button_deltastage_x_bwd_fine = findViewById(R.id.button_deltastage_x_plus);
+        button_deltastage_y_fwd_coarse = findViewById(R.id.button_deltastage_y_minusminus);
+        button_deltastage_y_fwd_fine = findViewById(R.id.button_deltastage_y_minus);
+        button_deltastage_y_bwd_coarse = findViewById(R.id.button_deltastage_y_plusplus);
+        button_deltastage_y_bwd_fine = findViewById(R.id.button_deltastage_y_plus);
+        button_deltastage_z_fwd_coarse = findViewById(R.id.button_deltastage_z_minusminus);
+        button_deltastage_z_fwd_fine = findViewById(R.id.button_deltastage_z_minus);
+        button_deltastage_z_bwd_coarse = findViewById(R.id.button_deltastage_z_plusplus);
+        button_deltastage_z_bwd_fine = findViewById(R.id.button_deltastage_z_plus);
         button_ip_address_go = findViewById(R.id.button_ip_address_go);
         button_load_localip = findViewById(R.id.button_load_localip);
-
 
         // set seekbar and coresponding texts for GUI
         seekbar_ledmatrix_naval = findViewById(R.id.seekbar_ledmatrix_naval);
@@ -188,26 +218,54 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
-        button_load_localip.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    serverUri = String.valueOf(wifiIpAddress(MainActivity.this));
-                    EditTextIPAddress.setText(serverUri);
-                    Toast.makeText(MainActivity.this, "IP-Address set to: " + serverUri, Toast.LENGTH_SHORT).show();
-                    stopConnection();
-                    initialConfig();
 
-                    // Save the IP address for next start
-                    editor.putString("IP_ADDRESS", serverUri);
-                    //editor.putString("IP_ADDRESS", serverUri);
-                    editor.commit();
+        button_load_localip.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    // TODO Auto-generated method stub
+                    tap_counter_ipadress_button++;
+                    Handler handler = new Handler();
+                    Runnable r = new Runnable() {
+
+                        @Override
+                        public void run() {
+                            tap_counter_ipadress_button = 0;
+                        }
+                    };
+
+                    if (tap_counter_ipadress_button == 1) {
+                        //Single click
+                        serverUri = String.valueOf(wifiIpAddress(MainActivity.this));
+                        EditTextIPAddress.setText(serverUri);
+                        Toast.makeText(MainActivity.this, "IP-Address set to: " + serverUri, Toast.LENGTH_SHORT).show();
+                        stopConnection();
+                        initialConfig();
+
+                        // Save the IP address for next start
+                        editor.putString("IP_ADDRESS", serverUri);
+                        //editor.putString("IP_ADDRESS", serverUri);
+                        editor.commit();
+                        handler.postDelayed(r, 250);
+
+                    } else if (tap_counter_ipadress_button == 2) {
+                        //Double click
+                        tap_counter_ipadress_button = 0;
+                        serverUri = "192.168.43.88";
+                        EditTextIPAddress.setText(serverUri);
+                        Toast.makeText(MainActivity.this, "IP-Address set to default: " + serverUri, Toast.LENGTH_SHORT).show();
+                        stopConnection();
+                        initialConfig();
+
+                        // Save the IP address for next start
+                        editor.putString("IP_ADDRESS", serverUri);
+                        editor.commit();
+
+                    }
+
 
                 }
-                return true;
-            }
-        });
-
+            });
 
 
         //******************* STEPPER in Y-Direction ********************************************//
@@ -288,7 +346,130 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         });
 
+
+
+    // DELTA-STAGE FROM BOWMAN
+        //******************* STEPPER in X-Direction ********************************************//
+        // this goes wherever you setup your button listener:
+        button_deltastage_x_fwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVX+50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_x_fwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVX+10");
+                }
+                return true;
+            }
+        });
+        button_deltastage_x_bwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVX+-50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_x_bwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVX+-10");
+                }
+                return true;
+            }
+        });
+
+
+        //******************* STEPPER in Y-Direction ********************************************//
+        // this goes wherever you setup your button listener:
+        button_deltastage_y_fwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVY+50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_y_fwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVY+10");
+                }
+                return true;
+            }
+        });
+        button_deltastage_y_bwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVY+-50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_y_bwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVY+-10");
+                }
+                return true;
+            }
+        });
+
+
+        //******************* STEPPER in Z-Direction ********************************************//
+        // this goes wherever you setup your button listener:
+        button_deltastage_z_fwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVZ+50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_z_fwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVZ+10");
+                }
+                return true;
+            }
+        });
+        button_deltastage_z_bwd_coarse.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVZ+-50");
+                }
+                return true;
+            }
+        });
+        button_deltastage_z_bwd_fine.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    publishMessage(topic_deltastage, "DRVZ+-10");
+                }
+                return true;
+            }
+        });
+
     }
+
 
 
     public void updateGUI() {
@@ -421,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
-            mqttAndroidClient.publish(topic_prefix_setup + pub_topic, message);
+            mqttAndroidClient.publish("/S00"+experiment_id+"/" + pub_topic, message);
             //addToHistory("Message Published");
             if (!mqttAndroidClient.isConnected()) {
                 //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");

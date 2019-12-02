@@ -23,14 +23,14 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 2
-#define LEDARR_PIN 22
+#define LEDARR_PIN 23
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S004";
+std::string SETUP = "S006";
 std::string COMPONENT = "LAR01";
-std::string DEVICE = "ESP32";
+std::string DEVICE = "ESP32_LED";
 std::string DEVICENAME;
 std::string CLIENTNAME;
 std::string SETUP_INFO;
@@ -46,7 +46,7 @@ PubSubClient client(espClient);
 String localIP;
 String gatewayIP;
 //char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
-char* MQTT_SERVER = "192.168.178.20"; // IP of the SERVER in the IPHT
+char* MQTT_SERVER = "192.168.178.54"; // IP of the SERVER in the IPHT
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -332,6 +332,8 @@ void setRGB(int r, int g, int b)
 
 void setNA(int select)
 {
+    matrix.fillScreen(0);
+    matrix.show();
     if (select<5 & select> 0)
     {
         ledNA = select;
