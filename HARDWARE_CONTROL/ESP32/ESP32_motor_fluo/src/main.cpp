@@ -22,7 +22,7 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 11
-#define LED_FLUO_PIN 26
+#define LED_FLUO_PIN 25
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
@@ -30,21 +30,21 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S004";      //S006->Aurelie; S004->Barbora
-std::string COMPONENT = "MOT02"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
+std::string SETUP = "S008";      //S006->Aurelie; S004->Barbora
+std::string COMPONENT = "MOT01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
 std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2-F8Team";       //"Blynk";"UC2"; "UC2-F8Team"; "UC2_wifi01" -> Aurelie
-const char *password = "_lachmannUC2"; //"12345678";"youseetoo"; "_lachmannUC2"; "2345678901"
+const char *ssid = "UC2wifi001";     //"Blynk";"UC2"; "UC2-F8Team"; "UC2_wifi01" -> Aurelie
+const char *password = "09533837112518974819"; //"12345678";"youseetoo"; "_lachmannUC2"; "2345678901"
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.78"; // 10.9.2.116 // 192.168.178.20 -> ipht // "192.168.43.1" -> Aurelie
+const char *MQTT_SERVER = "192.168.178.20"; // 10.9.2.116 // 192.168.178.20 -> ipht // "192.168.43.1" -> Aurelie
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -61,7 +61,7 @@ const char *delim_inst = "+";
 const int delim_len = 1;
 
 // ~~~~ MOTOR ~~~~
-StepMotor stepperZ = StepMotor(25, 26, 27, 14); // for Peter Horbert
+StepMotor stepperZ = StepMotor(12,14,27,26); //normally: 25, 26, 27, 14
 StepMotor stepperY = StepMotor(10, 12, 11, 13);
 StepMotor stepperX = StepMotor(27, 25, 32, 4); // never connected to same ESP32 as stepperZ -> hence: universally possible
 

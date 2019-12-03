@@ -175,29 +175,7 @@
     # LEFT SIDE
     BoxLayout:
         orientation: 'vertical'
-        size_hint_x: 0.495
-        BoxLayout:
-            size_hint_y: 0.05
-            padding: [30,10,30,10]
-            orientation: "horizontal"
-            FluidLabel:
-                size_hint_x: 0.25
-                text: "Temp:"
-                color: 1, 1, 1, 1
-            FluidLabel:
-                id: lbl_temperature
-                size_hint_x: 0.25
-                text: ""
-            FluidLabel:
-                size_hint_x: 0.25
-                text: "Hum:"
-                color: 1, 1, 1, 1
-            FluidLabel:
-                id: lbl_humidity
-                size_hint_x: 0.25
-                text: ""
-                text: " %"
-                # on_press: root.btn_function_update_temphum('btn_hum_kv')
+        size_hint_x: 0.6
         BoxLayout:
             size_hint_y: 0.1
             padding: [20,10,20,10]
@@ -216,6 +194,141 @@
                 fl_active: False
         Widget:
             size_hint_y: 0.5
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.1
+        #BoxLayout:
+        #    size_hint_y: 0.05
+        #    padding: [30,10,30,10]
+        #    orientation: "horizontal"
+        #    FluidLabel:
+        #        size_hint_x: 0.25
+        #        text: "Temp:"
+        #        color: 1, 1, 1, 1
+        #    FluidLabel:
+        #        id: lbl_temperature
+        #        size_hint_x: 0.25
+        #        text: ""
+        #    FluidLabel:
+        #        size_hint_x: 0.25
+        #        text: "Hum:"
+        #        color: 1, 1, 1, 1
+            FluidLabel:
+                id: lbl_Info
+                text: ""
+                # on_press: root.btn_function_update_temphum('btn_hum_kv')
+        #Widget:
+        #    size_hint_y: 0.01
+        BoxLayout:
+            size_hint_y: 0.1
+            padding: [0,2,0,2]
+            orientation: 'horizontal'
+            BoxLayout:
+                size_hint_x: 0.6
+                orientation: 'vertical'
+                padding: (2,0,2,0)
+                GridLayout:
+                    size_hint_y: 0.8
+                    cols: 3
+                    row: 1
+                    spacing: 2
+                    #Autofocus part
+                    FluidButton:
+                        id: btn_autofocus
+                        text: "FocAct"
+                        on_press: root.btn_function_autofocus(self)
+                    FluidButton:
+                        id: btn_autofocus_now
+                        text: "FocNow"
+                        on_press: root.btn_function_autofocus(self)
+                    FluidButton:
+                        id: btn_autofocus_opt
+                        text: "FocOpt"
+                        on_press: root.scr_switch(self)
+                BoxLayout:
+                    size_hint_y: 0.2
+                    ProgressBar:
+                        id: pb_autofocus
+                        max: 100
+                        value: 0
+            BoxLayout:
+                size_hint_x: 0.01
+                FluidLineVert:
+                    #test
+            BoxLayout:
+                size_hint_x: 0.39
+                padding: (2,0,2,0)
+                canvas.before:
+                    Color:
+                        rgba: 0.0,0.2,0.2,1
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                GridLayout:
+                    cols: 2
+                    row: 1
+                    spacing: 2
+                    #Autofocus part
+                    FluidButton:
+                        id: btn_camera_live_settings
+                        text: "camSET"
+                        on_press: root.btn_camera_live_settings(self)
+                    FluidButton:
+                        id: btn_tomography_settings
+                        text: "tomoSET"
+                        fl_active: False
+                        on_press: root.scr_switch(self)                
+        Widget:
+            size_hint_y: 0.001
+        BoxLayout:
+            size_hint_y: 0.1
+            canvas.before:
+                Color:
+                    rgba: 0.0,0.2,0.2,1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            padding: [0,2,0,2]
+            orientation: "horizontal"
+            GridLayout:
+                size_hint_x: 0.3
+                padding: [2,0,2,0]
+                spacing: 2
+                rows: 1
+                cols: 3
+                FluidButton:
+                    id: btn_light_full
+                    text: "FULL"
+                    on_press: root.buttons_light(self)
+                FluidButton:
+                    id: btn_light_preset_pattern
+                    text: "PRE"
+                    on_press: root.buttons_light(self)
+                FluidButton:
+                    id: btn_light_custom_pattern
+                    text: "CUS"
+                    on_press: root.buttons_light(self)
+            BoxLayout:
+                padding: (0,0,2,0)
+                size_hint_x: 0.01
+                FluidLineVert:
+                # inserts a pre-defined line
+            FluidButton:
+                size_hint_x: 0.1
+                #padding: [5,0,5,0]
+                #spacing: [2,0]
+                id: btn_light_fluo
+                text: "FLUO"
+                on_press: root.buttons_light(self)
+            FluidSlide3:
+                id: slider_light_intensity
+                name: "slider_light_intensity_name"
+                size_hint_x: 0.38
+                min: 0
+                max: 100
+                value: root.init_var[0]
+                step: 1
+                on_value: root.slider_change(self)
         BoxLayout:
             size_hint_y: 0.1
             orientation: "horizontal"
@@ -323,118 +436,6 @@
                     text: ">>"
                     disabled: True
                     on_press: root.btn_function_move_motor(self)
-        BoxLayout:
-            size_hint_y: 0.1
-            canvas.before:
-                Color:
-                    rgba: 0.0,0.2,0.2,1
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-            padding: [0,2,0,2]
-            orientation: "horizontal"
-            GridLayout:
-                size_hint_x: 0.3
-                padding: [2,0,2,0]
-                spacing: 2
-                rows: 1
-                cols: 3
-                FluidButton:
-                    id: btn_light_full
-                    text: "FULL"
-                    on_press: root.buttons_light(self)
-                FluidButton:
-                    id: btn_light_preset_pattern
-                    text: "PRE"
-                    on_press: root.buttons_light(self)
-                FluidButton:
-                    id: btn_light_custom_pattern
-                    text: "CUS"
-                    on_press: root.buttons_light(self)
-            BoxLayout:
-                padding: (0,0,2,0)
-                size_hint_x: 0.01
-                FluidLineVert:
-                # inserts a pre-defined line
-            FluidButton:
-                size_hint_x: 0.1
-                #padding: [5,0,5,0]
-                #spacing: [2,0]
-                id: btn_light_fluo
-                text: "FLUO"
-                on_press: root.buttons_light(self)
-            FluidSlide3:
-                id: slider_light_intensity
-                name: "slider_light_intensity_name"
-                size_hint_x: 0.38
-                min: 0
-                max: 255
-                value: root.init_var[0]
-                step: 1
-                on_value: root.slider_change(self)
-        #Widget:
-        #    size_hint_y: 0.01
-        BoxLayout:
-            size_hint_y: 0.1
-            padding: [0,2,0,2]
-            orientation: 'horizontal'
-            BoxLayout:
-                size_hint_x: 0.6
-                orientation: 'vertical'
-                padding: (2,0,2,0)
-                GridLayout:
-                    size_hint_y: 0.8
-                    cols: 3
-                    row: 1
-                    spacing: 2
-                    #Autofocus part
-                    FluidButton:
-                        id: btn_autofocus
-                        text: "FocAct"
-                        on_press: root.btn_function_autofocus(self)
-                    FluidButton:
-                        id: btn_autofocus_now
-                        text: "FocNow"
-                        on_press: root.btn_function_autofocus(self)
-                    FluidButton:
-                        id: btn_autofocus_opt
-                        text: "FocOpt"
-                        on_press: root.scr_switch(self)
-                BoxLayout:
-                    size_hint_y: 0.2
-                    ProgressBar:
-                        id: pb_autofocus
-                        max: 100
-                        value: 0
-            BoxLayout:
-                size_hint_x: 0.01
-                FluidLineVert:
-                    #test
-            BoxLayout:
-                size_hint_x: 0.39
-                padding: (2,0,2,0)
-                canvas.before:
-                    Color:
-                        rgba: 0.0,0.2,0.2,1
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                GridLayout:
-                    cols: 2
-                    row: 1
-                    spacing: 2
-                    #Autofocus part
-                    FluidButton:
-                        id: btn_camera_live_settings
-                        text: "camSET"
-                        on_press: root.btn_camera_live_settings(self)
-                    FluidButton:
-                        id: btn_tomography_settings
-                        text: "tomoSET"
-                        fl_active: False
-                        on_press: root.scr_switch(self)                
-        Widget:
-            size_hint_y: 0.001
     BoxLayout:
         size_hint_x: 0.005
         canvas.before:
@@ -1619,6 +1620,7 @@
                         size_hint_y: 0.6
                         id: scr_cam_set_2_grid
                         cols: 4
+                        rows: 8
                         Label:
                             text: 'alpha'
                         TextInput:
@@ -1630,10 +1632,36 @@
                             id: scr_imaging_set_grid_lbl_value_fullscreen
                             text: ''
                         Label:
+                            text: 'extension'
+                        TextInput:
+                            id: scr_imaging_set_grid_lbl_value_extension
+                            text: ''
+                        Label:
+                            text: 'speed'
+                        TextInput:
+                            id: scr_imaging_set_grid_lbl_value_speed
+                            text: ''
+                        Label:
                             text: 'window\nsize'
                         TextInput:
                             id: scr_imaging_set_grid_lbl_value_window
                             text: ''
+                        Label:
+                            text: 'window\nsmall'
+                        TextInput:
+                            id: scr_imaging_set_grid_lbl_value_window_small
+                            text: ''
+                        Label:
+                            text: 'window\nbig'
+                        TextInput:
+                            id: scr_imaging_set_grid_lbl_value_window_big
+                            text: ''
+                        Label:
+                            text: 'window\nbigactive'
+                        TextInput:
+                            id: scr_imaging_set_grid_lbl_value_window_big_active
+                            text: ''
+
                     BoxLayout:
                         orientation: 'vertical'
                         size_hint_y: 0.1

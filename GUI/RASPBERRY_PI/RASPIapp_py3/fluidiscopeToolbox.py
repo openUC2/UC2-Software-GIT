@@ -648,7 +648,7 @@ def update_measurement_status_display_timer(self, interval, *rargs):
 def abort_measurement(self, instance):
     deactivate(instance)
     imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-                          "Custom": "btn_imaging_technique_3", "Fluor": "btn_imaging_technique_fluor"}
+                          "Custom": "btn_imaging_technique_3", "FPM": "btn_imaging_technique_4", "Fluor": "btn_imaging_technique_5"}
     change_enable_status(instance, False)
     while not fg.config['experiment']['active_methods'] == []:
         key = fg.config['experiment']['active_methods'].pop(0)
@@ -1734,6 +1734,7 @@ def textinput_convert(text_input):
 
 # do Preview
 def preview_switch(self, instance):
+    #print("Preview switch.")
     if instance.uid == self.ids['btn_preview_big'].uid:
         preview_size_switch(self, instance)
     else:
@@ -1742,7 +1743,10 @@ def preview_switch(self, instance):
 
 def preview_size_switch(self, instance):
     fg.config['imaging']['window_big_active'] = not(instance.fl_active) #status of button will be changed in SUPER-routine
-    fg.config['imaging']['window'] = fg.config['imaging']['window_small'] if instance.fl_active else fg.config['imaging']['window_big'] #set preview-window-size to small if big-window button was already active (and henc gets deactivated)
+    #print("Prev size switch.")
+    #logger.debug('Preview-Size-Switch: Testing the contents of the different config-entries for window size. ');logger.debug(fg.config['imaging']['window']);logger.debug(fg.config['imaging']['window_small']);logger.debug(fg.config['imaging']['window_big'])
+    fg.config['imaging']['window'] = [m for m in fg.config['imaging']['window_small']] if instance.fl_active else [m for m in fg.config['imaging']['window_big']] #set preview-window-size to small if big-window button was already active (and henc gets deactivated)
+    #logger.debug(fg.config['imaging']['window']);logger.debug('Preview-Size-Switch: END')
     if self.ids['btn_preview'].fl_active:
         camera_preview(self, True)
 

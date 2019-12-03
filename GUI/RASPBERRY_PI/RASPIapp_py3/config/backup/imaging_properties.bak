@@ -3,7 +3,12 @@ extension: .jpg
 fullscreen: 0
 speed: 0.1
 window:
-- 44
-- 80
+- 20
+- 20
+- 480
 - 320
-- 240
+window_big:
+- 20
+- 20
+- 500
+- 300

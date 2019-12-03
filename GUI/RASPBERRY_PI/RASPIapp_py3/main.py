@@ -30,8 +30,8 @@ import fluidiscopeToolbox as toolbox
 import fluidiscopeIO
 if(0):
     # Set Kivy-PARAMETERS
-    # os.environ['KIVY_WINDOW'] = 'sdl2'
-    # time.sleep(1)
+    #os.environ['KIVY_WINDOW'] = 'sdl2'
+    #time.sleep(1)
     pass
     # Fluidiscope
 if fg.i2c:
