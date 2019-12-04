@@ -1,39 +1,43 @@
 # I/O
-import unipath as uni
-import socket
-import serial
-import datetime
-import time
-import logging
-import io
-import sys
-import os
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.config import Config
-from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.widget import Widget
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.popup import Popup
-from kivy.uix.textinput import TextInput
-from kivy.clock import Clock
-from kivy.clock import mainthread
-from functools import partial
-from kivy.utils import platform
-from kivy.core.window import Window
-from kivy.properties import NumericProperty, StringProperty, ListProperty
-import fluidiscopeGlobVar as fg
-import fluidiscopeInit
-import fluidiscopeToolbox as toolbox
-import fluidiscopeIO
-if(0):
-    # Set Kivy-PARAMETERS
-    #os.environ['KIVY_WINDOW'] = 'sdl2'
-    #time.sleep(1)
+if (1):
+    import os
+    os.environ['KIVY_TEXT'] = 'egl_rpi'
+    os.environ['KIVY_WINDOW'] = 'egl_rpi'  # 'sdl2'
+    os.environ['KIVY_GL_BACKEND'] = 'gl'
+    # time.sleep(1)
     pass
     # Fluidiscope
+
+if True:
+    import unipath as uni
+    import socket
+    import serial
+    import datetime
+    import time
+    import logging
+    import io
+    import sys
+    import os
+    from kivy.app import App
+    from kivy.lang import Builder
+    from kivy.config import Config
+    from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
+    from kivy.uix.boxlayout import BoxLayout
+    from kivy.uix.widget import Widget
+    from kivy.uix.button import Button
+    from kivy.uix.label import Label
+    from kivy.uix.popup import Popup
+    from kivy.uix.textinput import TextInput
+    from kivy.clock import Clock
+    from kivy.clock import mainthread
+    from functools import partial
+    from kivy.utils import platform
+    from kivy.core.window import Window
+    from kivy.properties import NumericProperty, StringProperty, ListProperty
+    import fluidiscopeGlobVar as fg
+    import fluidiscopeInit
+    import fluidiscopeToolbox as toolbox
+    import fluidiscopeIO
 if fg.i2c:
     from I2CDevice import I2CDevice
 

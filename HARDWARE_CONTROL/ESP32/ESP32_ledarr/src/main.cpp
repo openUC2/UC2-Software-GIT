@@ -28,7 +28,7 @@
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S008";
+std::string SETUP = "S004";
 std::string COMPONENT = "LAR01";
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -36,13 +36,12 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2wifi001";     //"Blynk";"UC2"; "UC2-F8Team"; "UC2_wifi01" -> Aurelie
-const char *password = "09533837112518974819"; //"12345678";"youseetoo"; "_lachmannUC2"; "2345678901"
+const char *ssid = "WIFI_SSID_HERE" ;
+const char *password = "YOURPASSWORD";
 WiFiClient espClient;
 PubSubClient client(espClient);
-
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "192.168.178.20"; // 10.9.2.116 // 192.168.178.20 -> ipht // "192.168.43.1" ->
+const char *MQTT_SERVER = "MQTT_SERVER_IP";
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";

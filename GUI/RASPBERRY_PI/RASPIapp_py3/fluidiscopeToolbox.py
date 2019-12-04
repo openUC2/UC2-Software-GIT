@@ -713,6 +713,8 @@ def take_image_now(self,imaging_cause='MEAS', filename='', method='CUS'):
             return image
         else:
             fg.camera.capture(filename)
+            if 'Fluor' in fg.experiment['experiment']['imaging_method']: 
+                fg.camera.c
             return True
 
 def take_image(self, *args): 
@@ -817,7 +819,7 @@ def take_image(self, *args):
         fg.config['experiment']['expt_last_image'] = file_name_write + fg.config['imaging']['extension']
         fg.ledarr.send("CLEAR")
     if set_active_again:
-        camera_preview(True)
+        camera_preview(self,True)
         for x in active_modes:
             buttons_light(self, self.ids[x])
         
@@ -1379,8 +1381,10 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
                 self.ids['lbl_warning'].text = 'Z-limit reached at position:'+ str(fg.config['motor']['calibration_z_pos']) + 'from max=' + str(fg.config['motor']['calibration_z_max'])
     # manage progress-bar
     if not limit_reached:
-        if not fg.i2c:
-            fg.motors[motor_sel].send(cmd, stepsize)
+        if fg.i2c:
+            fg.motors.send(cmd,stepsize)
+        else:
+            fg.motors[motor_sel].send(cmd, stepsize) 
         refresh_progress_bar = 0.2
         fg.config['motor']['calibration_z_pos'] += stepsize
         if instance.text == '<<':

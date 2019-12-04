@@ -3,9 +3,12 @@ import sys
 import time
 import errno
 import fluidiscopeGlobVar as fg
+import logging
 
 if not fg.my_dev_flag:
     from I2CBus import I2CBus
+
+logger = logging.getLogger('UC2_I2CDEVICE')
 
 
 class I2CDevice(object):
@@ -98,6 +101,7 @@ class I2CDevice(object):
                 "Debugging mode. Generated Command=[{}] has not been sent.".format(cmd))
         else:
             print("Sending:   {0}".format(cmd))
+            logger.info("Sending:   {0}".format(cmd))
             self.sendEvent(cmd)
 
     def request(self):
