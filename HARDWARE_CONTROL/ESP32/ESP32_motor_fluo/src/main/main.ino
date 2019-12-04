@@ -22,7 +22,7 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 11
-#define LED_FLUO_PIN 26
+#define LED_FLUO_PIN 25
 
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S004";
+std::string SETUP = "S006";
 std::string COMPONENT = "MOT01"; // LAR01 //LED01 //
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -49,7 +49,7 @@ PubSubClient client(espClient);
 String localIP;
 String gatewayIP;
 //char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
-char* MQTT_SERVER = "192.168.178.20"; // IP of the SERVER in the IPHT
+char* MQTT_SERVER = "192.168.178.54"; // IP of the SERVER in the IPHT
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -66,7 +66,7 @@ const char *delim_inst = "+";
 const int delim_len = 1;
 
 // ~~~~ MOTOR ~~~~
-StepMotor stepperZ = StepMotor(19,18,5,17);//(27, 25, 32, 4);//25, 26, 27, 14); // for Peter Horbert
+StepMotor stepperZ = StepMotor(12,14,27,26);//(27, 25, 32, 4);//25, 26, 27, 14); // for Peter Horbert
 StepMotor stepperY = StepMotor(1, 1, 1, 1);//(10, 12, 11, 13);
 StepMotor stepperX = StepMotor(1, 1, 1, 1);//(27, 25, 32, 4); // never connected to same ESP32 as stepperZ -> hence: universally possible
 
