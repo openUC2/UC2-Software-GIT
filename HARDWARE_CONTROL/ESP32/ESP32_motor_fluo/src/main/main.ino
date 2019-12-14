@@ -39,8 +39,8 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2-F8Team"; //"Blynk";        //"Blynk";"UC2";
-const char *password = "_lachmannUC2"; //"youseetoo";
+const char *ssid = "Blynk";// "UC2-F8Team"; //        //"Blynk";"UC2";
+const char *password = "12345678";// "_lachmannUC2"; //
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -49,7 +49,7 @@ PubSubClient client(espClient);
 String localIP;
 String gatewayIP;
 //char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
-char* MQTT_SERVER = "192.168.178.54"; // IP of the SERVER in the IPHT
+char* MQTT_SERVER = "192.168.43.86";//"192.168.178.54"; // IP of the SERVER in the IPHT
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";

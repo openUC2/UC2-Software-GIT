@@ -1,11 +1,14 @@
 package de.nanoimaging.uc2controler;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     MqttAndroidClient mqttAndroidClient;
 
     // Server uri follows the format tcp://ipaddress:port
-    String serverUri = "10.9.1.62";
+    String serverUri = "0.0.0.0";
 
 
     // Assign Random ID for the Client
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_view);
 
+
         // Manage the Actionbar settings
         ActionBar actionBar = getSupportActionBar();
         actionBar.setLogo(R.mipmap.ic_launcher);
@@ -198,6 +202,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         //getCallingActivity().publish(connection, topic, message, selectedQos, retainValue);
 
 
+        // start internal MQTT server
+        startServer();
+
         button_ip_address_go.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -236,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     if (tap_counter_ipadress_button == 1) {
                         //Single click
-                        serverUri = String.valueOf(wifiIpAddress(MainActivity.this));
+                        serverUri = "tcp://localhost:1883"; //String.valueOf(wifiIpAddress(MainActivity.this));
                         EditTextIPAddress.setText(serverUri);
                         Toast.makeText(MainActivity.this, "IP-Address set to: " + serverUri, Toast.LENGTH_SHORT).show();
                         stopConnection();
@@ -471,6 +478,24 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        stopServer();
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        stopServer();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        stopServer();
+    }
+
 
     public void updateGUI() {
         // Update all slides if value has been changed
@@ -569,8 +594,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
 
-                    // Todo Obtener estado de luces If de si las luces están encendidas
-                    publishMessage("A phone has connected.", "");
                     // subscribeToTopic();
                     Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                 }
@@ -598,11 +621,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     public void publishMessage(String pub_topic, String publishMessage) {
 
-        Log.d(TAG, pub_topic + " " + publishMessage);
+
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
             mqttAndroidClient.publish("/S00"+experiment_id+"/" + pub_topic, message);
+            Log.i(TAG, pub_topic + " " + publishMessage);
             //addToHistory("Message Published");
             if (!mqttAndroidClient.isConnected()) {
                 //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
@@ -648,4 +672,17 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         return ipAddressString;
     }
+
+
+    private void startServer(){
+        Toast.makeText(MainActivity.this, "local MQTT-Server started", Toast.LENGTH_SHORT).show();
+        this.startService(new Intent(this, BrokerService.class));
+    }
+
+    private void stopServer(){
+        Toast.makeText(MainActivity.this, "local MQTT-Server stopped", Toast.LENGTH_SHORT).show();
+        this.stopService(new Intent(this, BrokerService.class));
+    }
+
+
 }

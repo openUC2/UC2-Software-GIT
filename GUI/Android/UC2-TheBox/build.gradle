@@ -19,7 +19,11 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven {
+            url "https://repo.eclipse.org/content/repositories/paho/"
+        }
     }
+
 }
 
 task clean(type: Delete) {
