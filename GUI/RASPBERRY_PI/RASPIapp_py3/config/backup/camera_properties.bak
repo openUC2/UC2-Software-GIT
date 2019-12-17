@@ -1,7 +1,7 @@
 awbGain:
 - 1.5
 - 1.5
-awbMode: 'off'
+awbMode: 'auto'
 brightness: 50
 colorEffects: null
 contrast: 0
@@ -18,11 +18,12 @@ iso: 100
 meterMode: average
 previewLength: 3
 resolution:
-- 2592
-- 1944
+- 3280
+- 2464
 rotation: 0
 saturation: 0
 sharpness: 0
-shutterSpeed: 0
+shutterSpeed: 1000000
+sensor_mode: 4
 vflip: false
 videoStabilization: false

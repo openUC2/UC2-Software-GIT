@@ -1,7 +1,7 @@
 alpha: 255
 extension: .jpg
 fullscreen: 0
-speed: 0.1
+speed: 2.0
 window:
 - 2
 - 40
