@@ -24,9 +24,9 @@ last_expt_num: 1
 path_last_expt: C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\data\20191203\expt_001
 snap_num: 0
 success: false
+take_raw: 1
 time_left: 119
 time_passed: 1
-take_raw: 1
 tm_backlash: 10
 tm_endPOS: 200
 tm_motor: Z

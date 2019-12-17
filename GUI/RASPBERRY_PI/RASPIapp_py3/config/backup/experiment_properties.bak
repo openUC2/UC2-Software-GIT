@@ -26,6 +26,7 @@ snap_num: 0
 success: false
 time_left: 119
 time_passed: 1
+take_raw: 1
 tm_backlash: 10
 tm_endPOS: 200
 tm_motor: Z
