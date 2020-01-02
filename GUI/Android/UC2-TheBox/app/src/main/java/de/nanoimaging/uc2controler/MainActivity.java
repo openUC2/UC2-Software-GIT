@@ -1,26 +1,36 @@
 package de.nanoimaging.uc2controler;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.log4j.BasicConfigurator;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -31,17 +41,36 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 import java.util.Random;
+
+import de.nanoimaging.uc2controler.broker.MQTTService;
+import de.nanoimaging.uc2controler.broker.ServerInstance;
+import de.nanoimaging.uc2controler.util.Utils;
+import io.moquette.BrokerConstants;
 
 
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener {
 
+    // MQTT-Broker related STUFF
+    private MQTTService mService;
+    private boolean mBound = false;
+    Context context;
+    File confFile, passwordFile;
+    boolean is_servicerunning = false;
 
-
+    // MQTT-Client related STUFF
     MqttAndroidClient mqttAndroidClient;
 
     // Server uri follows the format tcp://ipaddress:port
@@ -51,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     // Assign Random ID for the Client
     Random rand = new Random();
     String rand_id = String.format("%04d", rand.nextInt(1000));
-    final String clientId = "AND123"+rand_id;
+    final String clientId = "Android"+rand_id;
 
     boolean is_vibration = false;
     // TAG
@@ -123,6 +152,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     Button button_deltastage_z_bwd_coarse;
     Button button_deltastage_z_bwd_fine;
 
+    Button button_stop_mqtt_service;
+    Button button_start_mqtt_service;
 
     Button button_ip_address_go;
     Button button_load_localip;
@@ -130,11 +161,39 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     EditText EditTextIPAddress;
     EditText EditTextExperimentalID;
 
+    String[] permissions = new String[]{
+            Manifest.permission.INTERNET,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.bindService(new Intent(this, MQTTService.class), mConnection, BIND_IMPORTANT);
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            MainActivity.this.mService = ((MQTTService.LocalBinder) service).getService();
+            MainActivity.this.mBound = ((MQTTService.LocalBinder) service).getServerStatus();
+            // MainActivity.this.updateStartedStatus();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+            MainActivity.this.mBound = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_view);
+        context = this;
 
+        // check for permission
+        checkPermissions();
 
         // Manage the Actionbar settings
         ActionBar actionBar = getSupportActionBar();
@@ -172,14 +231,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         button_deltastage_z_bwd_fine = findViewById(R.id.button_deltastage_z_plus);
         button_ip_address_go = findViewById(R.id.button_ip_address_go);
         button_load_localip = findViewById(R.id.button_load_localip);
+        button_start_mqtt_service = findViewById(R.id.button_start_mqtt_service);
+        button_stop_mqtt_service = findViewById(R.id.button_stop_mqtt_service);
 
         // set seekbar and coresponding texts for GUI
         seekbar_ledmatrix_naval = findViewById(R.id.seekbar_ledmatrix_naval);
         seekbar_z_stage_ledval = findViewById(R.id.seekbar_z_stage_ledval);
-
         seekbar_ledmatrix_naval.setMax(NA_val);
         seekbar_z_stage_ledval.setMax(PWM_resolution);
-
         textView_z_stage_ledval = findViewById(R.id.textView_Z_Stage_LED_Fluo);
         textView_ledmatrix_naval = findViewById(R.id.textView_LED_MATRIX_VAL);
 
@@ -199,11 +258,32 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         } else
             Toast.makeText(this, R.string.no_internets, Toast.LENGTH_SHORT).show();
 
-        //getCallingActivity().publish(connection, topic, message, selectedQos, retainValue);
+        // MOQUETTE related stuff
+        BasicConfigurator.configure();
 
+        button_start_mqtt_service.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(!is_servicerunning) startService();
+                is_servicerunning = true;
+                return true;
+            }
+        });
 
-        // start internal MQTT server
-        startServer();
+        button_stop_mqtt_service.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                is_servicerunning = false;
+                stopService();
+                return true;
+            }
+        });
+
+        confFile = new File(getApplicationContext().getDir("media", 0).getAbsolutePath() + Utils.BROKER_CONFIG_FILE);
+        passwordFile = new File(getApplicationContext().getDir("media", 0).getAbsolutePath() + Utils.PASSWORD_FILE);
+        Log.i("MAIN", confFile.getAbsolutePath());
+        loadConfig();
+
 
         button_ip_address_go.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -243,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     if (tap_counter_ipadress_button == 1) {
                         //Single click
-                        serverUri = "tcp://localhost:1883"; //String.valueOf(wifiIpAddress(MainActivity.this));
+                        serverUri = String.valueOf(wifiIpAddress(MainActivity.this));
                         EditTextIPAddress.setText(serverUri);
                         Toast.makeText(MainActivity.this, "IP-Address set to: " + serverUri, Toast.LENGTH_SHORT).show();
                         stopConnection();
@@ -479,21 +559,13 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     @Override
-    protected void onDestroy(){
-        super.onDestroy();
-        stopServer();
-    }
-
-    @Override
     protected void onPause(){
         super.onPause();
-        stopServer();
     }
 
     @Override
     protected void onStop(){
         super.onStop();
-        stopServer();
     }
 
 
@@ -543,8 +615,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private void initialConfig() {
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), "tcp://"+serverUri, clientId);
-        Log.e(TAG, "My ip is: tcp://"+serverUri);
-        Log.e(TAG, "My client ID is: tcp://"+clientId);
+        Log.i(TAG, "My ip is: tcp://"+serverUri);
+        Log.i(TAG, "My client ID is: "+clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
@@ -576,11 +648,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(false);
-        //mqttConnectOptions.setUserName(mqttUser);
-        //mqttConnectOptions.setPassword(mqttPass.toCharArray());
-        mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setCleanSession(true);
 
         try {
             //addToHistory("Connecting to " + serverUri);
@@ -591,7 +659,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     disconnectedBufferOptions.setBufferEnabled(true);
                     disconnectedBufferOptions.setBufferSize(100);
                     disconnectedBufferOptions.setPersistBuffer(false);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
+                    disconnectedBufferOptions.setDeleteOldestMessages(true);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
 
                     // subscribeToTopic();
@@ -620,11 +688,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     public void publishMessage(String pub_topic, String publishMessage) {
-
-
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
+            //message.setRetained(true);
             mqttAndroidClient.publish("/S00"+experiment_id+"/" + pub_topic, message);
             Log.i(TAG, pub_topic + " " + publishMessage);
             //addToHistory("Message Published");
@@ -641,7 +708,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     private void stopConnection() {
         try {
+            mqttAndroidClient.disconnectForcibly();
             mqttAndroidClient.close();
+            mqttAndroidClient.unregisterResources();
+
             Toast.makeText(MainActivity.this, "Connection closed - on purpose?", Toast.LENGTH_SHORT).show();
         }
         catch(Throwable e){
@@ -674,15 +744,104 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
-    private void startServer(){
-        Toast.makeText(MainActivity.this, "local MQTT-Server started", Toast.LENGTH_SHORT).show();
-        this.startService(new Intent(this, BrokerService.class));
+
+    private boolean checkPermissions() {
+        int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p : permissions) {
+            result = ContextCompat.checkSelfPermission(this, p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
+        }
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 100);
+            return false;
+        }
+        return true;
     }
 
-    private void stopServer(){
-        Toast.makeText(MainActivity.this, "local MQTT-Server stopped", Toast.LENGTH_SHORT).show();
-        this.stopService(new Intent(this, BrokerService.class));
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == 100) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // do something
+            }
+            return;
+        }
     }
 
 
+    // MOQUETTE related stuff
+    private Properties defaultConfig() {
+        Properties props = new Properties();
+        props.setProperty(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, context.getExternalFilesDir(null).getAbsolutePath() + File.separator +  "UC2_moquette_store.mapdb");//BrokerConstants.DEFAULT_MOQUETTE_STORE_MAP_DB_FILENAME );
+        props.setProperty(BrokerConstants.PORT_PROPERTY_NAME, "1883");
+        props.setProperty(BrokerConstants.NEED_CLIENT_AUTH, "false");
+        props.setProperty(BrokerConstants.HOST_PROPERTY_NAME, Utils.getBrokerURL(this));
+        props.setProperty(BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME, String.valueOf(BrokerConstants.WEBSOCKET_PORT));
+        props.setProperty(BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME, "true");
+
+        return props;
+    }
+
+    private Properties loadConfig() {
+
+        try (InputStream input = new FileInputStream(confFile)) {
+            Properties props = new Properties();
+            props.load(input);
+            updateUI(props);
+            return props;
+        } catch (FileNotFoundException e) {
+            Log.e("MAIN", "Config file not found. Using default config");
+        } catch (IOException ex) {
+            Log.e("MAIN", "IOException. Using default config");
+        }
+        Properties props = defaultConfig();
+        updateUI(props);
+        return props;
+    }
+
+    private void updateUI(Properties props) {
+    }
+
+    public void startService(View v) {
+        startService();
+    }
+
+    public void startService() {
+        Log.i(TAG, "we start the service");
+        if (mBound == true && mService != null) {
+            Log.i("MainActivity", "Service already running");
+            return;
+        }
+        Intent serviceIntent = new Intent(this, MQTTService.class);
+
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("config", defaultConfig());
+        serviceIntent.putExtras(bundle);
+
+        startService(serviceIntent);
+        this.bindService(new Intent(this, MQTTService.class), mConnection, BIND_IMPORTANT);
+    }
+
+    public void stopService(View v) {
+        stopService();
+    }
+
+    public void stopService() {
+        Intent serviceIntent = new Intent(this, MQTTService.class);
+        stopService(serviceIntent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            this.unbindService(mConnection);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -22,7 +22,7 @@ The general control scheme looks like this:
 The code for the ESP32's in order to control the motors and LEDS can be found [here](./../../../HARDWARE_CONTROL/ESP32).
 
 ## Signed APK
-The latest version of the signed **APK** of the app can be downloaded [here](./app/build/outputs/apk/debug/app-debug.apk)
+The latest version of the signed **APK** of the app can be downloaded [here](./APK/app-debug.apk)
 
 ## Tutorial to make it work
 

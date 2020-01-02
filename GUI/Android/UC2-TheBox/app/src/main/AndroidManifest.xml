@@ -30,9 +30,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".broker.MQTTService"
+            android:icon="@drawable/ic_robot"
+            android:label="UC2 - MQTT Server" />
         <service android:name="org.eclipse.paho.android.service.MqttService" />
-        <service android:name=".BrokerService"/>
     </application>
+
 
 
 </manifest>
