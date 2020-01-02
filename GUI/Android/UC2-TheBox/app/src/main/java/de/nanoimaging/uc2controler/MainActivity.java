@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     String serverUri = "0.0.0.0";
 
 
+
     // Assign Random ID for the Client
     Random rand = new Random();
     String rand_id = String.format("%04d", rand.nextInt(1000));
@@ -84,15 +85,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     boolean is_vibration = false;
     // TAG
-    String TAG = "UC2 Controler";
+    String TAG = "UC2 Controller";
 
     // Save settings for later
     private final String PREFERENCE_FILE_KEY = "myAppPreference";
 
     // MQTT Topics
     // environment variables
-    public static String experiment_id = "1";
-    public static String topic_prefix_setup = "/S004/";
+    public static String experiment_id = "5";
+    public static String topic_prefix_setup = "/S005/";
     public static final String topic_prefix_dev1 = "MOT01/";
     public static final String topic_prefix_dev2 = "MOT02/";
     public static final String topic_prefix_dev3 = "LAR01/";
@@ -198,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         // Manage the Actionbar settings
         ActionBar actionBar = getSupportActionBar();
         actionBar.setLogo(R.mipmap.ic_launcher);
-        actionBar.setTitle("UC2 Controler");
+        actionBar.setTitle("UC2 Controller");
         actionBar.setDisplayUseLogoEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
 
@@ -338,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     } else if (tap_counter_ipadress_button == 2) {
                         //Double click
                         tap_counter_ipadress_button = 0;
-                        serverUri = "192.168.43.88";
+                        serverUri = "21.3.2.103";
                         EditTextIPAddress.setText(serverUri);
                         Toast.makeText(MainActivity.this, "IP-Address set to default: " + serverUri, Toast.LENGTH_SHORT).show();
                         stopConnection();

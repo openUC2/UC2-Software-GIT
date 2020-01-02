@@ -22,6 +22,7 @@ else:
     #import usb
     #import cv2 as cv
     from PIL import Image
+    import picamera
 import numpy as np
 from fractions import Fraction
 from kivy.clock import Clock
@@ -565,7 +566,7 @@ def run_measurement(self, instance):
     if instance.uid == self.ids['btn_snap'].uid:
         select_method(self, instance, "take_image")
         activate(instance)
-        take_image(self)
+        take_image_callback(self)
         abort_measurement(self, instance)
     else: 
         # rewrite button-text if necessary
@@ -713,9 +714,23 @@ def take_image_now(self,imaging_cause='MEAS', filename='', method='CUS'):
             return image
         else:
             fg.camera.capture(filename)
-            if 'Fluor' in fg.experiment['experiment']['imaging_method']: 
-                fg.camera.c
-            return True
+            if 'Fluor' in fg.config['experiment']['active_methods']: 
+                logger.debug("RAW: Start acquistion into RAM, extract and concat Green-Channel.")
+                filename[:-4] + '-rawG.npz'
+                stream = picamera.array.PiBayerArray(fg.camera)
+                fg.camera.capture(stream, 'jpeg', bayer=True) #'rgb' -> Error: unable to locate bayer-pattern at end of buffer
+                rawstream = np.transpose(np.dstack((stream.array[1::2,::2,1],stream.array[::2,1::2,1])),[2,0,1])
+                logger.debug("RAW: Save as compressed numpy.")
+                np.savez_compressed(filename, rawstream) # and lossless compressed
+                logger.debug("RAW: done.")
+    return True
+
+def take_image_callback(self, *args):
+    '''
+    Callback function to make sure GUI stays responsive while image is taken. Event is only called once and hence will delete itself.
+    '''
+    fg.EVENT['take_image_callback'] = Clock.schedule_once(partial(take_image, self),0.01)
+    return True
 
 def take_image(self, *args): 
     '''
@@ -790,14 +805,18 @@ def take_image(self, *args):
                             fg.ledarr.send("CLEAR")
                         elif active_method== "FPM":
                             # 1 image per LED
-                            fnwh = file_name_write
+                            fnwh_raw = file_name_write + datetime.strftime(datetime.now(),"%H%M%S" )
+                            logger.debug("Starting FPM.")
                             for myc in range(64): 
-                                fnwh += "-" + str(myc).zfill(2)
+                                fnwh = fnwh_raw + "-" + str(myc).zfill(2)
                                 time.sleep(0.04) # fastened
                                 fg.ledarr.send("PXL", myc, col,col,col)
-                                time.sleep(fg.config['imaging']['speed'])
+                                #time.sleep(fg.config['imaging']['speed'])
+                                time.sleep(1.0) # fastened
                                 tin_returnval = take_image_now(self,fg.config['experiment']['imaging_cause'], fnwh)
+                                logger.debug("Storing LED={} to {}.".format(myc,fnwh))
                                 fg.ledarr.send("CLEAR")
+                                time.sleep(0.04)
                         elif active_method== "RECT":
                             # set now with small NA image
                             file_name_write = uni.Path(fg.expt_path, image_name)
@@ -822,7 +841,6 @@ def take_image(self, *args):
         camera_preview(self,True)
         for x in active_modes:
             buttons_light(self, self.ids[x])
-        
     # True -> normal images taken;
     # image -> case of autofocus
     return tin_returnval
@@ -872,25 +890,26 @@ def camera_set_parameter(method='CUS'):
         if method in ['CUS','qDPC','Bright','BG','FG']:
             method_key = 'cam'
             fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
-            fg.camera.contrast = fg.config[method_key]['contrast']
-            fg.camera.sharpness = fg.config[method_key]['sharpness']
-            fg.camera.brightness = fg.config[method_key]['brightness']
-            fg.camera.saturation = fg.config[method_key]['saturation']
-            fg.camera.ISO = fg.config[method_key]['iso']
-            fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
-            fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
-            fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
-            fg.camera.meter_mode = fg.config[method_key]['meterMode']
-            fg.camera.awb_mode = fg.config[method_key]['awbMode']
+            #fg.camera.contrast = fg.config[method_key]['contrast']
+            #fg.camera.sharpness = fg.config[method_key]['sharpness']
+            #fg.camera.brightness = fg.config[method_key]['brightness']
+            #fg.camera.saturation = fg.config[method_key]['saturation']
+            #fg.camera.ISO = fg.config[method_key]['iso']
+            #fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
+            #fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
+            #fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
+            #fg.camera.meter_mode = fg.config[method_key]['meterMode']
+            #fg.camera.awb_mode = fg.config[method_key]['awbMode']
             if fg.config[method_key]['awbMode'] == 'off':
                 fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128)) # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config[method_key]['awbGain']
-            fg.camera.image_effect = fg.config[method_key]['imageEffects']
-            fg.camera.color_effects = fg.config[method_key]['colorEffects']
-            fg.camera.rotation = fg.config[method_key]['rotation']
-            fg.camera.hflip = fg.config[method_key]['hflip']
-            fg.camera.vflip = fg.config[method_key]['vflip']
-            fg.camera.crop = tuple(fg.config[method_key]['crop'])
+            #fg.camera.image_effect = fg.config[method_key]['imageEffects']
+            #fg.camera.color_effects = fg.config[method_key]['colorEffects']
+            #fg.camera.rotation = fg.config[method_key]['rotation']
+            #fg.camera.hflip = fg.config[method_key]['hflip']
+            #fg.camera.vflip = fg.config[method_key]['vflip']
+            #fg.camera.crop = tuple(fg.config[method_key]['crop'])
             fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
+            fg.camera.sensor_mode = fg.config[method_key]['sensor_mode']
         elif method == 'Fluor':
             method_key = 'cam_fluo'
             fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
@@ -913,8 +932,8 @@ def camera_set_parameter(method='CUS'):
             fg.camera.vflip = fg.config[method_key]['vflip']
             fg.camera.crop = tuple(fg.config[method_key]['crop'])
             fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
-        logger.debug("Camera shutter_speed={}, exposure_speed={} at ISO=.".format(fg.camera.shutter_speed, fg.camera.exposure_speed, fg.camera.iso))
-        logger.debug("Camera preparation done for method=".format(method))
+        logger.debug("Camera shutter_speed={}, exposure_speed={}, ISO={}, AWB={},AWB_gains={}.".format(fg.camera.shutter_speed, fg.camera.exposure_speed,fg.camera.awb_mode, fg.camera.iso, fg.camera.awb_gains))
+        logger.debug("Camera preparation done for method={}.".format(method))
     return True
 
 def crop_image():
@@ -943,7 +962,7 @@ def imaging_callback(self, instance, *largs):
     if not fg.config['experiment']['is_autofocus_busy']:
         # take image
         fg.config['experiment']['imaging_method']='MEAS'
-        take_image(self)
+        take_image_callback(self)
         deact_me = False
         if (fg.config['experiment']['time_left']-fg.config['experiment']['interval']) >= 0:
             # update config entries
