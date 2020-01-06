@@ -23,15 +23,20 @@ The code for the ESP32's in order to control the motors and LEDS can be found [h
 
 ### IMPORTANT - Stand-Alone-MQTT-APP
 
+***ATTENTION:*** It is in an experimental stage! 
+
 Since the latest version of the Android APP, we fused the **MQTT Broker** and **MQTT Client** into one app. The steps are as follows:
 
+0. Allow installation from "Unknown Sources" following [this link](https://www.applivery.com/docs/troubleshooting/android-unknown-sources/)
 1. Start a Wifi Hotspot using Android with the following credentials:
 - SSID: **Blynk**
 - Password: **12345678**
-2. Start the APP which can be downloaded [here](./APK/app-debug.apk)
+2. Start the APP which can be downloaded [here](./app/release/app-release.apk)
 3. Start the Server by clicking the **Start SERVER** button
-4. Hit the **GO** button
-5. The app should show "Connected" 
+4. Enter ```0.0.0.0```as the IP in the IP-editor
+5. Enter the Setup number (e.g. 4) in the settings 
+6. Hit the **GO** button
+7. The app should show "Connected" 
 
 In order to let the ESP find the Server Automatically two things have to be kept in mind in the ESP32-code
 
@@ -77,7 +82,7 @@ An example file which has been tested with the LED-Array can be found [here](./c
 
 
 ## Signed APK
-The latest version of the signed **APK** of the app can be downloaded [here](./APK/app-debug.apk)
+The latest version of the signed **APK** of the app can be downloaded [here](./app/release/app-release.apk)
 
 ## Tutorial to make it work
 
