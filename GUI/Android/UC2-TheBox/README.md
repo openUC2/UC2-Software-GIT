@@ -21,6 +21,61 @@ The general control scheme looks like this:
 ## Code for ESP32
 The code for the ESP32's in order to control the motors and LEDS can be found [here](./../../../HARDWARE_CONTROL/ESP32).
 
+### IMPORTANT - Stand-Alone-MQTT-APP
+
+Since the latest version of the Android APP, we fused the **MQTT Broker** and **MQTT Client** into one app. The steps are as follows:
+
+1. Start a Wifi Hotspot using Android with the following credentials:
+- SSID: **Blynk**
+- Password: **12345678**
+2. Start the APP which can be downloaded [here](./APK/app-debug.apk)
+3. Start the Server by clicking the **Start SERVER** button
+4. Hit the **GO** button
+5. The app should show "Connected" 
+
+In order to let the ESP find the Server Automatically two things have to be kept in mind in the ESP32-code
+
+1. The SSID and password have to be set to **Blynk** and **12345678** respectively:
+
+```
+const char *ssid = "Blynk";
+const char *password = "12345678";
+```
+
+2. The Server-IP has to be the one of the "Gateway" which can ensured using this code in the **setup_wifi()**: 
+
+```
+void setup_wifi()
+{
+  uc2wait(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Device-MAC: ");
+  Serial.println(WiFi.macAddress());
+  Serial.print("Connecting to ");
+  Serial.print(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    uc2wait(500);
+    Serial.print(".");
+  }
+
+  localIP = WiFi.localIP().toString();
+  gatewayIP = WiFi.gatewayIP().toString();
+  gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
+
+  Serial.println("");
+  Serial.print("WiFi connected with IP:");
+  Serial.println(localIP);
+  Serial.print("Default Gateway (MQTT-SERVER):\t");
+  Serial.println(MQTT_SERVER);
+}
+``` 
+
+An example file which has been tested with the LED-Array can be found [here](./code/main_mqttstandalone_ledarray/main_mqttstandalone_ledarray.ino).
+
+
 ## Signed APK
 The latest version of the signed **APK** of the app can be downloaded [here](./APK/app-debug.apk)
 
