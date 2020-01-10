@@ -1,7 +1,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
-#define PIN 12
+#define PIN 2
 
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
@@ -20,11 +20,11 @@ void setup() {
 
   matrix.begin();
   matrix.setBrightness(255);
-  matrix.fillScreen(matrix.Color(153,0,255));
+  matrix.fillRect(4, 5, 5, 6, matrix.Color(255, 255, 255));//matrix.fillScreen(matrix.Color(255,255,255));
   matrix.show();
-  uc2wait(1500);
-  matrix.fillScreen(0);
-  matrix.show();
+  //uc2wait(1500);
+  //matrix.fillScreen(0);
+  //matrix.show();
 }
 
 void loop() {

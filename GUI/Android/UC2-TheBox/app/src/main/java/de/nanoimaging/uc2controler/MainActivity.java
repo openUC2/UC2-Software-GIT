@@ -443,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVX+50");
+                    publishMessage(topic_deltastage, "DRVX+20");
                 }
                 return true;
             }
@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVX+10");
+                    publishMessage(topic_deltastage, "DRVX+1");
                 }
                 return true;
             }
@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVX+-50");
+                    publishMessage(topic_deltastage, "DRVX+-20");
                 }
                 return true;
             }
@@ -470,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVX+-10");
+                    publishMessage(topic_deltastage, "DRVX+-1");
                 }
                 return true;
             }
@@ -483,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVY+50");
+                    publishMessage(topic_deltastage, "DRVY+20");
                 }
                 return true;
             }
@@ -492,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVY+10");
+                    publishMessage(topic_deltastage, "DRVY+1");
                 }
                 return true;
             }
@@ -501,7 +501,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVY+-50");
+                    publishMessage(topic_deltastage, "DRVY+-20");
                 }
                 return true;
             }
@@ -510,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_deltastage, "DRVY+-10");
+                    publishMessage(topic_deltastage, "DRVY+-1");
                 }
                 return true;
             }
