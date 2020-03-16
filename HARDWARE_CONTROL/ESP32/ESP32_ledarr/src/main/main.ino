@@ -45,8 +45,8 @@ PubSubClient client(espClient);
 #define BUFLEN 16
 String localIP;
 String gatewayIP;
-//char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
-char* MQTT_SERVER = "192.168.43.86"; //"youseetoo"; "192.168.178.54"; // IP of the SERVER in the IPHT
+char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
+//char* MQTT_SERVER = "192.168.43.86"; //"youseetoo"; "192.168.178.54"; // IP of the SERVER in the IPHT
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -137,7 +137,7 @@ void setup_wifi()
 
   localIP = WiFi.localIP().toString();
   gatewayIP = WiFi.gatewayIP().toString();
-  //gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
+  gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
 
   Serial.println("");
   Serial.print("WiFi connected with IP:");
@@ -362,11 +362,11 @@ void updateColor(uint8_t r, uint8_t g, uint8_t b)
 
 void callback(char *topic, byte *message, unsigned int length)
 {
-  //Serial.println("Callback-func called.");
+  Serial.println("Callback-func called.");
   // test topics
   if (std::string(topic) == stopicREC)
   {
-    //Serial.println(stopicREC.c_str());
+    Serial.println(stopicREC.c_str());
     int nINST = separateMessage(message, length);
     if (strcmp(CMD, COMMANDSET[0]) == 0)
     {

@@ -34,7 +34,7 @@ Our first version for the modular microscope centered around the Raspberry Pi (t
 
 ### Setting up Raspberry PI
 Due to various design-choices in the beginning we use the [kivy-framework for Python](https://kivy.org/) together with the global installed Python 2.7 in Raspbian. Hence, we prepared a [detailed description (and a script)](./HARDWARE_CONTROL/RASPBERRY_PI) on how to setup your RaspberryPi to work with our framework. </br>
-Once the framework is installed, download the [GUI-folder](./GUI/RASPIapp/) into the folder where you want to start it, e.g. "~" (which means your homepath). Then navigate to the GUI folder and run the program via:
+Once the framework is installed, download the [GUI-folder](./GUI/RASPBERRY_PI/) into the folder where you want to start it, e.g. "~" (which means your homepath). Then navigate to the GUI folder and run the program via:
 ```
 cd ~/RASPIapp/ 
 python main.py
