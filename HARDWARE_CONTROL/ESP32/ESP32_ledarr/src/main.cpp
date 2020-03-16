@@ -1,8 +1,11 @@
+
 // ----------- ----------- ----------- ----------- ----------- -----------
 // ESP32 script to accept MQTT commands for UC2-control
 // by: Rene Lachmann
 // date: 11.09.2019
 // based on Arduino-Interface by Rene Lachmann, Xavier Uwurukundu
+// fixes:
+//		> 20.01.2020 Ientercept based correcd display updating -> Thomas Combriat (Oslo)
 //----------- ----------- ----------- ----------- ----------- -----------
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -23,12 +26,12 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 26
-#define LEDARR_PIN 23
+#define LEDARR_PIN 23 //22
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S004";
+std::string SETUP = "S007";
 std::string COMPONENT = "LAR01";
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -36,12 +39,14 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "WIFI_SSID_HERE" ;
-const char *password = "YOURPASSWORD";
+//const char *ssid = "WIFI_SSID_HERE" ;
+const char *ssid = "UC2wifi001";
+const char *password = "09533837112518974819";
 WiFiClient espClient;
 PubSubClient client(espClient);
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "MQTT_SERVER_IP";
+//const char *MQTT_SERVER = "MQTT_SERVER_IP";
+const char *MQTT_SERVER = "192.168.178.24"; //21.3.2.142
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -97,6 +102,13 @@ void uc2wait(int period)
     {
         //wait approx. [period] ms
     };
+}
+void matrix_show()
+{
+    portDISABLE_INTERRUPTS(); // transmission to array should no be interrupted
+    matrix.show();
+    matrix.show();           // to remove glitchy green corner
+    portENABLE_INTERRUPTS(); // restore back interrupts
 }
 void setup_device_properties()
 {
@@ -169,10 +181,10 @@ int separateMessage(byte *message, unsigned int length)
         else
         {
             INSTS.push_back(atoi(mess.substr(0, pos).c_str()));
-            //Serial.print("INST[");
-            //Serial.print(i);
-            //Serial.print("]=");
-            //Serial.println(INSTS[i]);
+            /* Serial.print("INST[");
+        Serial.print(i);
+        Serial.print("]=");
+        Serial.println(INSTS[i]);*/
             i++;
         }
         mess.erase(0, pos + delim_len);
@@ -190,10 +202,10 @@ int separateMessage(byte *message, unsigned int length)
     else if (mess.length() > 0)
     {
         INSTS.push_back(atoi(mess.substr(0, pos).c_str()));
-        //Serial.print("INST[");
-        //Serial.print(i);
-        //Serial.print("]=");
-        //Serial.println(INSTS[i]);
+        /* Serial.print("INST[");
+      Serial.print(i);
+      Serial.print("]=");
+      Serial.println(INSTS[i]);*/
         i++;
     }
     else
@@ -222,7 +234,7 @@ void clearPattern()
     //int ypos = 0;
     Serial.println("ClearPAT.");
     matrix.fillScreen(0);
-    matrix.show();
+    matrix_show();
 
     //if (!doNotDisturb)
     //{
@@ -245,7 +257,7 @@ void reloadPresetPattern()
     //int ypos = 0;
 
     matrix.fillScreen(0);
-    matrix.show();
+    matrix_show();
 
     for (int xpos = 0; xpos < ncols; xpos++)
     {
@@ -257,7 +269,6 @@ void reloadPresetPattern()
                 rgb.g = (uint8_t)light_pattern_color[xpos][ypos][activePattern][1];
                 rgb.b = (uint8_t)light_pattern_color[xpos][ypos][activePattern][2];
                 matrix.drawPixel(xpos, ypos, matrix.Color(rgb.r, rgb.g, rgb.b));
-                matrix.show();
             }
             else
             {
@@ -270,6 +281,7 @@ void reloadPresetPattern()
             }
         }
     }
+    matrix_show();
 }
 
 void drawRect(int x, int y, int w, int h, bool fill)
@@ -308,8 +320,7 @@ void drawRect(int x, int y, int w, int h, bool fill)
         matrix.fillRect(x, y, w, h, matrix.Color(rgb.r, rgb.g, rgb.b));
     else
         matrix.drawRect(x, y, w, h, matrix.Color(rgb.r, rgb.g, rgb.b));
-
-    matrix.show();
+    matrix_show();
 }
 
 void setRGB(int r, int g, int b)
@@ -321,7 +332,8 @@ void setRGB(int r, int g, int b)
 
 void setNA(int select)
 {
-    if (select<5 & select> 0)
+    //if (select<5 & select> 0)      //// MOD
+    if (select < 5 && select > 0)
     {
         ledNA = select;
         Serial.print("NA set to: ");
@@ -330,13 +342,13 @@ void setNA(int select)
         setRGB(255, 255, 255);
         Serial.println("Call drawRect with: [0,0,8,8,255,255,255]. ");
         drawRect(0, 0, 8, 8, true);
+        matrix_show();
     }
     else
     {
         select = 0;
         ledNA = select;
         matrix.fillScreen(0);
-        matrix.show();
     }
 }
 
@@ -367,7 +379,7 @@ void callback(char *topic, byte *message, unsigned int length)
             int ypos = INSTS[0] / ncols;
             updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             matrix.drawPixel(xpos, ypos, matrix.Color(rgb.r, rgb.g, rgb.b));
-            matrix.show();
+            matrix_show();
 
             //if (!doNotDisturb)
             //{
@@ -379,7 +391,8 @@ void callback(char *topic, byte *message, unsigned int length)
         }
         else if (strcmp(CMD, COMMANDSET[4]) == 0)
         {
-            updateColor(INSTS[nINST - 4], INSTS[nINST - 3], INSTS[nINST - 2]);
+            //updateColor(INSTS[nINST - 4], INSTS[nINST - 3], INSTS[nINST - 2]);
+            updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             bool fill = !(INSTS[nINST - 1] == 1);
             drawRect(INSTS[0], INSTS[1], INSTS[2], INSTS[3], fill);
         }
@@ -507,10 +520,10 @@ void setup()
     //matrix.setCursor(x, 0);
     matrix.setTextColor(matrix.Color(40, 127, 200));
     matrix.print(F("UC2"));
-    matrix.show();
+    matrix_show();
     uc2wait(1000);
     matrix.fillScreen(0);
-    matrix.show();
+    matrix_show();
     uc2wait(100);
 }
 // ----------------------------------------------------------------------------------------------------------------

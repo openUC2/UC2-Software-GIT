@@ -7,11 +7,11 @@
 #include "Adafruit_NeoPixel.h"
 #include <SPI.h>
 
-#define SLAVE_ADDRESS 0x09
+#define SLAVE_ADDRESS 0x07
 #define CLOCK_FREQUENCY 100000 //choose according to frequency of I2C-Master
 #define HEARTBEAT_INTERVAL 300000
 #define LED 13
-#define LEDARR_PIN 13
+#define LEDARR_PIN 2
 #define MAX_MSG_LEN 32
 #define MAX_INST 10
 
@@ -31,24 +31,28 @@ const char *DEVICE_ID = "LEDARR";
 
 const int nCommands = 15;
 const char *COMMANDSET[nCommands] = {"NA", "PXL", "HLINE", "VLINE", "RECT", "CIRC", "LEFT", "RIGHT", "TOP", "BOTTOM", "CLEAR", "PRESET", "SETPRE", "FLYBY","ALIVE"};
+//const char *COMMANDSET[nCommands] = {"NA", "PXL", "RECT"};
 const char *INSTRUCTS[nCommands] = {"1", "4", "4", "4", "8", "6", "3", "3", "3", "3", "0", "1", "1", "1","1"};
+//const char *INSTRUCTS[nCommands] = {"1", "4","8"};
 
 const int nComCMDs = 4;
-const char *COM_CMDS[nComCMDs] = {"STATUS", "LOGOFF", "NAME", "ANNOUNCE"};
+//const char *COM_CMDS[nComCMDs] = {"STATUS", "LOGOFF", "NAME", "ANNOUNCE"};
+const char *COM_CMDS[nComCMDs] = {"STATUS"};
 
-char busy_msg[7];
+//char busy_msg[7];
 
 char receiveBuffer[MAX_MSG_LEN];
-char sendBuffer[MAX_MSG_LEN];
+//char sendBuffer[MAX_MSG_LEN];
 
 char CMD[MAX_MSG_LEN];
 int INST[MAX_INST];
 char instBuffer[MAX_INST];
 
-const int outBufLen = MAX_MSG_LEN * 4;
-char outBuffer[outBufLen];
+//const int outBufLen = MAX_MSG_LEN * 4;
+//char outBuffer[outBufLen];
 
-const size_t max_msg_size = sizeof(sendBuffer);
+//const size_t max_msg_size = sizeof(sendBuffer);
+const size_t max_msg_size = sizeof(receiveBuffer);
 
 //flag to escape Wire-library callback-function (less error-prone)
 volatile boolean receiveFlag = false;
@@ -91,19 +95,21 @@ const int bufferWarningLimit = 1;
 //look up specific task to according user-defined command
 void executeCommand(int nINST)
 {
+  //Serial.println(CMD);
+  //Serial.println(INST[0]);
   if (strcmp(CMD, COM_CMDS[0]) == 0)
   { 
     const char *response = registered ? "registered" : "not registered";
-    strlcat(outBuffer, response, outBufLen);
+    //strlcat(outBuffer, response, outBufLen);
   }
   else if (strcmp(CMD, COM_CMDS[1]) == 0)
   {
-    strlcat(outBuffer, "Received LOGOFF.", outBufLen);
+    //strlcat(outBuffer, "Received LOGOFF.", outBufLen);
     registered = false;
   }
   else if (strcmp(CMD, COM_CMDS[2]) == 0)
   {
-    strlcat(outBuffer, DEVICE_ID, outBufLen);
+    //strlcat(outBuffer, DEVICE_ID, outBufLen);
   }
   else if (strcmp(CMD, COM_CMDS[3]) == 0)
   {
@@ -121,9 +127,12 @@ void executeCommand(int nINST)
   }
   else if (strcmp(CMD, COMMANDSET[1]) == 0)
   {
-    strlcat(outBuffer, "Pressed PXL", outBufLen);
+    //Serial.print("INST=");
+    Serial.println("h");
+    //strlcat(outBuffer, "Pressed PXL", outBufLen);
     int xpos = INST[0] % ncols;
     int ypos = INST[0] / ncols;
+    //Serial.println(xpos);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     matrix.drawPixel(xpos, ypos, matrix.Color(rgb.r, rgb.g, rgb.b));
     matrix.show();
@@ -138,60 +147,60 @@ void executeCommand(int nINST)
   }
   else if (strcmp(CMD, COMMANDSET[4]) == 0)
   {
-    strlcat(outBuffer, "Pressed RECT", outBufLen);
+    //strlcat(outBuffer, "Pressed RECT", outBufLen);
     updateColor(INST[nINST-4], INST[nINST-3], INST[nINST-2]);
     bool fill = !(INST[nINST-1] == 1);
     drawRect(INST[0], INST[1], INST[2], INST[3], fill);
   }
   else if (strcmp(CMD, COMMANDSET[5]) == 0)
   {
-    strlcat(outBuffer, "Pressed CIRC", outBufLen);
+    //strlcat(outBuffer, "Pressed CIRC", outBufLen);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     drawRect(INST[0], INST[1], INST[2], INST[3], true);
   }
   else if (strcmp(CMD, COMMANDSET[6]) == 0)
   {
-    strlcat(outBuffer, "Pressed LEFT", outBufLen);
+    //strlcat(outBuffer, "Pressed LEFT", outBufLen);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     drawRect(0, 0, 4, 8, true);
   }
   else if (strcmp(CMD, COMMANDSET[7]) == 0)
   {
-    strlcat(outBuffer, "Pressed RIGHT", outBufLen);
+    //strlcat(outBuffer, "Pressed RIGHT", outBufLen);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     drawRect(4, 0, 4, 8, true);
   }
   else if (strcmp(CMD, COMMANDSET[8]) == 0)
   {
-    strlcat(outBuffer, "Pressed TOP", outBufLen);
+    //strlcat(outBuffer, "Pressed TOP", outBufLen);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     drawRect(0, 0, 8, 4, true);
   }
   else if (strcmp(CMD, COMMANDSET[9]) == 0)
   {
-    strlcat(outBuffer, "Pressed BOTTOM", outBufLen);
+    //strlcat(outBuffer, "Pressed BOTTOM", outBufLen);
     updateColor(INST[nINST-3], INST[nINST-2], INST[nINST-1]);
     drawRect(0, 4, 8, 4, true);
   }
   else if (strcmp(CMD, COMMANDSET[10]) == 0)
   {
-    strlcat(outBuffer, "Pressed CLEAR", outBufLen);
+    //strlcat(outBuffer, "Pressed CLEAR", outBufLen);
     clearPattern();    
   }
   else if (strcmp(CMD, COMMANDSET[11]) == 0)
   {
-    strlcat(outBuffer, "Pressed PRESET", outBufLen);
+    //strlcat(outBuffer, "Pressed PRESET", outBufLen);
     switchCurrentPreset(INST[0]);
     reloadPresetPattern();
   }
   else if (strcmp(CMD, COMMANDSET[12]) == 0)
   {
-    strlcat(outBuffer, "Pressed SETPRE", outBufLen);
+    //strlcat(outBuffer, "Pressed SETPRE", outBufLen);
     switchCurrentPreset(INST[0]);
   }
   else if (strcmp(CMD, COMMANDSET[13]) == 0)
   {
-    strlcat(outBuffer, "Pressed FLYBY", outBufLen);
+    //strlcat(outBuffer, "Pressed FLYBY", outBufLen);
     doNotDisturb = (INST[0] == 1);
   }
   else if (strcmp(CMD, COMMANDSET[14]) == 0)
@@ -200,7 +209,7 @@ void executeCommand(int nINST)
   }
   else
   {
-    strlcat(outBuffer, "Command not found.", outBufLen);
+    //strlcat(outBuffer, "Command not found.", outBufLen);
   }
 }
 
@@ -278,15 +287,16 @@ void setup()
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   Serial.begin(57600);
-
+  Serial.println("S");
+  
   matrix.begin();
   matrix.setBrightness(125);
   matrix.setTextColor(matrix.Color(255, 255, 255));
   matrix.setTextWrap(false);
-
+  
   memset(receiveBuffer, 0, max_msg_size);
-  memset(sendBuffer, 0, max_msg_size);
-  memset(outBuffer, 0, sizeof(outBuffer));
+  //memset(sendBuffer, 0, max_msg_size);
+  //memset(outBuffer, 0, sizeof(outBuffer));
 
   memset(light_pattern_bool, 0, sizeof(light_pattern_bool));
   memset(light_pattern_color, 0, sizeof(light_pattern_color));
@@ -295,10 +305,16 @@ void setup()
   delim_stop_len = (int)strlen(delim_stop);
   delim_tbc_len = (int)strlen(delim_tbc);
 
-  strlcat(busy_msg, delim_strt, sizeof(busy_msg));
-  strlcat(busy_msg, "BUSY", sizeof(busy_msg));
-  strlcat(busy_msg, delim_stop, sizeof(busy_msg));
-
+  //strlcat(busy_msg, delim_strt, sizeof(busy_msg));
+  //strlcat(busy_msg, "BUSY", sizeof(busy_msg));
+  //strlcat(busy_msg, delim_stop, sizeof(busy_msg));
+  matrix.fillScreen(255);
+  matrix.show();
+  delay(500);
+  matrix.fillScreen(0);
+  matrix.show();
+  delay(500);
+  Serial.println("g");
 
 }
 
@@ -317,12 +333,13 @@ void loop()
     bufferWarning += 1;
     busy = false;
     receiveFlag = false;
-  }
+  } 
 }
 
 //request callback of Wire-library
 void requestEvent()
 {
+  /*
   if(!busy)
   {
     prepareSend();
@@ -332,7 +349,7 @@ void requestEvent()
   else
   {
      Wire.write(busy_msg);
-  }
+  }*/
 }
 
 //receive callback for incoming data of Wire-library
@@ -355,8 +372,8 @@ void cleanUpReceive()
 }
 void cleanUpRequest()
 {
-  memset(outBuffer, 0, sizeof(outBuffer));
-  memset(sendBuffer, 0, max_msg_size);
+  //memset(outBuffer, 0, sizeof(outBuffer));
+  //memset(sendBuffer, 0, max_msg_size);
 }
 
 int separateCommand()
@@ -403,41 +420,42 @@ void announce()
 {
   for (int i = 0; i < nCommands; i++)
   {
-    strlcat(outBuffer, COMMANDSET[i], outBufLen);
-    strlcat(outBuffer, delim_inst, outBufLen);
-    strlcat(outBuffer, INSTRUCTS[i], outBufLen);
-    strlcat(outBuffer, delim_cmds, outBufLen);
+    //strlcat(outBuffer, COMMANDSET[i], outBufLen);
+    //strlcat(outBuffer, delim_inst, outBufLen);
+    //strlcat(outBuffer, INSTRUCTS[i], outBufLen);
+    //strlcat(outBuffer, delim_cmds, outBufLen);
   }
   matrix.fillScreen(0);
 }
 
-int numberOfSends()
+/*int numberOfSends()
 {
   int offset = delim_strt_len + delim_stop_len;
   int n = (int)strlen(outBuffer) / (MAX_MSG_LEN - offset);
   return n+1;
-}
+}*/
 
 void prepareSend()
 {
-  int n = numberOfSends();
-  strlcat(sendBuffer, delim_strt, MAX_MSG_LEN);
+  //int n = numberOfSends();
+  int n=1;
+  //strlcat(sendBuffer, delim_strt, MAX_MSG_LEN);
   if(n > 1)
   {
     int bound = MAX_MSG_LEN - delim_strt_len - delim_tbc_len;
-    strlcat(sendBuffer, outBuffer, bound);
-    strlcat(sendBuffer, delim_tbc, MAX_MSG_LEN);
-    shiftOutBuffer(bound-delim_strt_len-1);
+    //strlcat(sendBuffer, outBuffer, bound);
+    //strlcat(sendBuffer, delim_tbc, MAX_MSG_LEN);
+    //shiftOutBuffer(bound-delim_strt_len-1);
   }
   else
   {
-    strlcat(sendBuffer, outBuffer, MAX_MSG_LEN);
-    memset(outBuffer, 0, outBufLen);
+    //strlcat(sendBuffer, outBuffer, MAX_MSG_LEN);
+    //memset(outBuffer, 0, outBufLen);
   }
-  strlcat(sendBuffer, delim_stop, MAX_MSG_LEN);
+  //strlcat(sendBuffer, delim_stop, MAX_MSG_LEN);
 }
 
-void shiftOutBuffer(int shiftLength)
+/*void shiftOutBuffer(int shiftLength)
 {
   if (shiftLength >= (int)strlen(outBuffer))
   {
@@ -450,7 +468,7 @@ void shiftOutBuffer(int shiftLength)
       outBuffer[i] = outBuffer[i + shiftLength];
     }
   }
-}
+}*/
 
 void drawRect(int x, int y, int w, int h, bool fill)
 {

@@ -22,7 +22,7 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 11
-#define LED_FLUO_PIN 25
+#define LED_FLUO_PIN 26
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
@@ -30,7 +30,7 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S005";      //S006->Aurelie; S004->Barbora
+std::string SETUP = "S013";      //S006->Aurelie; S004->Barbora
 std::string COMPONENT = "MOT01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -38,12 +38,13 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "WIFI_SSID_HERE" ;
-const char *password = "YOURPASSWORD";
+const char *ssid = "UC2_wifi004";
+const char *password = "_lachmannUC2";
 WiFiClient espClient;
 PubSubClient client(espClient);
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "MQTT_SERVER_IP";
+const char *MQTT_SERVER = "21.3.2.152";
+const int MQTT_PORT = 1883;
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -60,9 +61,9 @@ const char *delim_inst = "+";
 const int delim_len = 1;
 
 // ~~~~ MOTOR ~~~~
-StepMotor stepperZ = StepMotor(12,14,27,26); //normally: 25, 26, 27, 14
-StepMotor stepperY = StepMotor(5,17,16,4);
-StepMotor stepperX = StepMotor(27, 25, 32, 4); // never connected to same ESP32 as stepperZ -> hence: universally possible
+StepMotor stepperZ = StepMotor(25,26,27,14); //normally: 25, 26, 27, 14 // 12, 14, 27, 26
+StepMotor stepperY = StepMotor(5, 17, 16, 4);
+StepMotor stepperX = StepMotor(33, 32, 27, 14); // 27, 25, 32, 4 never connected to same ESP32 as stepperZ -> hence: universally possible
 
 // ~~~~ FLUO ~~~~
 int led_fluo_pwm_frequency = 12000;
@@ -305,7 +306,11 @@ void setup()
     Serial.print("VOID SETUP -> topicSTATUS=");
     Serial.println(stopicSTATUS.c_str());
     setup_wifi();
-    client.setServer(MQTT_SERVER, 1883);
+    Serial.print("Starting to connect MQTT to: ");
+    Serial.print(MQTT_SERVER);
+    Serial.print(" at port:");
+    Serial.println(MQTT_PORT);
+    client.setServer(MQTT_SERVER, MQTT_PORT);
     client.setCallback(callback);
     pinMode(LED_BUILTIN, OUTPUT);
     time_now = millis();

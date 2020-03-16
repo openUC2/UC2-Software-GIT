@@ -33,6 +33,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.Random;
 
 import de.nanoimaging.uc2controller.R;
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
     EditText EditTextIPAddress;
     EditText EditTextExperimentalID;
-    EditText EditTextSetupNbr;
+    //EditText EditTextSetupNbr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         EditTextIPAddress = (EditText) findViewById(R.id.editText_ip_address);
         EditTextExperimentalID = (EditText) findViewById(R.id.editText_id_nr);
-        EditTextSetupNbr = (EditText) findViewById(R.id.editText_SetupNbr);
         button_x_stage_fwd_coarse = findViewById(R.id.button_x_stage_minusminus);
         button_x_stage_fwd_fine = findViewById(R.id.button_x_stage_minus);
         button_x_stage_bwd_coarse = findViewById(R.id.button_x_stage_plusplus);
@@ -153,8 +153,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         button_z_stage_bwd_fine = findViewById(R.id.button_z_stage_plus);
         button_ip_address_go = findViewById(R.id.button_ip_address_go);
         button_load_localip = findViewById(R.id.button_load_localip);
-        button_setup_get = findViewById(R.id.button_setup_get);
-        button_setup_set = findViewById(R.id.button_setup_set);
 
         // set seekbar and coresponding texts for GUI
         seekbar_ledmatrix_naval = findViewById(R.id.seekbar_ledmatrix_naval);
@@ -174,12 +172,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         // get
         serverUri = sharedPref.getString("IP_ADDRESS", serverUri);
         experiment_id = sharedPref.getString("ID_NUMBER", experiment_id);
-        topic_setup = sharedPref.getString("TOPIC_SETUP", topic_setup);
+        //topic_setup = sharedPref.getString("TOPIC_SETUP", topic_setup);
         // set
         EditTextIPAddress.setText(serverUri);
         EditTextExperimentalID.setText(experiment_id);
-        topic_prefix_setup = "/" + topic_setup + "/";
-        EditTextSetupNbr.setText(topic_setup);
+        //topic_prefix_setup = "/S00" + experiment_id + "/";
+        //EditTextSetupNbr.setText(topic_setup);
 
 
 
@@ -191,8 +189,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         //getCallingActivity().publish(connection, topic, message, selectedQos, retainValue);
 
 
-        // start internal MQTT server
-        startServer();
+        // start internal MQTT server -> not working correctly -> hence not started for now
+        // startServer();
 
         button_ip_address_go.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -233,8 +231,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                     if (tap_counter_ipadress_button == 1) {
                         //Single click
-                        serverUri = "tcp://localhost:1883"; //String.valueOf(wifiIpAddress(MainActivity.this));
-                        EditTextIPAddress.setText(serverUri);
+                        serverUri = "tcp://localhost"; //String.valueOf(wifiIpAddress(MainActivity.this)); // tcp://localhost:1883
                         Toast.makeText(MainActivity.this, "IP-Address set to: " + serverUri, Toast.LENGTH_SHORT).show();
                         stopConnection();
                         initialConfig();
@@ -263,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
                 }
             });
+        /*
         button_setup_get.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -287,6 +285,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 return true;
             }
         });
+        */
 
         //******************* STEPPER in X-Direction ********************************************//
         // this goes wherever you setup your button listener:
@@ -333,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_y_stage, "DRVZ+50");
+                    publishMessage(topic_y_stage, "DRVY+50");
                 }
                 return true;
             }
@@ -342,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_y_stage, "DRVZ+5");
+                    publishMessage(topic_y_stage, "DRVY+5");
                 }
                 return true;
             }
@@ -351,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_y_stage, "DRVZ+-50");
+                    publishMessage(topic_y_stage, "DRVY+-50");
                 }
                 return true;
             }
@@ -360,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_y_stage, "DRVZ+-5");
+                    publishMessage(topic_y_stage, "DRVY+-5");
                 }
                 return true;
             }
@@ -375,7 +374,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage, "DRVX+50");
+                    publishMessage(topic_z_stage, "DRVZ+50");
                 }
                 return true;
             }
@@ -384,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage, "DRVX+10");
+                    publishMessage(topic_z_stage, "DRVZ+10");
                 }
                 return true;
             }
@@ -393,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage, "DRVX+-50");
+                    publishMessage(topic_z_stage, "DRVZ+-50");
                 }
                 return true;
             }
@@ -402,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    publishMessage(topic_z_stage, "DRVX+-10");
+                    publishMessage(topic_z_stage, "DRVZ+-10");
                 }
                 return true;
             }
@@ -415,19 +414,19 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @Override
     protected void onDestroy(){
         super.onDestroy();
-        stopServer();
+        //stopServer();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        stopServer();
+        //stopServer();
     }
 
     @Override
     protected void onStop(){
         super.onStop();
-        stopServer();
+        //stopServer();
     }
 
 
@@ -454,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             // For left Lens in Z
             val_ledmatrix_naval = progress;
             updateGUI();
-            //publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
+            publishMessage(topic_led_matrix, "NA+" + String.valueOf(progress));
     }}
 
 
@@ -463,22 +462,23 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         if (bar.equals(seekbar_z_stage_ledval)) {
             // For left Lens in Y
             publishMessage(topic_z_stage_ledval, "FLUO+" + String.valueOf(val_z_stage_ledval));
-        } else if (bar.equals(seekbar_ledmatrix_naval)) {
+        }
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar bar) {
+        if (bar.equals(seekbar_ledmatrix_naval)) {
             // For left Lens in Z
-            publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
+            //Log.d("ledmatrix","onStopTrackingTouch = " + String.valueOf(val_ledmatrix_naval));
+            //publishMessage(topic_led_matrix, "NA+" + String.valueOf(val_ledmatrix_naval));
         }
     }
 
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
-    }
-
     private void initialConfig() {
-        mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), "tcp://"+serverUri, clientId);
+        mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), "tcp://"+serverUri, clientId); // tcp://"+serverUri
         Log.e(TAG, "My ip is: tcp://"+serverUri);
-        Log.e(TAG, "My client ID is: tcp://"+clientId);
+        Log.e(TAG, "My client ID is: "+clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
@@ -535,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     //addToHistory("Failed to connect to: " + serverUri);
-                    Toast.makeText(MainActivity.this, "Connection attemp failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Connection attempt failed", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -559,8 +559,9 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         try {
             MqttMessage message = new MqttMessage();
             message.setPayload(publishMessage.getBytes());
-            mqttAndroidClient.publish("/S00"+experiment_id+"/" + pub_topic, message);
-            Log.i(TAG, pub_topic + " " + publishMessage);
+            String main_topic = getMainTopic();
+            mqttAndroidClient.publish(main_topic + pub_topic, message);
+            Log.i(TAG, "topic=" + main_topic + pub_topic + "   Message= " + publishMessage);
             //addToHistory("Message Published");
             if (!mqttAndroidClient.isConnected()) {
                 //addToHistory(mqttAndroidClient.getBufferedMessageCount() + " messages in buffer.");
@@ -572,6 +573,14 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
     }
 
+    public String getMainTopic(){
+        // add zeroes
+        int smi = 3; //setup_max_indices
+        int idl = experiment_id.length(); // get number of digits of ID
+        char[] array = new char[smi-idl];
+        Arrays.fill(array, '0');
+        return "/S" + new String(array) + experiment_id+"/";
+    }
 
     private void stopConnection() {
         try {
