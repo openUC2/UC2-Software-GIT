@@ -7,7 +7,7 @@ color_picked:
 - 255
 - 255
 - 255
-color_picker_counter: 4
+color_picker_counter: 2
 default:
 - - - 0
     - 0
@@ -202,7 +202,7 @@ default:
     - 0
     - 0
 intensity: 132
-intensity_expt: 75
+intensity_expt: 132
 matrixdim:
 - 8
 - 8
