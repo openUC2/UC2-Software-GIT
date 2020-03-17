@@ -13,7 +13,7 @@
     * Acknowledgements
 
 <p align="center">
-<img src="../../images/UC2_Raspi_Gui_1.png" width="600" alt="">
+<img src="../../IMAGES/UC2_Raspi_Gui_1.png" width="600" alt="">
 </p> 
 
 ## Preparing your Raspberry Pi (RasPi)
@@ -27,7 +27,7 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
 1. **Download** ["Raspbian <NBR> with desktop"](https://downloads.raspberrypi.org/raspbian_latest), but without recommended software 
 2. Flash raspian onto SD card by using e.g. [Win32DiskImager](http://sourceforge.net/projects/win32diskimager/files/latest/download) or [Etcher](https://www.balena.io/etcher/) (or follow [the official Raspian-guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
     <p align="center">
-    <img src="./images/writeISO2SD.png" width="300" alt="">
+    <img src="./IMAGES/writeISO2SD.png" width="300" alt="">
     </p> 
 3. **Insert SD-card** into RasPi and start the device. Your display might be turned upside down. This will be handled soon. First:
     * Setup country info (e.g. Germany->German->Berlin->"Use English language"). Make sure, that your keyboard-input works as intended. Please find further information on how to setup RasPi on the [Official Homepage](https://www.raspberrypi.org/documentation/).
