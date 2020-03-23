@@ -22,6 +22,7 @@ resolution:
 - 2464
 rotation: 0
 saturation: 0
+sensor_mode: 0
 sharpness: 0
 shutterSpeed: 0
 vflip: false
