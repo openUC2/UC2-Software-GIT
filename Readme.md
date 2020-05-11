@@ -1,31 +1,36 @@
-# UC2
-<p align="center">
-<img src="./IMAGES/UC2_Logo.png" width="200">
+<p align="left">
+<img src="./IMAGES/UC2_logo_text.png" width="400">
 </p>
 
-This is the online repository of the Software of the open-source hardware project ''UC2'' [YouSeeToo]. 
+# **UC2 - Open and Modular Optical Toolbox**
 
-[RasPi GUI](./GUI/RASPBERRY_PI/README.md) | [Hardware Controlling](./HARDWARE_CONTROL/) | [Project Page](https://useetoo.org) | [UC2 CAD Repository](https://github.com/bionanoimaging/UC2-GIT) |[UC2 Paper](https://www.biorxiv.org/content/10.1101/2020.03.02.973073v1)
+---
+[<img src="./IMAGES/UC2_Logo.png" height=40>](https://www.useetoo.org) [<img src="./IMAGES/icon_git.png" width=40>](https://github.com/bionanoimaging/UC2-GIT) [<img src="./IMAGES/icon_UC2Software.png" height=40>](https://github.com/bionanoimaging/UC2-Software-GIT) [<img src="./IMAGES/icon_tw.png" width=40>](https://twitter.com/openuc2)  [<img src="./IMAGES/icon_yt.png" width=40>](https://www.youtube.com/channel/UCcHFzXTdC1Ro0OMnHS_54UA) [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
-Making **open-science** great again! 
+---
 
-## Introduction
-For a general introduction on UC2 please check our [CAD-repository](https://github.com/bionanoimaging/UC2-GIT). Our basic belief centers around simple and clean modularity which - combined with creativity and curiosity - can lead to unthought achievements. 
+This is the online repository of the Software of the open-source hardware project ''UC2'' [YouSeeToo].
 
+[RasPi GUI](./GUI/RASPBERRY_PI/README.md) | [Hardware Controlling](./HARDWARE_CONTROL/) | [UC2 Paper](https://www.biorxiv.org/content/10.1101/2020.03.02.973073v1)
+
+---
+
+## Making **open-science** great again!
+For a general introduction on UC2 please check our [CAD-repository](https://github.com/bionanoimaging/UC2-GIT). Our basic belief centers around simple and clean modularity which - combined with creativity and curiosity - can lead to unthought achievements.
 
 # Getting Started
-Like with our toolbox we tried to keep our interfaces modular as well. Hence, hardware (like Motors, LED, ...) can be adressed using 
+Like with our toolbox we tried to keep our interfaces modular as well. Hence, hardware (like Motors, LED, ...) can be adressed using
 *   Arduino (and alike) via I2C (Hardwired)
 *   ESP32 (and alike) via MQTT (WiFI)
 
 and could even be a mixture of both.Further, to control this components we provide two different graphical user interfaces (GUI):
-*   Raspberry Pi (RasPi) 
-*   Android App 
+*   Raspberry Pi (RasPi)
+*   Android App
 
 All useful links will be provided after the general shape of the repository is shortly displayed.
 
 ## Structure of Repository
-	
+
 	* 	coming
 		*	soon
 
@@ -34,12 +39,12 @@ All useful links will be provided after the general shape of the repository is s
 
 <p align="center">
 <img src="./IMAGES/UC2_Raspi_Gui_1.png" width="400" alt="">
-</p> 
+</p>
 
 Find a detailed description [here](./GUI/RASPBERRY_PI/README.md)
 
 
-# Getting Started using the Android APP 
+# Getting Started using the Android APP
 
 We have prepared a very basic control app for **TheBox** to have basic control over the hardware modules. The information can be found [here](./GUI/Android/UC2-TheBox).
 
@@ -54,7 +59,9 @@ Depending on the micro-controller that will be connected the code that is needed
 
 
 # Get Involved!
-Our software-oriented UC2-SOFTWARE-GIT provides you with all the different programs that you need to automate your blocks. Run our GUI on RasPi or Android-Phone and setup your Arduino or ESP32. We want to generalize our Software to even integrate more with community standards and have an overall compatibility with different Operating Systems. 
+This project is open so that anyone can get involved. You don't even have to learn CAD designing or programming. Find ways you can contribute in  [CONTRIBUTING](https://github.com/bionanoimaging/UC2-GIT/blob/master/CONTRIBUTING.md)
+
+Our software-oriented UC2-SOFTWARE-GIT provides you with all the different programs that you need to automate your blocks. Run our GUI on RasPi or Android-Phone and setup your Arduino or ESP32. We want to generalize our Software to even integrate more with community standards and have an overall compatibility with different Operating Systems.
 
 Get **INVOLVED** by help us to:
 *   switch to a new browser-based GUI
