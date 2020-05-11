@@ -3,7 +3,6 @@
 // by: Rene Lachmann
 // date: 11.09.2019
 // based on Arduino-Interface by Rene Lachmann, Xavier Uwurukundu
-// for: S-Stage
 //----------- ----------- ----------- ----------- ----------- -----------
 
 // ----------------------------------------------------------------------------------------------------------------
@@ -23,7 +22,8 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 11
-#define LED_FLUO_PIN 26
+#define LED_FLUO_PIN 25
+
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
@@ -31,16 +31,16 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S009";
-std::string COMPONENT = "MOT02"; // LAR01 //LED01 //
+std::string SETUP = "S004";
+std::string COMPONENT = "MOT01"; // LAR01 //LED01 //
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
 std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2_wifi004";// "Blynk";       //"Blynk";"UC2";
-const char *password = "_lachmannUC2"; //"12345678";"youseetoo";
+const char *ssid = "Blynk";// "UC2-F8Team"; //        //"Blynk";"UC2";
+const char *password = "12345678";// "_lachmannUC2"; //
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -49,7 +49,7 @@ PubSubClient client(espClient);
 String localIP;
 String gatewayIP;
 //char MQTT_SERVER[BUFLEN]; //const char *MQTT_SERVER = "192.168.178.21"; // 10.9.2.116
-const char *MQTT_SERVER = "21.3.2.102"; // 10.9.2.116
+char* MQTT_SERVER = "192.168.43.86";//"192.168.178.54"; // IP of the SERVER in the IPHT
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -66,9 +66,9 @@ const char *delim_inst = "+";
 const int delim_len = 1;
 
 // ~~~~ MOTOR ~~~~
-StepMotor stepperZ = StepMotor(1,1,1,1);//25, 26, 27, 14); // for Peter Horbert
-StepMotor stepperY = StepMotor(1,1,1,1);//10, 12, 11, 13);
-StepMotor stepperX = StepMotor(14,27,26,25);//27, 25, 32, 4); // never connected to same ESP32 as stepperZ -> hence: universally possible
+StepMotor stepperZ = StepMotor(18,19,5,17); //StepMotor(12,14,27,26);//(27, 25, 32, 4);//25, 26, 27, 14); // for Peter Horbert
+StepMotor stepperY = StepMotor(1, 1, 1, 1);//(10, 12, 11, 13);
+StepMotor stepperX = StepMotor(1, 1, 1, 1);//(27, 25, 32, 4); // never connected to same ESP32 as stepperZ -> hence: universally possible
 
 // ~~~~ FLUO ~~~~
 int led_fluo_pwm_frequency = 12000;
@@ -148,7 +148,7 @@ void setup_wifi()
 
     localIP = WiFi.localIP().toString();
     gatewayIP = WiFi.gatewayIP().toString();
-    //gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
+    gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
     
     Serial.println("");
     Serial.print("WiFi connected with IP:");
