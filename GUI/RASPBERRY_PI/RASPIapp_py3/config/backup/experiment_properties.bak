@@ -1,5 +1,6 @@
 active: 0
 active_methods: []
+autofocus_new: 0
 autofocus_num: 0
 autofocus_samples: 15
 autofocus_stepsize: 25

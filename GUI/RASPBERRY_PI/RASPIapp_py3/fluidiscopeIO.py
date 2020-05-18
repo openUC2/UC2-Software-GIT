@@ -257,10 +257,10 @@ def settings_save_restore(self, instance, restore):
                     self.ids[prop_help].text)
     elif chk[19]:
         key_prefix = 'tomography_lbl_'
-        key_dict = ['tm_backlash','tm_motor','tm_takeimage','tm_startPOS','tm_endPOS','tm_steps','tm_stepsize','tm_steptime','tm_totalTime']
+        key_dict = ['tm_backlash', 'tm_motor', 'tm_takeimage', 'tm_startPOS', 'tm_endPOS', 'tm_steps', 'tm_stepsize', 'tm_steptime', 'tm_totalTime']
         for key in key_dict:
             if restore:
-                self.ids[key_prefix+key].text = str(fg.config['experiment'][key])
+                self.ids[key_prefix + key].text = str(fg.config['experiment'][key])
             else:
                 fg.config['experiment'][key] = toolbox.textinput_convert(
                     self.ids[prop_help].text)
@@ -289,14 +289,14 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
     offset_y = 0
 
     if not ignore_NA:
-        offset_x = int((m - fg.config['light']['NA']*2) * 0.5)
-        offset_y = int((n - fg.config['light']['NA']*2) * 0.5)
+        offset_x = int((m - fg.config['light']['NA'] * 2) * 0.5)
+        offset_y = int((n - fg.config['light']['NA'] * 2) * 0.5)
 
     for row in range(n):
-        if offset_y <= row < n-offset_y:
+        if offset_y <= row < n - offset_y:
             for col in range(m):
-                if offset_x <= col < m-offset_x:
-                    pos = row*n + col
+                if offset_x <= col < m - offset_x:
+                    pos = row * n + col
                     prop_help = 'scr_light_set_2_grid_' + str(pos)
                     if sum(fg.config[pattern_key[0]][pattern_key[1]][row][col]) > 0:
                         self.ids[prop_help].value = 1

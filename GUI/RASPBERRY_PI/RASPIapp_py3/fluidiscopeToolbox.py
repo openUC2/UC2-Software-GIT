@@ -1190,8 +1190,8 @@ def run_autofocus(self, instance, key):
             change_activation_status(instance)
     else:
         fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(
-            run_autofocus, instance), fg.config['autofocus']['time_interval_min']*60)
-    logger.debug('Autofocus-01-Started autofocus routine.')
+            af.autofocus_callback, self, instance), fg.config['autofocus']['interval_min']*60)
+        logger.debug('Autofocus-01-Added Autofocus routine to callback.')
 
 
 def autofocus_callback(self, instance, *rargs):

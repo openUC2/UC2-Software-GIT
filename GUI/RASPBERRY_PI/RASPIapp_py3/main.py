@@ -1,9 +1,9 @@
 # I/O
 if (1):
     import os
-    #os.environ['KIVY_TEXT'] = 'egl_rpi'
+    # os.environ['KIVY_TEXT'] = 'egl_rpi'
     os.environ['KIVY_WINDOW'] = 'sdl2'  # 'egl_rpi'  # 'sdl2'
-    #os.environ['KIVY_GL_BACKEND'] = 'gl'
+    # os.environ['KIVY_GL_BACKEND'] = 'gl'
     # time.sleep(1)
     pass
     # Fluidiscope
@@ -199,9 +199,6 @@ class Fluidiscope(BoxLayout):
         else:
             toolbox.motor_change_status(instance)
         toolbox.select_method(self, instance, "motor_buttons")
-
-    def colorpicker_selected_color(self, instance):
-        toolbox.selected_color(self, instance)
 
     # menu buttons
     def start_experiment(self, instance):

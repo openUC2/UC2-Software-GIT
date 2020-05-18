@@ -1978,11 +1978,6 @@
                         id: scr_autofocus_set_grid
                         cols: 4
                         spacing: 15
-						Label:
-                            text: 'interval'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_time_interval_min
-                            text: ''
                         Label:
                             text: 'backlash'
                         TextInput:
@@ -1994,24 +1989,19 @@
                             id: scr_autofocus_set_lbl_value_corr_test
                             text: ''
                         Label:
-                            text: 'fine range'
+                            text: 'durat. max'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_fine_range
-                            text: ''
-                        Label:
-                            text: 'fine steps'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_fine_steps
-                            text: ''
-                        Label:
-                            text: 'fine steps\nsize'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_fine_steps_size
+                            id: scr_autofocus_set_lbl_value_duration_max
                             text: ''
                         Label:
                             text: 'iter. max'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_iter_max
+                            id: scr_autofocus_set_lbl_value_iteration_max
+                            text: ''
+                        Label:
+                            text: 'interv. min'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_interval_min
                             text: ''
                         Label:
                             text: 'maxmin'
@@ -2019,14 +2009,9 @@
                             id: scr_autofocus_set_lbl_value_maxmin
                             text: ''
                         Label:
-                            text: 'method'
+                            text: 'maxmin'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_method
-                            text: ''
-                        Label:
-                            text: 'use last\nautofocus'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_use_last_autofocus
+                            id: scr_autofocus_set_lbl_value_roi
                             text: ''
                         Label:
                             text: 'run only\nonce'
@@ -2034,14 +2019,44 @@
                             id: scr_autofocus_set_lbl_value_run_only_once
                             text: ''
                         Label:
-                            text: 'use\nchannel'
+                            text: 'Coarse steps'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_use_channel
+                            id: scr_autofocus_set_lbl_value_steps_coarse
+                            text: ''
+                        Label:
+                            text: 'fine steps'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_steps_fine
+                            text: ''
+                        Label:
+                            text: 'Coarse steps\nsize'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_step_dist_coarse
+                            text: ''
+                        Label:
+                            text: 'Fine steps\nsize'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_step_dist_fine
                             text: ''
                         Label:
                             text: 'last\nsuccess'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_success
+                            text: ''
+                        Label:
+                            text: 'method'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_technique
+                            text: ''
+                        Label:
+                            text: 'use\nchannel'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_use_channel
+                            text: ''
+                        Label:
+                            text: 'use last\nautofocus'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_use_last_autofocus
                             text: ''
                     # Buttons for save, restore
                     BoxLayout:
