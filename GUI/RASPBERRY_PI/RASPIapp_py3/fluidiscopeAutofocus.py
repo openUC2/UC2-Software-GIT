@@ -40,62 +40,147 @@ logger = logging.getLogger('UC2_Autofocus')
 
 
 def autofocus_callback(self, instance, *rargs):
-    # flags
-    # set autofocus busy! -> calls from measurement-callback will be skipped until set to false again
-    fg.config['experiment']['is_autofocus_busy'] = True
-    logger.debug("Autofocus-03a- config->experiment->is_autofocus_busy={}".format(fg.config['experiment']['is_autofocus_busy']))
-    # run autofocus routine
-    logger.debug(
-        "Autofocus-03b- autofocus_callback in fluidiscopeAutofocus.py started.")
-    fg.config['experiment']['imaging_method'] = 'AF'
-    autofocus_routine(self)
-    # simulation datastack
-    # x_positions, calc_im_qual = simulate_data_stack()
-    fg.config['experiment']['is_autofocus_busy'] = False
-    logger.debug("Autofocus-03c- config->experiment->is_autofocus_busy={}".format(
-        fg.config['experiment']['is_autofocus_busy']))
+    '''
+        Tests whether autofocus is already running or anything else is blocking. If not: blocks all measurements (and further autofocus-calls) and resets autofocus-count if scheduled.
+        To block running autofocus, click "AF now" as implemented in Toolbox.run_autofocus-function.
+    '''
+    # skip if AF already running
+    if fg.config['experiment']['autofocus_busy']:
+        pass
+    else:
+        # wait 1s before checking again
+        while fg.config['experiment']['imaging_active']:
+            sleep(1)
+        fg.config['experiment']['autofocus_busy'] = True
+        autofocus_routine(self)
+        fg.config['experiment']['is_autofocus_busy'] = False
 #
 #
-# %%
-# ----------------------------------- #
-# @       algorithm toolbox          @ #
-# ----------------------------------- #
+
+        # %%
+        # ----------------------------------- #
+        # @       algorithm toolbox          @ #
+        # ----------------------------------- #
 
 
 def autofocus_routine(self):
+    '''
+    Prepares parameters for scanning, sets everything up and calls scanning and calculation routines. 
+    Note:
+        > scan_range: half of the total (symmetric) scanning distance
+    '''
+
     # generate image name
     image_name_template = autofocus_imagename_gen()
 
     # set correct number of iteration
-    fg.config['experiment']['autofocus_num'] = 1 if fg.config['experiment']['autofocus_new'] else fg.config['experiment']['autofocus_num']+1
-    
-    # take autofocus_scan
-    imqual_stack = autofocus_scan(self, names=image_name_template)
+    fg.config['experiment']['autofocus_num'] = 1 if fg.config['experiment']['autofocus_new'] else fg.config['experiment']['autofocus_num'] + 1
+
+    # set parameters
+    scan_range_coarse = fg.config['autofocus']['step_dist_coarse'] * fg.config['autofocus']['steps_coarse']
+    scan_range_fine = fg.config['autofocus']['step_dist_fine'] * fg.config['autofocus']['steps_fine']
+    pos_start = fg.config['motor']['calibration_z_pos']
+    pos_max = fg.config['motor']['calibration_z_max']
+    pos_min = fg.config['motor']['calibration_z_min']
+    smethod = fg.config['autofocus']['technique']
+    max_steps = fg.config['autofocus']['max_steps']
+
+    # start video-stream of camera (to avoid re-init and long capture times)
+    while True:
+        # implement here
+        break
+
+    # init camera and allow for warmup
+    camera = autofocus_setupCamera()
+    rawCapture = PiRGBArray(camera, fg.config['autofocus']['resolution'])
+    time.sleep(0.1)
+
+    # Coarse scan -> get coarse-sharpness measures + new position of motor
+    sharpness_coarse, pos_coarse = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, scan_range=scan_range_coarse, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps)
+
+    # Fit Gauss to graph and find new position of highest sharpness
+    pos_optimum_coarse = find_optimum(sharpness_coarse, smethod)
+    step_2opt_coarse = get_distvec(pos_coarse, pos_optimum_coarse)
+
+    # move to new center with z motor
+    toolbox.move_motor(None, 2, motor_stepsize=step_2opt_coarse)
+
+    # fine scan around new position ->
+    sharpness_fine, pos_fine = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, scan_range=scan_range_fine, pos_start=pos_optimum_coarse, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps)
+
+    # Fit Gauss to graph and find new position of highest sharpness
+    pos_optimum_fine = find_optimum(sharpness_fine, smethod)
+    step_2opt_fine = get_distvec(pos_fine, pos_optimum_coarse)
+
+    # move to new center with z motor
+    toolbox.move_motor(None, 2, motor_stepsize=step_2opt_coarse)
+
+    # done
+    return True
 
 
-def autofocus_scan(self, names='nonamegiven'):
+def get_distvec(a, b):
+    '''
+    Calculates signed distance two positions, where direction points from a to b. 
+    '''
+    return b - a
+
+
+def autofocus_scan(self, names='nonamegiven', rawCapture, smethod, scan_range, pos_start, pos_min, pos_max, max_steps):
     '''
     Implements modules of how to scan through the object and how to use/ check for backlash!
-    :param fine_range: marks range into 1 movement-direction (e.g. towards minus)
-    :return:
+
+    :scan_methods:      0=slow Filter-based, 1=fast Filter-based, 2=fast stream-size reading, 3=simulation
+
+    TODO: 
+        1) provide iteration limit NIter
     '''
-    logger.debug("Autofocus-05a- autofocus_scan reached.")
+    logger.debug("Autofocus ---> Scanning.")
+
     # set parameters and variables
-    imqual_stack = []
-    imqual_zpos = []
     found_focus = False
-    myc = 0
-    scan_offset = 0
-    if scan_method == 0:  # default method -> just some steps
-        # 1. take image at start position
-        # 2. go to minimum position -> scan stepwise to maximum (taking an image at the start position again)
-        # 3. at each step calculate metric (and correlation if corr_test is 1)
-        # 4. repeat if not best position was found
-        # 5. save resulting graphs
-        # ------------------------------------------------
-        # find range
-        fine_range = autofocus_getRange(fine_range, fg.config['motor']['calibration_z_pos'])
-        fine_steps_size = autofocus_getSteps(fine_range, fine_steps, step_method=0)
+
+    tim = []
+    tproc = []
+    sharpness = []
+    ttotal = time.time()
+    timstart = time.time()
+
+    m = 0
+    # faster way to acquire images and especially ensure same illumination properties etc per image as opposed to long-warm ups for single captures
+    for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+
+        # get raw numpy-array of shape [Y,X,Channel]
+        image = frame.array
+        tim.append(time.time() - timstart)
+
+        # calculate sharpness measure
+        tprocstart = time.time()
+        if smethod == 0:
+            sharpness.append(diff_tenengrad(np.reshape(image, [image.shape[-1], image.shape[-2], image.shape[-3]])))
+        elif
+        tproc.append(time.time() - tprocstart)
+
+        # clear the stream in preparation for the next frame
+        timstart = time.time()
+        rawCapture.truncate(0)
+
+        # set counter
+        m += 1
+        if m >= max_steps:
+            break
+
+    # TODO: update autofocus GUI-feedback
+    # autofocus_display_update()
+
+    # (slow) sharpness-Filter based method
+
+        # get range
+        scan_range = autofocus_getRange()
+
+        #
+        fine_steps_size = autofocus_getSteps(fine_range, fg.config['motor']['steps_fine'], step_method=0)
+
         image_ref, imqual_ref = autofocus_take_image(self, image_name_template=names, method=method)  # ==1.
         upd_val = 100 / (fine_steps * iter_max)
 
@@ -124,6 +209,15 @@ def autofocus_scan(self, names='nonamegiven'):
                                  fg.config['motor']['calibration_z_pos'])
         autofocus_update_dict(found_focus, method,
                               fine_range, fine_steps, fine_steps_size)
+    elif fg.config['autofocus']['scan_method'] == 1:
+        # (fast) sharpness Filter-based
+        pass
+    elif fg.config['autofocus']['scan_method'] == 2:
+        # (fast) byte-stream reading based
+        pass
+    elif fg.config['autofocus']['scan_method'] == 3:
+        # simulates sharpness stack and tests performance
+        pass
     else:
         logger.debug(
             "Not implemented method for Autofocus chosen. Hence: Idly waiting.")
@@ -175,26 +269,38 @@ def autofocus_display_update(self, upd_val, myd, fine_steps, myc, iter_max, *lar
         self.ids['user_notify_expt'].text = ""
 
 
-def autofocus_getRange(fine_range, scan_startpos):
-    if fine_range == 0:
-        scan_limits = [scan_startpos - fg.config['motor']['calibration_z_min'],
-                       fg.config['motor']['calibration_z_min'] - scan_startpos]
-        fine_range = scan_limits[1] if (scan_limits[0]) > (
-            scan_limits[1]) else scan_limits[0]
-        fine_range /= 2  # only half it and
+def autofocus_getRange(srange, pos_start, pos_min, pos_max):
+    '''
+    Calculates absolut range for reference printing with respect to the motor position, movement and limits. 
+
+    :PARAM:
+    =======
+    :scanrange:     2 * of the scanning range that will symmetrically be stepped about
+    :pos_start:      start-position of scan (=center)
+    :
+
+    '''
+
+    if scanrange == 0:
+        # calculate maximum symmetric distance to borders from actual position
+        scan_limits = [abs(get_distvec(pos_start, pos_min)), abs(get_distvec(pos_start, pos_max))]
+
+        # select smaller distance
+        scanrange = scan_limits[1] if (scan_limits[0] >
+                                       scan_limits[1]) else scan_limits[0]
+        scanrange = np.array(scanrange, dtype=int) // 2
     else:
-        if (scan_startpos + fine_range > fg.config['motor']['calibration_z_max']):
-            fine_range = fg.config['motor']['calibration_z_max'] - \
-                scan_startpos
-        if (scan_startpos - fine_range < fg.config['motor']['calibration_z_min']):
-            fine_range = scan_startpos - \
-                fg.config['motor']['calibration_z_min']
-    return fine_range
+        # check limits to not go over boundaries for motors
+        if (pos_start + scanrange > pos_max):
+            scanrange = pos_max - pos_start
+        if (pos_start - scanrange < pos_min):
+            scanrange = abs(get_distvec(pos_start, pos_min))
+    return scanrange
 
 
-def autofocus_getSteps(fine_range, fine_steps, step_method=0):
+def autofocus_getSteps(scan_range, steps, step_method=0):
     if step_method == 0:
-        scan_steps = fine_range / fine_steps
+        scan_steps = scan_range / steps
     return scan_steps
 
 

@@ -310,7 +310,7 @@ def select_method(self, instance, aimed_component_group):
             counter_active_methods = ['btn_light_set_2_clear', 'btn_light_set_2_fill', 'slider_light_set_2_NA', 'btn_light_set_2_pattern_run',
                                       'btn_light_set_2_pattern_1', 'btn_light_set_2_pattern_2', 'btn_light_set_2_pattern_3', 'btn_light_set_2_pattern_4']
             for idx in range(1, 5):
-                if fg.config['light_patterns']['active_p'+str(idx)] == 1:
+                if fg.config['light_patterns']['active_p' + str(idx)] == 1:
                     active_pattern = str(idx)
                     break
             logger.debug(
@@ -507,15 +507,15 @@ def experiment_duration_format(value, direction):
     # format time values -> biggest: d
     if direction == 'forward':
         result = [0, 0, 0, 0]
-        result[0] = int(value/86400)
-        producth = result[0]*86400
-        result[1] = int((value-producth)/3600)
-        producth += result[1]*3600
-        result[2] = int((value-producth)/60)
+        result[0] = int(value / 86400)
+        producth = result[0] * 86400
+        result[1] = int((value - producth) / 3600)
+        producth += result[1] * 3600
+        result[2] = int((value - producth) / 60)
         producth += result[2] * 60
         result[3] = value - producth
     else:
-        result = sum(a*b for a, b in zip(value, [86400, 3600, 60, 1]))
+        result = sum(a * b for a, b in zip(value, [86400, 3600, 60, 1]))
     return result
 
 
@@ -544,7 +544,7 @@ def imaging_set_time(self, instance, value):
 
 def imaging_set_time_chkbound_and_update(p_op, value):
     if value[1] > 0 or (p_op + value[1] * [86400, 3600, 60, 1][value[0]] >= 0):
-        p_op += value[1]*[86400, 3600, 60, 1][value[0]]
+        p_op += value[1] * [86400, 3600, 60, 1][value[0]]
 
     return p_op
 
@@ -610,9 +610,7 @@ def run_measurement(self, instance):
         fg.ledarr.send("CLEAR")
         time.sleep(0.04)
         fg.ledarr.send("FLYBY", 1)
-    # set status of autofocus to False
-    #fg.config['experiment']['is_autofocus_request'] = False
-    #fg.config['experiment']['is_autofocus_busy'] = False
+
     if instance.uid == self.ids['btn_snap'].uid:
         select_method(self, instance, "take_image")
         activate(instance)
@@ -632,13 +630,14 @@ def run_measurement(self, instance):
 
         # let the device settle for a bit
         time.sleep(0.2)
-        # schedule callback-function
 
-        # if imaging_callback(self, instance):
+        # schedule callback-function
         if 'meas' in fg.EVENT:
             pass
             event_delete(fg.EVENT['meas'])
             event_delete(fg.EVENT['meas_disp'])
+            if 'autofocus' in fg.EVENT:
+                event_delete(fg.EVENT['autofocus_measure'])
         else:
             # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
             update_interval = 1  # for timer display refresh
@@ -646,12 +645,10 @@ def run_measurement(self, instance):
                 imaging_callback, self, instance), fg.config['experiment']['interval'])  # in seconds
             fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(
                 update_measurement_status_display_timer, self, update_interval), update_interval)  # in seconds
-            # if 'autofocus' in fg.EVENT:
-            #    logger.debug("autofocus_measure angelegt mit time {}".format(fg.config['autofocus']['time_interval_min']*60))
-            #    fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(run_autofocus,instance),fg.config['autofocus']['time_interval_min']*60) # in seconds
-            # if 'autofocus' in fg.EVENT:
-            #   fg.EVENT['autofocus_measure'].cancel()
-            #    Clock.unschedule(fg.EVENT['autofocus_measure'])
+            if 'autofocus' in fg.EVENT:
+                logger.debug("Scheduled Autofocus with repitition every {}m.".format(fg.config['autofocus']['time_interval_min']))
+                fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(autofocus, instance), fg.config['autofocus']['time_interval_min'] * 60)  # in seconds
+
             #logger.debug("not implemented yet")
 
 
@@ -697,10 +694,13 @@ def update_measurement_status_display(self):
 
 
 def update_measurement_status_display_timer(self, interval, *rargs):
-    if not fg.config['experiment']['is_autofocus_busy']:
+    '''
+    Updates the display during measurements, but is on hold during 
+    '''
+    if not fg.config['experiment']['autofocus_busy']:
         fg.config['experiment']['time_left'] -= interval
         fg.config['experiment']['time_passed'] += interval
-    update_measurement_status_display(self)
+        update_measurement_status_display(self)
 
 
 def abort_measurement(self, instance):
@@ -764,7 +764,7 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
         filename=filename, imaging_cause=imaging_cause, file_format='.jpg')
     # start
     logger.debug(
-        "This is _take_image_now_-Func saving to: {}".format(filename))
+        "Taking image and store to: {}".format(filename))
     if fg.my_dev_flag:
         logger.debug("Image taken -- DEV-MODE --.")
     else:
@@ -796,16 +796,23 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
 
 def take_image_callback(self, *args):
     '''
-    Callback function to make sure GUI stays responsive while image is taken. Event is only called once and hence will delete itself.
+    Callback function to make sure GUI stays responsive while image is taken. Event is only called once and hence will delete itself. If autofocus is running: schedules image-callback after autofocus routine. 
+    Note: Autofocus stops all measurement-counting times. Hence: maybe a first call has to be blocked, but no list will be kept. 
     '''
-    fg.EVENT['take_image_callback'] = Clock.schedule_once(
-        partial(take_image, self), 0.01)
+    # autofocus active?
+    if fg.config['experiment']['autofocus_busy']:
+        # fg.config['experiment']['']
+        logger.warn('Tried take_image_callback() during autofocus-routine. How did I get here?')
+    else:
+        fg.EVENT['take_image_callback'] = Clock.schedule_once(
+            partial(take_image, self), 0.01)
     return True
 
 
 def take_image(self, *args):
     '''
-    Method that switches through different imaging modalities. Does hold the respective algorithms.
+    Method that switches through different imaging modalities. 
+    Does hold the respective algorithms.
     '''
     logger.debug("Active method = " + "with mode= " +
                  fg.config['experiment']['imaging_cause'])
@@ -833,7 +840,7 @@ def take_image(self, *args):
             # active method
             active_method = fg.config['experiment']['active_methods'][myl]
             logger.debug("Using method {} of {}: {}.".format(
-                myl, len(fg.config['experiment']['active_methods'])-1, active_method))
+                myl, len(fg.config['experiment']['active_methods']) - 1, active_method))
             image_name = set_image_name(
                 im_cause=fg.config['experiment']['imaging_cause'], method=active_method)
             file_name_write = uni.Path(fg.expt_path, image_name)
@@ -1067,19 +1074,19 @@ def imaging_callback(self, instance, *largs):
         '\nThis is the imaging callback speaking !\n<> Images are now taken!')
 
     # skip imaging step during autofocus
-    if not fg.config['experiment']['is_autofocus_busy']:
+    if not fg.config['experiment']['autofocus_busy']:
         # take image
         fg.config['experiment']['imaging_method'] = 'MEAS'
         take_image_callback(self)
         deact_me = False
-        if (fg.config['experiment']['time_left']-fg.config['experiment']['interval']) >= 0:
+        if (fg.config['experiment']['time_left'] - fg.config['experiment']['interval']) >= 0:
             # update config entries
             update_measurement_parameters(self)
 
             # update display entries
             update_measurement_status_display(self)
             return True
-        elif any([fg.config['experiment']['time_left'] == 0, fg.config['experiment']['time_left']-fg.config['experiment']['interval'] < 0]):
+        elif any([fg.config['experiment']['time_left'] == 0, fg.config['experiment']['time_left'] - fg.config['experiment']['interval'] < 0]):
             update_measurement_parameters(self)
             update_measurement_status_display(self)
             deact_me = True
@@ -1100,9 +1107,9 @@ def imaging_callback(self, instance, *largs):
                 event_delete(keys[1])
             return False
 
-
 # ----------------------------------------------------------------
 #                      Tomographic-Functions
+
 
 def tomography_settings(self, instance):
 
@@ -1139,15 +1146,12 @@ def tomography_btn_logic(self, instance):
 
 def autofocus(self, instance):
     '''
-    Autofocus to be called from main-routine on button click.
-    :param self:
-    :param instance:
-    :return:
+    Intermediary between GUI and scheduled calls. 
     '''
     set_autofocus(self, instance)
     change_activation_status(instance)
     key = 'autofocus_now' if (
-        instance.uid == self.ids['btn_autofocus_now'].uid) else 'autofocus'
+        instance.uid == self.ids['autofocus_now'].uid) else 'autofocus'
     if not key in fg.EVENT:
         run_autofocus(self, instance, key)
     else:
@@ -1161,37 +1165,35 @@ def set_autofocus(self, instance):
     :param instance:
     :return:
     '''
-    logger.debug("Autofocus-00a2- DevFlag={}".format(fg.my_dev_flag))
+    #logger.debug("Autofocus-00a2- DevFlag={}".format(fg.my_dev_flag))
     # if not (fg.my_dev_flag):
     if check_active(instance):
-        logger.debug("Autofocus-00a2- now deactivating autofocus")
         fg.config['experiment']['is_autofocus'] = False
         if instance.uid == self.ids['btn_autofocus'].uid:
             refresh_text_entry(instance, "Autofocus disabled!")
-        logger.debug("Autofocus-00a4- Autofocus disabled")
+        logger.debug("Deactivated autofocus.")
     else:
-        logger.debug("Autofocus-00a2- now setting autofocus")
         fg.config['experiment']['is_autofocus'] = True
         if instance.uid == self.ids['btn_autofocus'].uid:
             refresh_text_entry(instance, "Autofocus enabled!")
-        logger.debug("Autofocus-00a4- Autofocus enabled")
+        logger.debug("Autofocus activated.")
 
 
 def run_autofocus(self, instance, key):
     '''
-    Always runs autofocus only once!
+    Always runs autofocus only once (and hence can be scheduled via callback).
     '''
     if key == 'autofocus_now':
-        if not fg.config['experiment']['is_autofocus_busy']:
+        if not fg.config['experiment']['autofocus_busy']:
             fg.EVENT['autofocus_now'] = Clock.schedule_once(
-                partial(af.autofocus_callback, self, instance), 1)  # start direct after 1 sec
+                partial(af.autofocus_callback, self, instance), 0.1)  # start direct after 0.1 sec
         else:  # auto-deactivate autofocus
             set_autofocus(self, instance)
             change_activation_status(instance)
     else:
         fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(
-            af.autofocus_callback, self, instance), fg.config['autofocus']['interval_min']*60)
-        logger.debug('Autofocus-01-Added Autofocus routine to callback.')
+            af.autofocus_callback, self, instance), fg.config['autofocus']['interval_min'] * 60)
+        logger.debug('Added Autofocus routine to callback.')
 
 
 def autofocus_callback(self, instance, *rargs):
@@ -1338,7 +1340,7 @@ def light_settings_activate(self, instance):
                         self.ids['btn_light_set_2_pattern_3'], self.ids['btn_light_set_2_pattern_4']]
         idx = sum(map(lambda x, y: int(x) * y,
                       [check_active(x) for x in pattern_list], [1, 2, 3, 4]))
-        key_name = ['light_patterns', 'p'+str(idx)]
+        key_name = ['light_patterns', 'p' + str(idx)]
         pattern = key_name[1]
         if idx == 0:
             send_allowed = False
@@ -1367,7 +1369,7 @@ def light_settings_activate(self, instance):
 
 
 def convert_color(in_color, in_opacity):
-    return [in_color[0]/255.0, in_color[0]/255.0, in_color[0]/255.0, in_opacity]
+    return [in_color[0] / 255.0, in_color[0] / 255.0, in_color[0] / 255.0, in_opacity]
 
 
 def matrix_switch(self, instance):
@@ -1428,11 +1430,11 @@ def light_set_patterns(self, instance):
     elif instance.uid == self.ids['btn_light_set_2_pattern_off'].uid:
         sum_active_patterns = 0
         for myc in range(1, 5):
-            sum_active_patterns += fg.config['light_patterns']['active_p'+str(
+            sum_active_patterns += fg.config['light_patterns']['active_p' + str(
                 myc)]
-        idx = sum(map(lambda x, y: x*y, [check_active(x)
-                                         for x in pattern_list], [1, 2, 3, 4]))
-        active_el = 'active_p'+str(idx)
+        idx = sum(map(lambda x, y: x * y, [check_active(x)
+                                           for x in pattern_list], [1, 2, 3, 4]))
+        active_el = 'active_p' + str(idx)
         if fg.config['light_patterns'][active_el] == 1 and sum_active_patterns > 1:
             fg.config['light_patterns'][active_el] = 0
             self.ids['btn_light_set_2_pattern_off'].text = 'OFF'
@@ -1473,7 +1475,7 @@ def pattern_disp_func(self, pattern_list, imaging=False, file_name_write='', tim
         file_name_write_dpc = file_name_write + '_MYPAT_P' + mypat
         # if not fg.my_dev_flag:
         fluidiscopeIO.update_matrix(
-            self, ignore_NA=True, sync_only=False, pattern='p'+mypat)
+            self, ignore_NA=True, sync_only=False, pattern='p' + mypat)
         time.sleep(time_sleep)  # waiting for the light to be active
         take_image_now(file_name_write_dpc,
                        imaging_cause=fg.config['experiment']['imaging_cause'], filename=file_name_write_dpc)
@@ -1519,6 +1521,9 @@ def motor_steps_settings(self, instance):
 
 
 def move_motor(self, instance, motor_sel, motor_stepsize=None):
+    '''
+    Security check, GUI and config updates while actually invoking the motor-movement.
+    '''
     # prepare selection of right motor
     testdict = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}
     cmd = testdict[motor_sel]
@@ -1527,15 +1532,17 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
         stepsize_app = '_xy'
     else:
         stepsize_app = '_z'
+
     # convert motor-stepsize given the CONFIG-Factor
     if motor_stepsize == None:
-        stepsize = floor(fg.config['motor']['stepsize'+stepsize_app] /
-                         fg.config['motor']['conversion_factor'+stepsize_app])
+        stepsize = floor(fg.config['motor']['stepsize' + stepsize_app] /
+                         fg.config['motor']['conversion_factor' + stepsize_app])
     else:
         stepsize = floor(motor_stepsize /
-                         fg.config['motor']['conversion_factor'+stepsize_app])
+                         fg.config['motor']['conversion_factor' + stepsize_app])
     if instance.text == '<<':
         stepsize *= -1
+
     # actually move motor
     if motor_sel == 2:
         if stepsize < 0:
@@ -1547,18 +1554,27 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
                 limit_reached == True
                 self.ids['lbl_warning'].text = 'Z-limit reached at position:' + str(
                     fg.config['motor']['calibration_z_pos']) + 'from max=' + str(fg.config['motor']['calibration_z_max'])
+
     # manage progress-bar
     if not limit_reached:
+
+        # send per I2C (wired) or MQTT (wifi)
         if fg.i2c:
             fg.motors.send(cmd, stepsize)
         else:
             fg.motors[motor_sel].send(cmd, stepsize)
+
+        # manage progress_bar + actual motor-position on config
         refresh_progress_bar = 0.2
         fg.config['motor']['calibration_z_pos'] += stepsize
+
+        # invert direction if going down
         if instance.text == '<<':
             stepsize *= -1
-        move_motor_display(
-            self, instance, fg.config['motor']['active_motor'], stepsize, refresh_progress_bar)
+
+        # update display
+        if not instance is None:
+            move_motor_display(self, instance, fg.config['motor']['active_motor'], stepsize, refresh_progress_bar)
 
 
 def move_motor_display(self, instance, active_motor, stepsize, refresh_progress_bar, *rargs):

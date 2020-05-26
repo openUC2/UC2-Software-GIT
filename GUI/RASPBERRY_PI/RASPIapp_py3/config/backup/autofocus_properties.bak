@@ -6,6 +6,7 @@ iteration_max: 3
 maxmin: 0.05
 roi: [1,1]
 run_only_once: true
+scan_method: sequence
 step_dist_coarse: 200
 step_dist_fine: 50
 steps_coarse: 2

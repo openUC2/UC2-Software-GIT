@@ -4,8 +4,11 @@ duration_max: 10
 interval_min: 100
 iteration_max: 3
 maxmin: 0.05
+max_iterations: 10
+resolution: [640,480]
 roi: [1,1]
 run_only_once: true
+scan_method: 0
 step_dist_coarse: 200
 step_dist_fine: 50
 steps_coarse: 2
