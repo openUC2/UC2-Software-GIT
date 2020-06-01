@@ -56,11 +56,74 @@ def autofocus_callback(self, instance, *rargs):
         fg.config['experiment']['is_autofocus_busy'] = False
 #
 #
+# %%
+# ----------------------------------- #
+# @            Parameters           @ #
+# ----------------------------------- #
 
-        # %%
-        # ----------------------------------- #
-        # @       algorithm toolbox          @ #
-        # ----------------------------------- #
+def get_camstats(camera,printme=False):
+    '''
+    Retrieves all available camera-properties and stores them into a dictionary.
+
+    :PARAMS:
+    ========
+    :camera:    pointing to PiCamera() instance
+    :printme:   Whether the dict should be printed nicely
+
+    :OUTPUTS:
+    =========
+    :camProp:   (DICT) with available camera properties
+
+    '''
+    # retrieve all existing get_functions
+    all_getter =  [s for s in dir(camera) if "_get_" in s]
+    camProp = {}
+    for m in all_getter:
+        try: 
+            camProp[m[5:]] = eval('camera.' + m + '()')
+        except:
+            pass
+
+    if printme:
+        print("\nlen(all_getter)={}\nlen(camProp)={}\n".format(len(all_getter),len(camProp)))
+        for m in camProp:
+            print(m + " = \t\t{}".format(camProp[m]))
+
+    return camProp
+
+def get_camstatsSorted(camStats, sel=None, just_subset=False, printme=False):
+    '''
+    Sorts resulting measurements so it can be used as a table.
+    if just_subset==True, returns a list, else a dictionary.
+
+    Example: 
+    sel=['awb_gains','iso','shutter_speed','analog_gain']
+    get_camstatsSorted(camStats,sel)
+
+    '''
+    if just_subset and sel is not None:
+        camStats_sorted = [[[s,a[s]] for s in a if s in sel] for a in camStats]
+    else: 
+    
+        # fill selection to all entries if not chosen
+        sel = [m for m in camStats[0]] if sel is None else sel
+        camStats_sorted = {}
+
+        # traverse time-points and collect datasets
+        for m in sel:
+            camStats_sorted[m] = [a[m] for a in camStats]
+    
+        # print formatted
+        if printme:
+            for m in camStats_sorted:
+                print(m+"=\t {}".format(camStats_sorted[m]))
+
+    return camStats_sorted
+
+# %%
+# ----------------------------------- #
+# @           algorithms            @ #
+# ----------------------------------- #
 
 
 def autofocus_routine(self):
@@ -85,15 +148,13 @@ def autofocus_routine(self):
     smethod = fg.config['autofocus']['technique']
     max_steps = fg.config['autofocus']['max_steps']
 
-    # start video-stream of camera (to avoid re-init and long capture times)
-    while True:
-        # implement here
-        break
-
     # init camera and allow for warmup
-    camera = autofocus_setupCamera()
+    camStats.append(get_camstats(fg.camera,printme=False))
     rawCapture = PiRGBArray(camera, fg.config['autofocus']['resolution'])
     time.sleep(0.1)
+
+    # take images with camera and adjust brightness values etc if not given globally
+    cameraParam = autofocus_getParam(rawCapture)
 
     # Coarse scan -> get coarse-sharpness measures + new position of motor
     sharpness_coarse, pos_coarse = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, scan_range=scan_range_coarse, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps)

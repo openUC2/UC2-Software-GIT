@@ -4,7 +4,7 @@ duration_max: 10
 interval_min: 100
 iteration_max: 3
 maxmin: 0.05
-max_iterations: 10
+max_steps: 100
 resolution: [640,480]
 roi: [1,1]
 run_only_once: true
