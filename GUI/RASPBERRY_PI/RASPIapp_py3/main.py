@@ -88,7 +88,6 @@ class Fluidiscope(BoxLayout):
 
     # change autofocus to true/false
     def btn_function_autofocus(self, instance):
-        logger.debug("Autofocus-00a1- autofocus-btn clicked.")
         toolbox.autofocus(self, instance)
 
     def select_imaging_method(self, instance):

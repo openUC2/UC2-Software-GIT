@@ -1,5 +1,6 @@
 import errno
 import fluidiscopeGlobVar as fg
+from fluidiscopeLogging import logger_createChild
 import logging
 import paho.mqtt.client as mqtt
 import os
@@ -24,13 +25,14 @@ class MQTTDevice(object):
     topic_announce = "ANNO"
 
     # add logger
-    logger = logging.getLogger('UC2_mqtt')
+    logger = ''
 
     def __init__(self, setup, device):
         self.setup = setup
         self.device = device
         self.topic_base = "/" + self.setup + "/" + self.device + "/"
         self.mqtt_subscribe()
+        self.logger = logger_createChild(self.topic_base,'UC2')
 
     def mqtt_subscribe(self, *args):
         fg.mqttclient.subscribe(self.topic_base + self.topic_announce)
@@ -48,8 +50,7 @@ class MQTTDevice(object):
     def extractCommand(self, args):
         cmd = ""
         delim = MQTTDevice.delim_inst  # so that it is not different per instances
-        self.logger.debug(
-            "MQTTclient_extractCommand -> starting for: {}".format(args))
+        #self.logger.debug("MQTTclient_extractCommand -> starting for: {}".format(args))
         for i, arg in enumerate(args):
             if type(arg) == list:
                 sep = [str(x) for x in arg]

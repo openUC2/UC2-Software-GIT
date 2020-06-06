@@ -130,13 +130,16 @@ def verify_user_config(userload, defaultdict):
 
 def write_config():
     main_load = fluid_load(fg.config_file)
+    trackme = ''
     try:
         for sub in main_load:
+            trackme = sub
             sub_file = uni.Path(fg.config_path, main_load[sub])
             fluid_dump(sub_file, fg.config[sub])
     except Exception as exc:
         logger.error(exc)
-        exit()
+        logger.warning('Please consider Leaving the Application. Error happened when writing into: {}.'.format(trackme))
+        # exit()
     logger.debug("Config written.")
 
 
@@ -314,6 +317,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
                         self.ids[prop_help].fl_value = fg.config[pattern_key[0]
                                                                  ][pattern_key[1]][row][col]
                         toolbox.activate(self.ids[prop_help])
+                        #logger.debug("Turn-on light of {} at Pos {} with val {}."format(,[row,col],self.ids[prop_help].fl_value))
                     else:
                         self.ids[prop_help].value = 0
                         self.ids[prop_help].fl_value = [0, 0, 0]

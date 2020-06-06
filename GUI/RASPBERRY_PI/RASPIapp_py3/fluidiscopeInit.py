@@ -67,13 +67,15 @@ def arduino_init():
 
 def mqtt_init():
     # connect to server
-    import random
+    from random import randint
     setup_name = "S" + fg.setup_number
-    device_ID = "RASPI_" + str(random.randint(0, 100000))
-    device_MQTT_name = "RAS01"
-    mqtt_connect_to_server(broker="0.0.0.0", mqttclient_name="raspi1", mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
+    device_ID = fg.config['comcat']['mqtt_device_id_prefix'] + str(randint(0, 100000))
+    device_MQTT_name = fg.config['comcat']['mqtt_device_name']
+    mqtt_connect_to_server(broker=fg.config['comcat']['mqtt_ip'], mqttclient_name=fg.config['comcat']['mqtt_client_name'], mqttclient_pass=fg.config['comcat']['mqtt_client_pass'], mqttclient_ID=device_ID, port=fg.config['comcat']['mqtt_port'], keepalive=fg.config['comcat']['mqtt_keepalive'], use_login=fg.config['comcat']['mqtt_use_login'])
+
     # register Raspberry
     fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
+
     # instanciate devices
     fg.ledarr = MQTTDevice(setup_name,  "LAR01")
     fg.motors = [MQTTDevice(setup_name, "MOT02"), MQTTDevice(
@@ -81,24 +83,28 @@ def mqtt_init():
     fg.fluo = MQTTDevice(setup_name, "MOT01")
 
 
-def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_ID, port=1883, keepalive=60):
+def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_ID, port=1883, keepalive=60, use_login=False):
     mqtt.Client.connected_flag = False  # create flag in class
     mqtt.Client.bad_connection_flag = False  # new flag
     mqtt.Client.disconnect_flag = False
     mqtt.Client.turnoff_flag = False
+
     # define broker
     fg.mqttclient = mqtt.Client(mqttclient_ID)  # creates a new client
-    fg.mqttclient.username_pw_set(mqttclient_name, mqttclient_pass)
+    if use_login:
+        fg.mqttclient.username_pw_set(mqttclient_name, mqttclient_pass)
+
     # attach functions to client
     fg.mqttclient.on_connect = on_connect
     fg.mqttclient.on_message = on_message
     fg.mqttclient.on_disconnect = on_disconnect
+
     # start loop to process received messages
     fg.mqttclient.loop_start()
     try:
-        logger.info("MQTTClient: connecting to broker ", broker)
+        logger.info("MQTTClient: connecting to broker ".format(broker))
         #print("MQTTClient: connecting to broker ", broker)
-        fg.mqttclient.connect(broker, port, keepalive)
+        fg.mqttclient.connect(host=broker, port=port, keepalive=keepalive)
         while not fg.mqttclient.connected_flag and not fg.mqttclient.bad_connection_flag:
             logger.info("MQTTClient: Waiting for established connection.")
             #print("MQTTClient: Waiting for established connection.")
@@ -124,13 +130,12 @@ def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_
 def on_connect(client, userdata, flags, rc):
     if rc == 0:  # connection established
         client.connected_flag = True
-        logger.info("Connected with result code = {0}".format(rc))
+        logger.info("Connected with result code = {}".format(rc))
         #print("Connected with result code = {0}".format(rc))
     else:
         logger.warning("Connection error")
         #print("Connection error")
         client.bad_connection_flag = True
-
 
 def on_message(client, userdata, message):
     #print("on message")

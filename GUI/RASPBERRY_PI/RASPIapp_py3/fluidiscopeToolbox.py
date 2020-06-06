@@ -33,13 +33,9 @@ import shutil
 if os.name == 'nt':
     pass
 else:
-    #import usb
-    #import cv2 as cv
     from PIL import Image
     import picamera
-#from kivy.uix.listview import ListView
-#from kivy.uix.listview import ListItemButton
-#from kivy.adapters.listadapter import ListAdapter
+
 
 if not (fg.my_dev_flag):
     if fg.i2c:
@@ -636,22 +632,15 @@ def run_measurement(self, instance):
         time.sleep(0.2)
 
         # schedule callback-function
-        if 'meas' in fg.EVENT:
-            pass
-            event_delete(fg.EVENT['meas'])
-            event_delete(fg.EVENT['meas_disp'])
-            if 'autofocus' in fg.EVENT:
-                event_delete(fg.EVENT['autofocus_measure'])
-        else:
-            # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
-            update_interval = 1  # for timer display refresh
-            fg.EVENT['meas'] = Clock.schedule_interval(partial(
-                imaging_callback, self, instance), fg.config['experiment']['interval'])  # in seconds
-            fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(
-                update_measurement_status_display_timer, self, update_interval), update_interval)  # in seconds
-            if 'autofocus' in fg.EVENT:
-                logger.debug("Scheduled Autofocus with repitition every {}m.".format(fg.config['autofocus']['time_interval_min']))
-                fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(autofocus, instance), fg.config['autofocus']['time_interval_min'] * 60)  # in seconds
+        # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
+        update_interval = 1  # for timer display refresh
+        fg.EVENT['meas'] = Clock.schedule_interval(partial(
+            imaging_callback, self, instance), fg.config['experiment']['interval'])  # in seconds
+        fg.EVENT['meas_disp'] = Clock.schedule_interval(partial(
+            update_measurement_status_display_timer, self, update_interval), update_interval)  # in seconds
+        if 'autofocus' in fg.EVENT:
+            logger.debug("Scheduled Autofocus with repitition every {}m.".format(fg.config['autofocus']['time_interval_min']))
+            fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(autofocus, instance), fg.config['autofocus']['time_interval_min'] * 60)  # in seconds
 
             #logger.debug("not implemented yet")
 
@@ -724,17 +713,27 @@ def abort_measurement(self, instance):
     if not instance.uid == self.ids['btn_snap'].uid:
         event_delete('meas')
         event_delete('meas_disp')
+        af.autofocus_afterclean(self, instance,'cam_fluo')
+        af.autofocus_afterclean(self, instance,'cam')
+        if 'autofocus_measure' in fg.EVENT:
+            event_delete('autofocus_measure')
+            af.autofocus_afterclean(self, instance,'cam_af')
 
         fg.config['experiment']['last_expt_num'] = fg.expt_num
         show_notification_labels(self, instance)
+            
 
 
 def event_delete(event_name):
-    fg.EVENT[event_name].cancel()
-    Clock.unschedule(fg.EVENT[event_name])
-    fg.EVENT.pop(event_name, None)
-    logger.debug(
-        "Event: ~{0}~ was canceled and safely deleted.".format(event_name))
+    try:
+        fg.EVENT[event_name].cancel()
+        Clock.unschedule(fg.EVENT[event_name])
+        fg.EVENT.pop(event_name, None)
+        logger.debug(
+            "Event: ~{0}~ was canceled and safely deleted.".format(event_name))
+    except:
+        logger.debug(
+            "Event: ~{}~ was not found (anymore) and hence nothing was don.".format(event_name))
 
 # not used anymore?? ---------------------------------------
 # def take_snapshot(self, instance):
@@ -998,58 +997,15 @@ def resizeImage(infile, resize_factor=5):  # used to show image in preview
 
 def camera_set_parameter(method='CUS'):
     if not fg.my_dev_flag:
-        logger.debug("Autofocus is set to False!")
-
         if method in ['CUS', 'qDPC', 'Bright', 'BG', 'FG']:
-            method_key = 'cam'
-            fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
-            #fg.camera.contrast = fg.config[method_key]['contrast']
-            #fg.camera.sharpness = fg.config[method_key]['sharpness']
-            #fg.camera.brightness = fg.config[method_key]['brightness']
-            #fg.camera.saturation = fg.config[method_key]['saturation']
-            #fg.camera.ISO = fg.config[method_key]['iso']
-            #fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
-            #fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
-            #fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
-            #fg.camera.meter_mode = fg.config[method_key]['meterMode']
-            #fg.camera.awb_mode = fg.config[method_key]['awbMode']
-            if fg.config[method_key]['awbMode'] == 'off':
-                # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config[method_key]['awbGain']
-                fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128))
-            #fg.camera.image_effect = fg.config[method_key]['imageEffects']
-            #fg.camera.color_effects = fg.config[method_key]['colorEffects']
-            #fg.camera.rotation = fg.config[method_key]['rotation']
-            #fg.camera.hflip = fg.config[method_key]['hflip']
-            #fg.camera.vflip = fg.config[method_key]['vflip']
-            #fg.camera.crop = tuple(fg.config[method_key]['crop'])
-            fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
-            fg.camera.sensor_mode = fg.config[method_key]['sensor_mode']
+            method_key = 'cam' 
         elif method == 'Fluor':
             method_key = 'cam_fluo'
-            fg.camera.resolution = tuple(fg.config[method_key]['resolution'])
-            fg.camera.contrast = fg.config[method_key]['contrast']
-            fg.camera.sharpness = fg.config[method_key]['sharpness']
-            fg.camera.brightness = fg.config[method_key]['brightness']
-            fg.camera.saturation = fg.config[method_key]['saturation']
-            fg.camera.ISO = fg.config[method_key]['iso']
-            fg.camera.video_stabilization = fg.config[method_key]['videoStabilization']
-            fg.camera.exposure_compensation = fg.config[method_key]['exposureCompensation']
-            fg.camera.exposure_mode = fg.config[method_key]['exposureMode']
-            fg.camera.meter_mode = fg.config[method_key]['meterMode']
-            fg.camera.awb_mode = fg.config[method_key]['awbMode']
-            if fg.config[method_key]['awbMode'] == 'off':
-                # (red, blue)  [0..8] TODO: Get values from YAML, Only some randomly chosen values!  fg.config[method_key]['awbGain']
-                fg.camera.awb_gains = (Fraction(200, 128), Fraction(200, 128))
-            fg.camera.image_effect = fg.config[method_key]['imageEffects']
-            fg.camera.color_effects = fg.config[method_key]['colorEffects']
-            fg.camera.rotation = fg.config[method_key]['rotation']
-            fg.camera.hflip = fg.config[method_key]['hflip']
-            fg.camera.vflip = fg.config[method_key]['vflip']
-            fg.camera.crop = tuple(fg.config[method_key]['crop'])
-            fg.camera.shutter_speed = fg.config[method_key]['shutterSpeed']
-        logger.debug("Camera shutter_speed={}, exposure_speed={}, ISO={}, AWB={},AWB_gains={}.".format(
-            fg.camera.shutter_speed, fg.camera.exposure_speed, fg.camera.awb_mode, fg.camera.iso, fg.camera.awb_gains))
-        logger.debug("Camera preparation done for method={}.".format(method))
+
+        # setup cam with proper parameters to keep constant over imaging process
+        af.autofocus_setupCAM(camStats=[],camdict=method_key,rawCapture=None)
+        
+    # done?        
     return True
 
 
@@ -1189,7 +1145,9 @@ def run_autofocus(self, instance, key):
     if key == 'autofocus_now':
         if not fg.config['experiment']['autofocus_busy']:
             fg.EVENT['autofocus_now'] = Clock.schedule_once(
-                partial(af.autofocus_callback, self, instance), 0.1)  # start direct after 0.1 sec
+                partial(af.autofocus_callback, self, instance), 0.1)
+            fg.EVENT['autofocus_clean'] = Clock.schedule_once(
+                partial(af.autofocus_afterclean, self, instance), 0.2) 
         else:  # auto-deactivate autofocus
             set_autofocus(self, instance)
             change_activation_status(instance)
@@ -1201,9 +1159,8 @@ def run_autofocus(self, instance, key):
 
 def autofocus_callback(self, instance, *rargs):
     # start autofocus if necessary and only if it is not already in progress
-    logger.debug("Autofocus-02-callback started.")
     if fg.config['experiment']['is_autofocus_request'] == True:
-        if fg.config['experiment']['is_autofocus_busy'] == False:
+        if fg.config['experiment']['autofocus_busy'] == False:
             # only perform autofocus if it is not already doing so!
             now = time.time()
             # this runs through the algorithm in the autofocus toolbox
@@ -1543,8 +1500,9 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
     else:
         stepsize = floor(motor_stepsize /
                          fg.config['motor']['conversion_factor' + stepsize_app])
-    if instance.text == '<<':
-        stepsize *= -1
+    if instance is not None:
+        if instance.text == '<<':
+            stepsize *= -1
 
     # actually move motor
     if motor_sel == 2:
@@ -1572,11 +1530,12 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
         fg.config['motor']['calibration_z_pos'] += stepsize
 
         # invert direction if going down
-        if instance.text == '<<':
-            stepsize *= -1
+        if instance is not None:
+            if instance.text == '<<':
+                stepsize *= -1
 
-        # update display
-        if not instance is None:
+        # update display -> if AF-thread non-blocking, than IF-condition not necessary anymore
+        if instance is not None:
             move_motor_display(self, instance, fg.config['motor']['active_motor'], stepsize, refresh_progress_bar)
 
 
@@ -1588,7 +1547,7 @@ def move_motor_display(self, instance, active_motor, stepsize, refresh_progress_
         max_time = fg.config['motor']['standard_move_time_z'] * \
             stepsize / fg.config['motor']['standard_move_dist_z']
     upd_val = 100 * refresh_progress_bar / max_time
-    logger.debug(str(upd_val))
+    logger.debug('Update Motor-Display by {}.'.format(upd_val))
     fg.EVENT['pb_motor'] = Clock.schedule_interval(partial(
         move_motor_display_update, self, instance, upd_val), refresh_progress_bar)
 
@@ -1600,7 +1559,8 @@ def move_motor_display_update(self, instance, upd_val, event_obj, *rargs):
     else:
         self.ids['pb_motor_step'].value = 0
         event_delete('pb_motor')
-        select_method(self, instance, "motor_mov_buttons")
+        if instance is not None:
+            select_method(self, instance, "motor_mov_buttons")
 
 
 def btn_motor_refresh_text(self, instance):
@@ -1969,8 +1929,8 @@ def preview_activation(self, instance):
 
 
 def camera_preview(self, start):
-    if not (fg.my_dev_flag):
-        if (start is True):  # and (fg.popup_last_im is False):
+    if not fg.my_dev_flag:
+        if start is True:  # and (fg.popup_last_im is False):
             try:
                 fg.camera.start_preview()
                 fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']

@@ -73,7 +73,7 @@ def logger_create(logname,path_save=None,base_logger='UC2'):
 
     #create stream-handler
     shandler = logging.StreamHandler(sys.stdout)
-    shandler.setLevel(logging.INFO)
+    shandler.setLevel(logging.DEBUG)
     shandler.setFormatter(sformatter)
     shandler.name = logname
     shandler._name = logname

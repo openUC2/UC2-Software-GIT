@@ -8,13 +8,15 @@ import fluidiscopeGlobVar as fg
 import fluidiscopeToolbox as toolbox
 import fluidiscopeIO as fio
 from fluidiscopeLogging import logger_createChild
+import fluidiscopeCalculate as fc
 
 # general imports
 import unipath as uni
 from datetime import datetime
-from os import listdir
+from os import listdir, path
 from glob import glob
-from time import sleep
+from time import sleep, time
+
 import logging
 import tifffile as tif
 # math
@@ -48,9 +50,11 @@ def autofocus_callback(self, instance, *rargs):
         # wait 1s before checking again
         while fg.config['experiment']['imaging_active']:
             sleep(1)
+        logger.debug('Autofocus started.')
         fg.config['experiment']['autofocus_busy'] = True
         autofocus_routine(self)
-        fg.config['experiment']['is_autofocus_busy'] = False
+        fg.config['experiment']['autofocus_busy'] = False
+        logger.debug('Autofocus finished.')
 #
 #
 # %%
@@ -117,58 +121,71 @@ def get_camstatsSorted(camStats, sel=None, just_subset=False, printme=False):
 
     return camStats_sorted
 
-def autofocus_setupCAM(camStats):
+def autofocus_afterclean(self, instance, camdict):
+    '''
+    After ending AF resets global values.
+    '''
+    fg.config[camdict]['camProp_defined'] = False
+
+def autofocus_setupCAM(camStats, camdict,rawCapture=None):
     '''
         Prepares camera. 
         Make sure that Autofocus-config entries are updated before running this. 
         Does not do anything if global camera-properties are already active OR if Autofocus already configured camera.
     '''
     # record existing configuration
-    camStats.append(get_camstats(fg.camera,printme=False))
+    if camStats is None:
+        camStats = []
+    else:
+        camStats.append(get_camstats(fg.camera,printme=False))
 
-    # if parameters not globally fixed AND not yet fixed by Autofocus-routine
-    if not fg.config['autofocus']['use_global_camProp'] and not fg.config['autofocus']['camProp_defined']:
+    # if parameters not globally fixed OR not yet fixed by Autofocus-routine
+    if not fg.config[camdict]['camProp_use_global'] and not fg.config['autofocus']['camProp_defined']:
 
         # set basic modes 
-        fg.camera.image_denoise = fg.config['cam_af']['image_denoise']
-        fg.camera.iso = fg.config['cam_af']['iso']
-        fg.camera.meter_mode = fg.config['cam_af']['meter_mode']   
-        fg.camera.resolution = fg.config['cam_af']['resolution']
+        fg.camera.image_denoise = fg.config[camdict]['image_denoise']
+        fg.camera.iso = fg.config[camdict]['iso']
+        fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
+        fg.camera.resolution = fg.config[camdict]['resolution']
         fg.camera.sensor_mode = fg.config['autofocus']['sensor_mode']
-        fg.camera.video_denoise = fg.config['cam_af']['video_denoise']
-        fg.camera.video_stabilization = fg.config['cam_af']['video_stabilization']     
+        fg.camera.video_denoise = fg.config[camdict]['video_denoise']
+        fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
         
         
         # wait for camera to settle on new setup
         sleep(0.5)
-
+        
         # prepare Buffer
         rawCapture = PiRGBArray(fg.camera, fg.config['autofocus']['resolution'])
-        
+
         # take an image to use auto-functions for parameter estimation
         fg.camera.capture(rawCapture, format="bgr", use_video_port=True, bayer=False)
+        rawCapture.truncate(0)
         camStats.append(get_camstats(fg.camera,printme=False))
 
         # refresh autofocus-dictionary
-        fg.config['cam_af']['analog_gain'] = camStats[-1]['analog_gain']
-        fg.config['cam_af']['awb_gains'] = camStats[-1]['awb_gains']
-        fg.config['cam_af']['digital_gain'] = camStats[-1]['digital_gain']
-        fg.config['cam_af']['framerate'] = camStats[-1]['framerate']
-        fg.config['cam_af']['shutter_speed'] = camStats[-1]['shutter_speed']
+        fg.config[camdict]['analog_gain'] = camStats[-1]['analog_gain']
+        fg.config[camdict]['awb_gains'] = camStats[-1]['awb_gains']
+        fg.config[camdict]['digital_gain'] = camStats[-1]['digital_gain']
+        fg.config[camdict]['framerate'] = camStats[-1]['framerate']
+        fg.config[camdict]['shutter_speed'] = camStats[-1]['shutter_speed']
         
         # overwrite camera parameters AND (therwith) FIX 
-        fg.camera.awb_gains = fg.config['cam_af']['awb_gains'] 
-        fg.camera.awb_mode = fg.config['cam_af']['awb_mode']
-        fg.camera.exposure_compensation = fg.config['cam_af']['exposure_compensation']
-        fg.camera.exposure_mode = fg.config['cam_af']['exposure_mode']
-        fg.camera.framerate = fg.config['cam_af']['framerate']
-        fg.camera.shutter_speed = fg.config['cam_af']['shutter_speed']
+        fg.camera.awb_gains = fg.config[camdict]['awb_gains'] 
+        fg.camera.awb_mode = fg.config[camdict]['awb_mode']
+        fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
+        fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
+        fg.camera.framerate = fg.config[camdict]['framerate']
+        fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
 
         # set True to use setting for future 
-        fg.config['autofocus']['camProp_defined'] = 1
-          
+        fg.config[camdict]['camProp_defined'] = 1
+        logger.debug("Camera preparation done for {}.".format(camdict))
+    
+    if rawCapture is None:
+        rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
 
-    return camStats
+    return camStats, rawCapture
 
 
 
@@ -190,39 +207,39 @@ def autofocus_routine(self, camStats=None):
     sleep(0.2)
 
     # get parameters
-    image_name_template, steps_coarse_dist, steps_coarse_nbr, steps_fine_dist, steps_fine_nbr, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal = autofocus_getParameters()
-
+    image_name_template, steps_coarse_dist, steps_coarse_nbr, scanrange_coarse, steps_fine_dist, steps_fine_nbr, scanrange_fine, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal, channel, use_scipy = autofocus_getParameters(self)
 
     # sanity-check Scanrange
-    scan_range = autofocus_getRange(scanrange, pos_start, pos_min, pos_max)
+    scanrange_coarse = autofocus_getRange(scanrange_coarse, pos_start, pos_min, pos_max)
+    scanrange_fine = autofocus_getRange(scanrange_fine, pos_start, pos_min, pos_max)
 
-    # initialize camera-properties
+    # initialize camera-properties and create Image-Buffer
     camStats = [] if camStats is None else camStats
-    camStats = autofocus_setupCAM(camStats)
+    camStats, rawCapture = autofocus_setupCAM(camStats,camdict='cam_af')
 
     # Coarse scan -> get coarse-sharpness measures + new position of motor
-    sharpness_coarse, poslist, tim, tproc, ttotal = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_coarse_dist, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
+    sharpness_coarse, poslist, pos_coarse, tim, tproc, ttotal, wait_time = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_coarse_dist, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
 
     # Fit Gauss to graph and find new position of highest sharpness
-    coarse_posOptimum, coarse_max, coarse_coeff, coarse_succs = autofocus_findOptimum(s=sharpness_coarse, offset=1, smethod=smethod, NIterTotal=NIterTotal, steps=steps_coarse_nbr , poslist=poslist, save_name=image_name_template, status='coarse', plotme=True, storeme=True)
+    coarse_posOptimum, coarse_coeff, coarse_succs = autofocus_findOptimum(s=sharpness_coarse, offset=1, smethod=smethod, NIterTotal=NIterTotal, steps=steps_coarse_nbr , poslist=poslist, save_name=image_name_template, status='coarse', plotme=True, storeme=True, channel=channel, use_scipy=use_scipy)
     step_2opt_coarse = get_distvec(pos_coarse, coarse_posOptimum)
 
     # move to new center with z motor
-    toolbox.move_motor(None, 2, motor_stepsize=step_2opt_coarse)
+    wait_time, pos_now  = autofocus_move_motor(self,stepsize=step_2opt_coarse,motor=motor,pos_now=pos_coarse,wait_time=wait_time)
     
     if not fg.config['autofocus']['use_coarse_only']:
 
         # fine scan around new position ->
         sharpness_fine, pos_fine = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, scan_range=scan_range_fine, pos_start=pos_optimum_coarse, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, save_im=save_im)
 
-        sharpness, poslist, tim, tproc, ttotal = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
+        sharpness, poslist, pos_fine, tim, tproc, ttotal = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_fine, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
 
         # Fit Gauss to graph and find new position of highest sharpness
-        fine_posOptimum, fine_max, fine_coeff, fine_succs = autofocus_findOptimum(s=sharpness_coarse, offset=1, smethod=smethod, NIterTotal=NIterTotal, steps=steps_coarse_nbr , poslist=poslist, save_name=image_name_template, status='fine', plotme=True, storeme=True)
+        fine_posOptimum, fine_coeff, fine_succs = autofocus_findOptimum(s=sharpness_coarse, offset=1, smethod=smethod, NIterTotal=NIterTotal, steps=steps_coarse_nbr , poslist=poslist, save_name=image_name_template, status='fine', plotme=True, storeme=True, channel=channel, use_scipy=use_scipy)
         step_2opt_fine = get_distvec(pos_fine, pos_optimum_coarse)
 
         # move to new center with z motor AND clear LED-array
-        toolbox.move_motor(None, 2, motor_stepsize=step_2opt_coarse)
+        wait_time, pos_now  = autofocus_move_motor(self,stepsize=step_2opt_fine,motor=motor,pos_now=pos_fine,wait_time=wait_time)
     
     fg.ledarr.send("CLEAR")
 
@@ -238,12 +255,12 @@ def get_distvec(a, b):
 
 
 
-def autofocus_getParameters():
+def autofocus_getParameters(self):
     '''
     Assignes variables to dict-entries for easier readability. 
     '''
     # generate image name
-    image_name_template = autofocus_imagename_gen()
+    image_name_template = autofocus_imagename_gen(self)
 
     # set correct number of iteration
     fg.config['experiment']['autofocus_num'] = 1 if fg.config['experiment']['autofocus_new'] else fg.config['experiment']['autofocus_num'] + 1
@@ -258,13 +275,19 @@ def autofocus_getParameters():
     pos_min = fg.config['motor']['calibration_z_min']
     smethod = fg.config['autofocus']['technique']
     max_steps = fg.config['autofocus']['max_steps'] 
-    fg.config['autofocus']['resolution'] = fg.config['camera']['sensor_mode_size'][fg.config['autofocus']['sensor_mode']]
+    fg.config['autofocus']['resolution'] = fg.config['cam']['sensor_mode_size'][fg.config['autofocus']['sensor_mode']]
     imres = fg.config['autofocus']['resolution']
     motor = fg.config['autofocus']['motor']
     save_im = fg.config['autofocus']['save_images']
     NIterTotal = fg.config['autofocus']['scan_iterations']
+    channel = fg.config['autofocus']['use_channel']
+    use_scipy = fg.config['autofocus']['use_scipy']
 
-    return image_name_template, steps_coarse_dist, steps_coarse_nbr, steps_fine_dist, steps_fine_nbr, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal
+    # calculate
+    scanrange_coarse = steps_coarse_dist * steps_coarse_nbr
+    scanrange_fine = steps_fine_dist * steps_fine_nbr
+
+    return image_name_template, steps_coarse_dist, steps_coarse_nbr, scanrange_coarse, steps_fine_dist, steps_fine_nbr, scanrange_fine, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal, channel, use_scipy
 
 def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max, max_steps, steps_nbr, steps_dist, direction, NIterTotal, motor, status='coarse', save_im=False, save_name=None):
     '''
@@ -281,17 +304,15 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
     m = 0
     scan_range = steps_dist * steps_nbr
     poslist = [pos_start,]
+    pos_now = pos_start
+    upd_val = 100 / ((steps_nbr+1)*NIterTotal)
 
     # prepare containers
     tim = []
     tproc = []
     sharpness = []
-    timstart = time.time()
-    ttotal = time.time()
-
-    #image_ref, imqual_ref = autofocus_take_image(self, image_name_template=names, method=method)  # ==1.
-    upd_val = 100 / ((steps_nbr+1)*NIterTotal)
-
+    timstart = time()
+    ttotal = time()
 
     # faster way to acquire images and especially ensure same illumination properties etc per image as opposed to long-warm ups for single captures
     for n in range(NIterTotal):
@@ -299,25 +320,27 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
 
             # get raw numpy-array of shape [Y,X,Channel]
             image = frame.array
-            tim.append(time.time() - timstart)
+            tim.append(time() - timstart)
+            logger.debug('Calculating image-sharpness with measure={} for image {}/{} in round {}/{} .'.format(smethod,m,steps_nbr,n+1,NIterTotal))
             sharpness, tproc = autofocus_getMeasure(image, sharpness, tproc)
 
             # if save
             if save_im:
-                tif.imwrite(save_name + str(n)+ "_"+str(m) + '.tif', image, photometric='rgb')
-
+                saven = "{}Image_{}-{}of{}.tif".format(save_name,status,str(n),str(m))
+                tif.imwrite(saven, image, photometric='rgb')
+                logger.debug("Store Autofocus-Image {}".format(saven))
             if m==0:
                 # move motor to start
-                step_2_start = get_distvec(pos_start, pos_start + direction* scan_range//2)
-                wait_time = autofocus_move_motor(step_2_start,motor,wait_time=None)
+                step_2_start = get_distvec(pos_start, pos_start - direction* scan_range//2)
+                wait_time, pos_now = autofocus_move_motor(self,stepsize=step_2_start,motor=motor,pos_now=pos_now, wait_time=None)
                 poslist.append(poslist[-1]+step_2_start)
-            else:
+            else: 
                 # move motor 1 step up
-                wait_time = autofocus_move_motor(direction*steps_dist,motor,wait_time=wait_time)
-                poslist.append(poslist[-1]+direction*steps_dist)
+                wait_time, pos_now  = autofocus_move_motor(self,stepsize=direction*steps_dist,motor=motor,pos_now=pos_now,wait_time=wait_time)
+                poslist.append(pos_now)
 
             # clear the stream in preparation for the next frame
-            timstart = time.time()
+            timstart = time()
             rawCapture.truncate(0)
 
             # update display
@@ -331,10 +354,10 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
         # iterate the stack inversely 
         m=1
         direction *= -1
-    ttotal = time.time() - ttotal
+    ttotal = time() - ttotal
 
     # done?
-    return sharpness, poslist, tim, tproc, ttotal
+    return sharpness, poslist, pos_now, tim, tproc, ttotal, wait_time
 
 
 def autofocus_getMeasure(im, sharpness, tproc):
@@ -342,7 +365,7 @@ def autofocus_getMeasure(im, sharpness, tproc):
     Calculates sharpness measure and returns value
     '''
     # calculate sharpness measure
-    tprocstart = time.time()
+    tprocstart = time()
     if fg.config['autofocus']['scan_method'] == 1:
         # (fast) sharpness Filter-based
         pass
@@ -353,10 +376,10 @@ def autofocus_getMeasure(im, sharpness, tproc):
         # simulates sharpness stack and tests performance
         pass
     else:
-        sharpness.append(diff_tenengrad(np.reshape(im, [im.shape[-1], im.shape[-2], im.shape[-3]])))    
-    tproc.append(time.time() - tprocstart)
+        sharpness.append(fc.diff_tenengrad(np.reshape(im, [im.shape[-1], im.shape[-2], im.shape[-3]])))    
+    tproc.append(time() - tprocstart)
 
-    return tproc, sharpness
+    return sharpness, tproc
 
 def autofocus_update_dict(found_focus, method, fine_range, fine_steps, fine_steps_size):
     fg.config['experiment']['autofocus_success'] = found_focus
@@ -378,7 +401,7 @@ def autofocus_update_stacks(imqual_zpos, imqual_stack, imqualh):
     return imqual_zpos, imqual_stack
 '''
 
-def autofocus_move_motor(stepsize,motor,wait_time=None):
+def autofocus_move_motor(self,stepsize,motor,pos_now,wait_time=None):
     '''
     Moves motor accordingly. 
     '''
@@ -390,16 +413,17 @@ def autofocus_move_motor(stepsize,motor,wait_time=None):
     # calculate proper waiting time
     if wait_time is None: 
         wait_time = fg.config['motor']['standard_move_time_'+letter[motor]] * \
-            stepsize / fg.config['motor']['standard_move_dist_'+letter[motor]]
+            abs(stepsize) / fg.config['motor']['standard_move_dist_'+letter[motor]]
 
     # move and update config
-    toolbox.move_motor(None, motor, motor_stepsize=stepsize)
+    toolbox.move_motor(self=self, instance=None, motor_sel=motor, motor_stepsize=stepsize)
     fg.config['motor']['calibration_'+letter[motor]+'_pos'] += stepsize
-    
+    pos_now +=stepsize
+
     # wait for movement to finish
     sleep(wait_time)
 
-    return wait_time
+    return wait_time, pos_now
 
 
 def autofocus_display_update(self, upd_val, myd, fine_steps, myc, iter_max, *largs):
@@ -454,23 +478,26 @@ def autofocus_getSteps(scan_range, steps, step_method=0):
     return scan_steps
 
 
-def autofocus_plotOptSearch(x,y,yfit,xrss,yfit_rss,smethod,name_im,nbr_dir,nbr_iter):
+def autofocus_plotOptSearch(x,y,yfit,xrss,yfit_rss,smethod,name_im,nbr_dir,nbr_iter,status):
     '''
     Plots fit for optimum search. 
     
     '''
+    import matplotlib.pyplot as plt
     fig1 = plt.figure()
     plt.plot(x, y, label='Meas.Data')
     plt.plot(x, yfit, label='Gauss-Fit.')
     plt.plot(xrss, yfit_rss, label='supersampled Gauss-Fit.')
-    plt.xlabel('Absolut Motor Position in [{0}]'.format(xunit))
+    plt.xlabel('Absolut Motor Position')
     plt.ylabel('Sharpness Value normed StartingPos in [a.U.]')
-    plt.title('Autofocus-Results using\nmetric={0} at step={1}/{2}'.format(smethod, myc, max_iter))
+    plt.title('Autofocus-Results using\nmetric={} at step={}/{}'.format(smethod, nbr_dir, nbr_iter))
     plt.legend()
-    plt.savefig(name_im+'_{}of{}.png'.format(nbr_dir,nbr_iter),dpi=300)
+    saven = "{}SharpnessFIT_{}_dir{}_iter{}.tif".format(name_im,status,str(nbr_dir),str(nbr_iter))
+    plt.savefig(saven,dpi=300)
+    logger.debug("Store Autofocus-Sharpness-Fit to {}".format(saven))
 
 
-def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_name, status='coarse', plotme=True, storeme=True, ): 
+def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_name, status='coarse', plotme=True, storeme=True, channel=1, use_scipy=False): 
     '''
     Calculates optimum position given input parameters.
     Structure of s=Sharpness_list: 
@@ -482,16 +509,18 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
     xlabel = 'motor-Pos'
     ylabel = 'sharpness'
 
-    for m in NIterTotal:
-        ttotal = time.time()
-        y = s[offset+m*steps:offset+(m+1)*steps]
+    s1 = np.array(s)[:,channel]
+    res = []
+
+    for m in range(NIterTotal):
+        ttotal = time()
+        y = s1[offset+m*steps:offset+(m+1)*steps]
         x = poslist[offset+m*steps:offset+(m+1)*steps]
-        autofocus_curveFit(x,y,)
 
         try:
             p0 = [1., 0., 1.]
             coeff, xr, xn, xrss, yfit, yfit_rss = autofocus_curveFit(
-                x, y, p0, 1)
+                x, y, p0, use_scipy)
             if all(coeff == p0):
                 p0l = [1., 0.]
                 succs = False
@@ -503,9 +532,13 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
             logger.debug(err)
             # try linear fit again
             p0l = [1., 0.]
-            coeff, var_matrixl = curve_fit(
+            if use_scipy:
+                from scipy.optimize import curve_fit
+                coeff, var_matrixl = curve_fit(
                 fitf_lin, x, y, p0=p0l)
             succs = False
+
+        res.append(coeff)
 
          # save out dictionary:
         if storeme:    
@@ -515,23 +548,29 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
                             'iteration_limit': NIterTotal,
                             'steps_nbr': xr[2],
                             'steps_dist': xr[1] - xr[0],
-                            'backlash': fg.config['autofocus_properties']['backlash'],
+                            'backlash': fg.config['autofocus']['backlash'],
                             'im_taken_before': fg.config['experiment']['images_taken'],
-                            'total_time': ttotal - time.time(),
+                            'total_time': ttotal - time(),
                             'A,mu,sigma': coeff,
                             'success': succs,
                             }
-            np.save(save_name + '_{}-{}_of_{}-results.npy'.format(status,m, NIterTotal), autofocus_res)
+            saven = "{}SharpnessFIT_{}_dir{}_of{}.npy".format(save_name,status,str(m),str(NIterTotal))
+            np.save(saven, autofocus_res)
         if plotme:
-            autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name + '_{}_'.format(status),nbr_dir=m,nbr_iter=NIter)
-    # results
-    pos_max = xr[np.argmax(yfit)]
-    max_val = np.max(yfit)
+            autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name,nbr_dir=m,nbr_iter=NIterTotal,status=status)
+    
+    # position of highest contrast -> assure that its INT
+    if fg.config['autofocus']['result_averaging']:
+        pos_max = int(np.mean(np.array(res)[:,1]))
+    else: 
+        pos_max = int(res[1,1])
+    #pos_max = xr[np.argmax(yfit)]
+    #max_val = np.max(yfit)
 
     # done?
-    return pos_max, max_val, coeff, succs
+    return pos_max, coeff, succs
 
-def autofocus_curveFit(x, y, p0, type):
+def autofocus_curveFit(x, y, p0, use_scipy):
     '''
     Actually courve-fitting routine for finding the maximum-position of sharpness-calculations.
     Calculates a normal fitted and a sub-sampled fit.
@@ -554,35 +593,115 @@ def autofocus_curveFit(x, y, p0, type):
     '''
 
     xr = [np.min(x), np.max(x), len(x)]
-    if type == 0:
-        if 0:
-            coeff, var_matrix = curve_fit(
-                fitf_gauss, x, y, p0=p0)  # coeff=[A, mu, sigma]
-        else:
-            coeff = p0
+    if use_scipy:
+        from scipy.optimize import curve_fit
+        coeff, var_matrix = curve_fit(fitf_gauss, x, y, p0=p0)  # coeff=[A, mu, sigma]
         a_fit = fitf_gauss(x, *coeff)  # Get the fitted curve
         xn = np.linspace(xr[0], xr[1], num=xr[2])
         xrss = np.linspace(xr[0], xr[1], num=xr[2] * 4)
         yn = fitf_gauss(xn, *coeff)  # Get the fitted curve
         yrss = fitf_gauss(xrss, *coeff)  # Get the fitted curve
-    elif type == 1:
+    else:
         # using numpy and lstsq
         # coeff, var_matrix = np.linalg.lstsq(fitf_gauss, x, imqual_stack, p0=p0)  # coeff=[A, mu, sigma]
         #a = np.vstack([x, np.ones(len(x))]).T
         a = np.random.randn(100)
-        fitp = np.polyfit(x, fitf_gauss, 2)
+        fitp = np.polyfit(x, y, 2)
         xn = np.linspace(xr[0], xr[1], num=xr[2])
         xrss = np.linspace(xr[0], xr[1], num=xr[2] * 4)
         yn = np.polyval(fitp, xn)
-        yn = np.polyval(fitp, xrss)
+        ynrss = np.polyval(fitp, xrss)
         coeff = [fitp[0], np.argmax(yn), fitp[2]]  # max-pos
-    else:
-        pass
+
     # format for gauss (type=0): A,mu,sigma
     return coeff, xr, xn, xrss, yn, yrss
 
 
+#
+#
+# %%
+# ----------------------------------- #
+# @       function toolbox          @ #
+# ----------------------------------- #
+
+
+def fitf_gauss(x, *parameters):
+    A, mu, sigma = parameters
+    return A * np.exp(-(x - mu)**2 / (2. * sigma**2))
+
+
+def fitf_lin(x, *parameters):
+    m, b = parameters
+    return m * x + b
+
+
+def get_slope(x, y):
+    # determine the slope of the current focus values
+    # x is given by the steps
+    # y is given by the measured contrast
+    # x = np.array([0, 1, , 3])
+    # y = np.array([-1, 0.2, 0.9, 2.1])
+    A = np.vstack([x, np.ones(len(x))]).T
+    m, c = np.linalg.lstsq(A, y)[0]
+    logger.debug(m, c)
+    return m
+
+def gauss_residual(updated_parameter, x, data):
+    resid = fitf_gauss(x, updated_parameter) - data
+    res = np.sum(np.square(resid))
+    return res
+
+
+def read_stack(file_names):
+    rstack = np.array(imo.imread(file_names[0]))[np.newaxis]
+    for myc in range(1, len(file_names)):
+        rstack = np.concatenate(
+            (rstack, np.array(imo.imread(file_names[myc]))[np.newaxis]), axis=0)
+    return rstack
+
+
+def autofocus_imagename_gen(self):
+    '''
+    Creates names for autofocus routine. 
+    '''
+
+    # CLONE from main.py "start_experiment"
+    if not fg.started_first_exp:
+        toolbox.scr_switch(self,self.ids['btn_start_expt'])
+        fio.prepareFolder()
+        fg.config['experiment']['active'] = 0
+
+    # create name
+    prename = 'Autofocus--{}--iter_{}--'.format(
+        datetime.now().strftime("%Y%m%d_%H%M%S"), fg.config['experiment']['autofocus_num'])
+    prename = path.join(fg.expt_path, prename)
+
+    # done?
+    return prename
+
+
+def simulate_data_stack():
+    open_dir = 'C:/Users/rene/Documents/Programming/matlab/Fluidi/swen/data/noise-data-01/'
+    open_file = glob(open_dir + '*.tif')
+    data_stack = read_stack(open_file)
+    imqual_res = [imqual_metric(data_stack[0, :, :], method='Tenengrad')]
+    for myc in range(1, data_stack.shape[0]):
+        imqual_res = np.concatenate((imqual_res, [imqual_metric(
+            data_stack[myc, :, :], method='Tenengrad')]), axis=0)
+    step_sizes = np.arange(41) / 8.0
+    return step_sizes, imqual_res
+
+# %% Deprecated
+
+def notify_deprecation_decorator(func):
+    def func_wrapper(*args,**kwargs):
+        logger.debug('<DEPRECATED> Function: {} called.'.format(func.__name__))    
+        return func(*args,**kwargs)
+    return func_wrapper
+
+@notify_deprecation_decorator
 def find_focus(names, method, imqual_zpos, imqual_stack, myc=0, max_iter=2):
+    
     xunit = 'pix'
     method = 'Tenengrad'
     # test gaussian -> from: https://stackoverflow.com/a/11507723
@@ -638,92 +757,8 @@ def find_focus(names, method, imqual_zpos, imqual_stack, myc=0, max_iter=2):
     np.save('{}-iter_{}-results.npy'.format(myc, names), autofocus_res)
     #d2 = np.load('autofocus_res-20190327_0917.npy')
     return imqual_zpos[np.argmax(imqual_stack)], np.max(imqual_stack), coeff[0], coeff[1], succs
-#
-#
-# %%
-# ----------------------------------- #
-# @       function toolbox          @ #
-# ----------------------------------- #
 
-
-def imqual_metric(image, method='Tenengrad'):
-    if method == 'Tenengrad':
-        offsets = [2, image.shape[0], 2, image.shape[1]]
-        # calculate shifted subsets of images
-        I_xp1_ym1 = image[offsets[0] - 2:offsets[1] - 2, offsets[2]:offsets[3]]
-        I_xp1_y0 = image[offsets[0] - 1:offsets[1] - 1, offsets[2]:offsets[3]]
-        I_xp1_yp1 = image[offsets[0]:offsets[1], offsets[2]:offsets[3]]
-        I_x0_ym1 = image[offsets[0] - 2:offsets[1] -
-                         2, offsets[2] - 1:offsets[3] - 1]
-        I_x0_y0 = image[offsets[0] - 1:offsets[1] -
-                        1, offsets[2] - 1:offsets[3] - 1]
-        I_x0_yp1 = image[offsets[0]:offsets[1], offsets[2] - 1:offsets[3] - 1]
-        I_xm1_ym1 = image[offsets[0] - 2:offsets[1] - 2, offsets[2] - 2:offsets[3] - 2]
-        I_xm1_y0 = image[offsets[0] - 1:offsets[1] -
-                         1, offsets[2] - 2:offsets[3] - 2]
-        I_xm1_yp1 = image[offsets[0]:offsets[1], offsets[2] - 2:offsets[3] - 2]
-        # sobel-filter to implement crossed derivatives
-        Sobel_h = I_xp1_ym1 + 2 * I_xp1_y0 + I_xp1_yp1 - \
-            I_xm1_ym1 - 2 * I_xm1_y0 - I_xm1_yp1
-        Sobel_v = I_xm1_yp1 + 2 * I_x0_yp1 + I_xp1_yp1 - \
-            I_xm1_ym1 - 2 * I_x0_ym1 - I_xp1_ym1
-        # normalize image
-        imqual_result = 1.0 / np.prod(np.shape(I_xp1_ym1)) * \
-            np.sum(np.square(Sobel_h) + np.square(Sobel_v), axis=(0, 1))
-    else:
-        pass
-    return imqual_result
-
-
-def fitf_gauss(x, *parameters):
-    A, mu, sigma = parameters
-    return A * np.exp(-(x - mu)**2 / (2. * sigma**2))
-
-
-def fitf_lin(x, *parameters):
-    m, b = parameters
-    return m * x + b
-
-
-def get_slope(x, y):
-    # determine the slope of the current focus values
-    # x is given by the steps
-    # y is given by the measured contrast
-    # x = np.array([0, 1, , 3])
-    # y = np.array([-1, 0.2, 0.9, 2.1])
-    A = np.vstack([x, np.ones(len(x))]).T
-    m, c = np.linalg.lstsq(A, y)[0]
-    logger.debug(m, c)
-    return m
-
-#
-
-
-def gauss_residual(updated_parameter, x, data):
-    resid = fitf_gauss(x, updated_parameter) - data
-    res = np.sum(np.square(resid))
-    return res
-
-
-def residual_derivative(updated_data, static_data, data):
-    pass
-
-
-def read_stack(file_names):
-    rstack = np.array(imo.imread(file_names[0]))[np.newaxis]
-    for myc in range(1, len(file_names)):
-        rstack = np.concatenate(
-            (rstack, np.array(imo.imread(file_names[myc]))[np.newaxis]), axis=0)
-    return rstack
-
-
-def autofocus_imagename_gen():
-    now = str(datetime.now().strftime("%Y%m%d_%H%M%S"))
-    image_name_template = '{}-Autofocus_it_{}-'.format(
-        now, fg.config['experiment']['autofocus_num'])
-    return image_name_template
-
-
+@notify_deprecation_decorator
 def autofocus_take_image(self, image_name_template, method):
     imvar = 0
     mythresh = 0.005  # has to be adjusted again
@@ -750,15 +785,3 @@ def autofocus_take_image(self, image_name_template, method):
         image = image_stack[np.argmax(imvar_stack)]
     imqual_res = imqual_metric(image, method=method)
     return image, imqual_res
-
-
-def simulate_data_stack():
-    open_dir = 'C:/Users/rene/Documents/Programming/matlab/Fluidi/swen/data/noise-data-01/'
-    open_file = glob(open_dir + '*.tif')
-    data_stack = read_stack(open_file)
-    imqual_res = [imqual_metric(data_stack[0, :, :], method='Tenengrad')]
-    for myc in range(1, data_stack.shape[0]):
-        imqual_res = np.concatenate((imqual_res, [imqual_metric(
-            data_stack[myc, :, :], method='Tenengrad')]), axis=0)
-    step_sizes = np.arange(41) / 8.0
-    return step_sizes, imqual_res
