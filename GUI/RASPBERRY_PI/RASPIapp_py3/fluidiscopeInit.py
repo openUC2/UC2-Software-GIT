@@ -11,6 +11,8 @@ import yaml
 from kivy.config import Config
 import fluidiscopeGlobVar as fg
 import fluidiscopeIO
+from fluidiscopeLogging import logger_createChild
+
 import unipath as uni
 
 if fg.i2c:
@@ -23,6 +25,8 @@ else:
 if not fg.my_dev_flag:
     import picamera
 
+# logging Functions ------------------------------------------------------------------------------
+logger = logger_createChild('init','UC2')
 
 # General Init ------------------------------------------------------------------------------
 
@@ -43,10 +47,6 @@ def camera_init():
         fg.camera = picamera.PiCamera()
         #print("cam is online")
         logger.debug("Cam is online.")
-
-
-def logging_init():
-    logging_load_config()
 
     # I2C Functions ------------------------------------------------------------------------------
 
@@ -71,8 +71,7 @@ def mqtt_init():
     setup_name = "S" + fg.setup_number
     device_ID = "RASPI_" + str(random.randint(0, 100000))
     device_MQTT_name = "RAS01"
-    mqtt_connect_to_server(broker="0.0.0.0", mqttclient_name="raspi1",
-                           mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
+    mqtt_connect_to_server(broker="0.0.0.0", mqttclient_name="raspi1", mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
     # register Raspberry
     fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
     # instanciate devices
@@ -148,45 +147,8 @@ def on_disconnect(client, userdata, rc):
     #logging.info("disconnecting reason: {0}".format)
     logger.warning("disconnecting reason: {0}".format)
     client.connected_flag = False
-    client.disconnect_flag = Trprinue
+    client.disconnect_flag = True
 
-# logging Functions ------------------------------------------------------------------------------
-
-
-def logging_load_config():
-    # read YAML
-    # with open(fg.config[''], 'r') as fd:
-    #    myconfig = yaml.safe_load(fd.read())
-    # create logpath if necessary
-    # get and check path
-    from kivy.logger import Logger
-    from shutil import copy2
-    kivy_logfile = Logger.handlers[1].filename
-    log_path = os.getcwd() + "/log/"
-    fluidiscopeIO.dir_test_existance(log_path)
-    # get time and date
-    logging_filename = "uc2-{}.log".format(
-        time.strftime("%Y%m%d_%H%M%S", time.localtime()))
-    log_path_full = os.path.abspath(
-        log_path + logging_filename)
-    print("Filepath is: {}".format(log_path_full))
-    # copy existing logs
-    copy2(kivy_logfile, log_path_full)
-    # put into config
-    logging.config.dictConfig(
-        fg.config['logging'])
-
-    # create logger
-    logger = logging.getLogger('UC2_init_load')
-    logger.handlers[1].close()
-    logger.handlers[1].baseFilename = log_path_full
-
-    # finish
-    logger.debug("Logging successfully initialized to -> " + logging_filename)
-
-
-logger = logging.getLogger('UC2_init')
-logger.debug("Logging successfully initialized")
 
 # Further Functions ------------------------------------------------------------------------------
 

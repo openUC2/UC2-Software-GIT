@@ -1,18 +1,25 @@
-from shutil import copyfile
-from safe_cast import safe_str
-import unipath as uni
-import time
+# %%  Imports
+
+#Fluidi imports
 import fluidiscopeToolbox as toolbox
 import fluidiscopeGlobVar as fg
 from fluidException import fluidException
+from fluidiscopeLogging import logger_createChild
+
+# general imports
 from copy import deepcopy
+import datetime
 import io
 import logging
+import numpy as np
 import os
-import datetime
 import re
+from shutil import copyfile
+from safe_cast import safe_str
 import time
+import unipath as uni
 
+# conditioned imports
 if os.name == 'nt':
     import yaml
 else:
@@ -21,8 +28,9 @@ else:
 if not fg.my_dev_flag and fg.i2c:
     from I2CDevice import I2CDevice
 
+# %%  Code
 # activate logging
-logger = logging.getLogger('UC2_io')
+logger = logger_createChild('io','UC2')
 
 
 def load_config(config_file):
@@ -163,108 +171,111 @@ def fluid_dump(write_file, data):
     #    with io.open(write_file, 'w', encoding='utf8') as stream:
     #        yaml.dump(data, stream, default_flow_style=False)
         # exit()
-
-
-def settings_save_restore(self, instance, restore):
+def io_createCHK(self):
+    '''
+    Returns array with btns to check for activity.
+    '''
+    # prepare empty array
     chk = [False] * 20
-    # -----------------------------------------------
+
+    # Camera-Options 1
     chk[0] = self.ids['scr_cam_set_1_btn_save'].uid
     chk[1] = self.ids['scr_cam_set_1_btn_restore'].uid
     chk[2] = self.ids['btn_cam_set_1'].uid
+
+    # Camera-Options 2
     chk[3] = self.ids['scr_cam_set_2_btn_save'].uid
     chk[4] = self.ids['scr_cam_set_2_btn_restore'].uid
     chk[5] = self.ids['btn_cam_set_2'].uid
+
+    # Light-Options 2
     chk[6] = self.ids['scr_light_set_2_btn_save'].uid
     chk[7] = self.ids['scr_light_set_2_btn_restore'].uid
     chk[8] = self.ids['btn_light_set_2'].uid
+
+    # Experiment Settings
     chk[9] = self.ids['scr_imaging_set_btn_save'].uid
     chk[10] = self.ids['scr_imaging_set_btn_restore'].uid
     chk[11] = self.ids['btn_imaging_set'].uid
+
+    # Motor Settings
     chk[12] = self.ids['scr_motor_set_btn_save'].uid
     chk[13] = self.ids['scr_motor_set_btn_restore'].uid
     chk[14] = self.ids['btn_motor_set'].uid
+
+    # Autofocus Settings
     chk[15] = self.ids['scr_autofocus_set_btn_save'].uid
     chk[16] = self.ids['scr_autofocus_set_btn_restore'].uid
     chk[17] = self.ids['btn_autofocus_set'].uid
     chk[18] = self.ids['btn_autofocus_opt'].uid
+
+    # Tomography Options
     chk[19] = self.ids['btn_tomography_settings'].uid
-    # -----------------------------------------------
+
+    # done?
+    return chk
+
+def settings_save_restore_switcher(self, restore, config_name,layout_prename):
+    '''
+    switches between readout and -in with exception handling.
+    '''
+    for key in fg.config[config_name]:
+        prop_help = layout_prename + key
+        try:
+            if restore:
+                self.ids[prop_help].text = str(fg.config[config_name][key])
+            else:
+                fg.config[config_name][key] = toolbox.textinput_convert(self.ids[prop_help].text)
+        except:
+            logger.warning("ID: {} not found. SKIPPED!".format(prop_help))
+
+def settings_save_restore(self, instance, restore):
+    '''
+    Switches save and Restore commands for different menues.
+    '''
+    # get check
+    chk = io_createCHK(self)
+    
+    # select interface/switching-group for active instance
     chk = [x == instance.uid for x in chk]
 
+    # prepare namings / assign tasks
     if any(chk[:3]):
-        for key in fg.config['cam']:
-            prop_help = 'scr_cam_set_1_grid_lbl_value_' + key
-            if restore:
-                try:
-                    self.ids[prop_help].text = str(fg.config['cam'][key])
-                except:
-                    logger.warning(
-                        "ID: {} not found. SKIPPED!".format(prop_help))
-            else:
-                fg.config['cam'][key] = toolbox.textinput_convert(
-                    self.ids[prop_help].text)
-
+        config_name = 'cam'
+        layout_prename = 'scr_cam_set_1_grid_lbl_value_'
     elif any(chk[3:6]):
-        for key in fg.config['imaging']:
-            try:
-                prop_help = 'scr_imaging_set_grid_lbl_value_' + key
-                if restore:
-                    self.ids[prop_help].text = str(fg.config['imaging'][key])
-                else:
-                    fg.config['imaging'][key] = toolbox.textinput_convert(
-                        self.ids[prop_help].text)
-            except Exception as e:
-                pass
-
+        config_name = 'cam'
+        layout_prename = 'scr_cam_set_2_grid_lbl_value_'
     elif chk[6]:
         fg.config['light']['default'] = deepcopy(fg.config['light']['user'])
-
     elif any(chk[7:9]):
         if restore:
             fg.config['light']['user'] = deepcopy(
                 fg.config['light']['default'])
             self.ids['slider_light_set_2_NA'].value = fg.config['light']['NA']
-        update_matrix(self, instance, ignore_NA=True, sync_only=False)
-
+        update_matrix(self, ignore_NA=True, sync_only=False)
     elif any(chk[9:12]):
-        for key in fg.config['imaging']:
-            try:
-                prop_help = 'scr_imaging_set_grid_lbl_value_' + key
-                if restore:
-                    self.ids[prop_help].text = str(fg.config['imaging'][key])
-                else:
-                    fg.config['imaging'][key] = toolbox.textinput_convert(
-                        self.ids[prop_help].text)
-            except Exception as e:
-                pass
-
+        config_name = 'imaging'
+        layout_prename = 'scr_imaging_set_grid_lbl_value_'
     elif any(chk[12:15]):
-        for key in fg.config['motor']:
-            prop_help = 'scr_motor_set_grid_lbl_value_' + key
-            if restore:
-                self.ids[prop_help].text = str(fg.config['motor'][key])
-            else:
-                fg.config['motor'][key] = toolbox.textinput_convert(
-                    self.ids[prop_help].text)
-
+        config_name = 'motor'
+        layout_prename = 'scr_motor_set_grid_lbl_value_'
     elif any(chk[15:19]):
-        for key in fg.config['autofocus']:
-            prop_help = 'scr_autofocus_set_lbl_value_' + key
-            if restore:
-                self.ids[prop_help].text = str(fg.config['autofocus'][key])
-            else:
-                fg.config['autofocus'][key] = toolbox.textinput_convert(
-                    self.ids[prop_help].text)
+        config_name = 'autofocus'
+        layout_prename = 'scr_autofocus_set_lbl_value_'
     elif chk[19]:
-        key_prefix = 'tomography_lbl_'
-        key_dict = ['tm_backlash', 'tm_motor', 'tm_takeimage', 'tm_startPOS', 'tm_endPOS', 'tm_steps', 'tm_stepsize', 'tm_steptime', 'tm_totalTime']
-        for key in key_dict:
-            if restore:
-                self.ids[key_prefix + key].text = str(fg.config['experiment'][key])
-            else:
-                fg.config['experiment'][key] = toolbox.textinput_convert(
-                    self.ids[prop_help].text)
+        config_name = 'tomo'
+        layout_prename = 'tm_'
+        #key_prefix = 'tomography_lbl_'
+        #key_dict = ['tm_backlash', 'tm_motor', 'tm_takeimage', 'tm_startPOS', 'tm_endPOS', 'tm_steps', 'tm_stepsize', 'tm_steptime', 'tm_totalTime']
+
+    # update values
+    if any(chk[:6]+chk[9:]):
+        settings_save_restore_switcher(self,restore,config_name,layout_prename)
+
+    # store if necessary
     if not restore:
+        logger.debug("Writing Settings into file for {}".format(instance.id))
         write_config()
 
 
@@ -298,7 +309,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
                 if offset_x <= col < m - offset_x:
                     pos = row * n + col
                     prop_help = 'scr_light_set_2_grid_' + str(pos)
-                    if sum(fg.config[pattern_key[0]][pattern_key[1]][row][col]) > 0:
+                    if np.sum(fg.config[pattern_key[0]][pattern_key[1]][row][col]) > 0:
                         self.ids[prop_help].value = 1
                         self.ids[prop_help].fl_value = fg.config[pattern_key[0]
                                                                  ][pattern_key[1]][row][col]
@@ -308,7 +319,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
                         self.ids[prop_help].fl_value = [0, 0, 0]
                         toolbox.deactivate(self.ids[prop_help])
 
-                    if not sync_only and sum(self.ids[prop_help].fl_value) > 0:
+                    if not sync_only and np.sum(self.ids[prop_help].fl_value) > 0:
                         fg.ledarr.send("PXL", pos, list(
                             self.ids[prop_help].fl_value))
                         time.sleep(fg.config['experiment']['i2c_send_delay'])

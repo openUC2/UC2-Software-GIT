@@ -1,6 +1,5 @@
 autofocus: autofocus_properties.yaml
 cam: camera_properties.yaml
-cam_af: camera_autofocus.yaml
 cam_fluo: camera_properties_fluo.yaml
 experiment: experiment_properties.yaml
 imaging: imaging_properties.yaml

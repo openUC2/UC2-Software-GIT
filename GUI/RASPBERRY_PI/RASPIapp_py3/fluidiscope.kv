@@ -1396,7 +1396,7 @@
                             Label: 
                                 id: tomography_lbl_tm_motor
                                 size_hint_x: 0.1
-                                text: 'Z'
+                                text: '2'
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'Backlash'
@@ -1408,7 +1408,7 @@
                                 size_hint_x: 0.2
                                 text: 'Image'
                             Label: 
-                                id: tomography_lbl_tm_takeimage
+                                id: tomography_lbl_tm_take_image
                                 size_hint_x: 0.1
                                 text: ''
                         BoxLayout:
@@ -1456,7 +1456,7 @@
                                 size_hint_x: 0.2
                                 text: 'totalTime'
                             Label: 
-                                id: tomography_lbl_tm_totalTime
+                                id: tomography_lbl_tm_totaltime
                                 size_hint_x: 0.1
                                 text: ''  
                     BoxLayout:
@@ -1483,7 +1483,7 @@
                 BoxLayout:
                     orientation: 'vertical'
                     GridLayout:
-                        size_hint_y: 0.8
+                        size_hint_y: 0.9
                         id: scr_cam_set_1_grid
                         cols: 4
                         Label:
@@ -1567,6 +1567,16 @@
                             id: scr_cam_set_1_grid_lbl_value_saturation
                             text:''
                         Label:
+                            text: 'sensor\nmode(sm)'
+                        TextInput:
+                            id: scr_cam_set_1_grid_lbl_value_sensor_mode
+                            text:''
+                        Label:
+                            text: 'sm-size'
+                        TextInput:
+                            id: scr_cam_set_1_grid_lbl_value_sensor_mode_size
+                            text:''
+                        Label:
                             text: 'sharpness'
                         TextInput:
                             id: scr_cam_set_1_grid_lbl_value_sharpness
@@ -1589,7 +1599,7 @@
 
                     # Buttons for save, restore
                     BoxLayout:
-                        size_hint_y: 0.2
+                        size_hint_y: 0.1
                         padding: [20,5,20,5]
                         FluidButton:
                             size_hint_x: 0.33
@@ -1972,34 +1982,29 @@
                 BoxLayout:
                     orientation: 'vertical'
                     BoxLayout:
-                        size_hint_y: 0.2
+                        size_hint_y: 0.01
                     GridLayout:
-                        size_hint_y: 0.6
+                        size_hint_y: 0.89
                         id: scr_autofocus_set_grid
                         cols: 4
-                        spacing: 15
+                        spacing: 2
                         Label:
                             text: 'backlash'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_backlash
                             text: ''
                         Label:
-                            text: 'corr. test'
+                            text: 'use glob.\nCam-Sett.'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_corr_test
+                            id: scr_autofocus_set_lbl_value_camProp_use_global
                             text: ''
                         Label:
-                            text: 'durat. max'
+                            text: 'max.dur.'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_duration_max
                             text: ''
                         Label:
-                            text: 'iter. max'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_iteration_max
-                            text: ''
-                        Label:
-                            text: 'interv. min'
+                            text: 'interval[min]'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_interval_min
                             text: ''
@@ -2009,14 +2014,54 @@
                             id: scr_autofocus_set_lbl_value_maxmin
                             text: ''
                         Label:
-                            text: 'maxmin'
+                            text: 'max_steps'
                         TextInput:
-                            id: scr_autofocus_set_lbl_value_roi
+                            id: scr_autofocus_set_lbl_value_max_steps
+                            text: ''
+                        Label:
+                            text: 'motor'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_motor
                             text: ''
                         Label:
                             text: 'run only\nonce'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_run_only_once
+                            text: ''
+                        Label:
+                            text: 'save im'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_save_images
+                            text: ''
+                        Label:
+                            text: 'save\nsharpness'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_save_sharpness
+                            text: ''
+                        Label:
+                            text: 'scan\niterations'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_scan_iterations
+                            text: ''
+                        Label:
+                            text: 'scan method'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_scan_method
+                            text: ''
+                        Label:
+                            text: 'sensor\nmode'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_sensor_mode
+                            text: ''
+                        Label:
+                            text: 'Coarse\nstep-size'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_step_dist_coarse
+                            text: ''
+                        Label:
+                            text: 'Fine\nstep-size'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_step_dist_fine
                             text: ''
                         Label:
                             text: 'Coarse steps'
@@ -2029,22 +2074,7 @@
                             id: scr_autofocus_set_lbl_value_steps_fine
                             text: ''
                         Label:
-                            text: 'Coarse steps\nsize'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_step_dist_coarse
-                            text: ''
-                        Label:
-                            text: 'Fine steps\nsize'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_step_dist_fine
-                            text: ''
-                        Label:
-                            text: 'last\nsuccess'
-                        TextInput:
-                            id: scr_autofocus_set_lbl_value_success
-                            text: ''
-                        Label:
-                            text: 'method'
+                            text: 'Sharpness\nMeasure'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_technique
                             text: ''
@@ -2054,13 +2084,18 @@
                             id: scr_autofocus_set_lbl_value_use_channel
                             text: ''
                         Label:
+                            text: 'use coarse\nonly'
+                        TextInput:
+                            id: scr_autofocus_set_lbl_value_use_coarse_only
+                            text: ''
+                        Label:
                             text: 'use last\nautofocus'
                         TextInput:
                             id: scr_autofocus_set_lbl_value_use_last_autofocus
                             text: ''
                     # Buttons for save, restore
                     BoxLayout:
-                        size_hint_y: 0.2
+                        size_hint_y: 0.1
                         padding: [20,5,20,5]
                         FluidButton:
                             size_hint_x: 0.33

@@ -1,7 +1,7 @@
 awbGain:
 - 1.5
 - 1.5
-awbMode: auto
+awbMode: 'auto'
 brightness: 50
 colorEffects: null
 contrast: 0
@@ -20,27 +20,10 @@ previewLength: 3
 resolution:
 - 3280
 - 2464
-sensor_mode_size:
-- - 800
-  - 480
-- - 1920
-  - 1080
-- - 3280
-  - 2464
-- - 3280
-  - 2464
-- - 1640
-  - 1232
-- - 1640
-  - 922
-- - 1280
-  - 720
-- - 640
-  - 480
 rotation: 0
 saturation: 0
-sensor_mode: 0
 sharpness: 0
-shutterSpeed: 0
+shutterSpeed: 1000000
+sensor_mode: 4
 vflip: false
 videoStabilization: false

@@ -23,6 +23,23 @@ resolution:
 rotation: 0
 saturation: 0
 sensor_mode: 0
+sensor_mode_size:
+- - 800
+  - 480
+- - 1920
+  - 1080
+- - 3280
+  - 2464
+- - 3280
+  - 2464
+- - 1640
+  - 1232
+- - 1640
+  - 922
+- - 1280
+  - 720
+- - 640
+  - 480
 sharpness: 0
 shutterSpeed: 0
 vflip: false

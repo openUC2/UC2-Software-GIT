@@ -38,6 +38,7 @@ if True:
     import fluidiscopeInit
     import fluidiscopeToolbox as toolbox
     import fluidiscopeIO
+    import fluidiscopeLogging as fl
 if fg.i2c:
     from I2CDevice import I2CDevice
 
@@ -45,13 +46,13 @@ if not fg.my_dev_flag:
     import picamera
 
 # Initialization
+fl.logging_init()
 fluidiscopeInit.load_config()
-fluidiscopeInit.logging_init()
 fluidiscopeInit.controller_init()
 fluidiscopeInit.GUI_define_sizes()
 
 # activate main-logger
-logger = logging.getLogger('UC2_main')
+logger = fl.logger_createChild('main','UC2')
 
 # GUI classes
 
@@ -124,13 +125,6 @@ class Fluidiscope(BoxLayout):
             if not instance.uid == self.ids['btn_snap']:
                 instance.text = "Start Measurement"
 
-    # def snapshot(self, instance):
-    #    fg.config['experiment']['imaging_method'] = toolbox.get_imaging_method(self)
-    #    toolbox.activate(instance)
-    #    toolbox.take_image(self, instance)
-    #    fg.config['experiment']['success'] = True
-    #    toolbox.switch_start_condition(self, instance)
-
     def autofocus(self, instance):
         toolbox.change_activation_status(instance)
         toolbox.autofocus(self, instance)
@@ -184,7 +178,7 @@ class Fluidiscope(BoxLayout):
             fluidiscopeIO.slider_setNA(self, instance)
         else:
             fluidiscopeIO.update_matrix(
-                self, instance, ignore_NA=True, sync_only=False)
+                self, ignore_NA=True, sync_only=False)
 
     def matrix_switch(self, instance):
         toolbox.matrix_switch(self, instance)
@@ -295,6 +289,10 @@ class FluidiscopeApp(App):
     title = 'Fluidiscope'
 
     def build(self):
+        '''
+        Can be used to implement own pre-call conditions and set pointers. It seems, that 'fluidiscope.kv' is loaded earlier already and hence the last call is not necessary any-more.
+        '''
+
         # self.icon = 'icon.png'
         # print("Thank you for starting Fluidiscopy v%s.\n  Copyright (C) 2017 Benedict Diederich & Rene Richter") % fg.VERSION
         # create the root widget and give it a reference of the application instance (so it can access the application settings)
@@ -304,8 +302,9 @@ class FluidiscopeApp(App):
 
         # do before creation
         # self.init_properties(self)
-        # build app
-        return Builder.load_file(uni.Path(fg.code_path, 'fluidiscope.kv'))
+        
+        #call not necessary???
+        #return Builder.load_file(uni.Path(fg.code_path, 'fluidiscope.kv'))
 
     # def after_created(self):
         # self.set_init_variables

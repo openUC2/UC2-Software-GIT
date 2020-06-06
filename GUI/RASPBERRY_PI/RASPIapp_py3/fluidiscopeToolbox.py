@@ -15,6 +15,8 @@ import fluidiscopeGlobVar as fg
 import fluidiscopeIO
 import fluidiscopeInit
 import fluidiscopeAutofocus as af
+from fluidiscopeLogging import logger_createChild
+
 # python packages
 import warnings
 from datetime import datetime
@@ -57,7 +59,7 @@ button_fontcolor_active = [0.0, 0.0, 0.0, 1.0]
 fg.expt_num = 1
 
 # activate logging
-logger = logging.getLogger('UC2_toolbox')
+logger = logger_createChild('toolbox','UC2')
 
 ##########################
 #                        #
@@ -128,14 +130,16 @@ def scr_switch(self, instance):
         fluidiscopeIO.settings_save_restore(self, instance, True)
     elif self.ids["btn_autofocus_set"].uid == instance.uid or self.ids["btn_autofocus_opt"].uid == instance.uid:
         if self.ids["sm"].current == 'scr_autofocus_set':
-            self.ids["sm"].current = 'scr_autofocus_set'
+            chk_experiment_created(self, instance, instance.text)
+            fluidiscopeIO.settings_save_restore(self, instance, False)
         else:
             self.ids["sm"].current = 'scr_autofocus_set'
             self.ids["btn_scr_name"].text = 'AUT\nOFO\nCUS'
-        fluidiscopeIO.settings_save_restore(self, instance, True)
+            fluidiscopeIO.settings_save_restore(self, instance, True)
     elif self.ids["btn_tomography_settings"].uid == instance.uid:
         if check_active(instance):
             chk_experiment_created(self, instance, instance.text)
+            fluidiscopeIO.settings_save_restore(self, instance, False)
         else:
             self.ids["sm"].current = 'scr_tomo'
             self.ids["btn_scr_name"].text = 'TO\nMO'
@@ -821,9 +825,8 @@ def take_image(self, *args):
     if fg.config['experiment']['imaging_cause'] == 'AF':  # case of autofocus
         image_name = set_image_name(im_cause='AF', method='CUS')
         file_name_write = uni.Path(fg.expt_path, image_name)
-        time.sleep(0.1)
-        fluidiscopeIO.update_matrix(self, ignore_NA=True, sync_only=False)
-        time.sleep(fg.config['imaging']['speed'])
+        #time.sleep(0.1)
+        #time.sleep(fg.config['imaging']['speed'])
         tin_returnval = take_image_now(self, 'AF', file_name_write)
         fg.ledarr.send("CLEAR")
     elif fg.config['experiment']['imaging_cause'] == 'SNAP':
@@ -1151,7 +1154,7 @@ def autofocus(self, instance):
     set_autofocus(self, instance)
     change_activation_status(instance)
     key = 'autofocus_now' if (
-        instance.uid == self.ids['autofocus_now'].uid) else 'autofocus'
+        instance.uid == self.ids['btn_autofocus_now'].uid) else 'autofocus'
     if not key in fg.EVENT:
         run_autofocus(self, instance, key)
     else:
@@ -1170,12 +1173,12 @@ def set_autofocus(self, instance):
     if check_active(instance):
         fg.config['experiment']['is_autofocus'] = False
         if instance.uid == self.ids['btn_autofocus'].uid:
-            refresh_text_entry(instance, "Autofocus disabled!")
+            refresh_text_entry(instance, "AF")
         logger.debug("Deactivated autofocus.")
     else:
         fg.config['experiment']['is_autofocus'] = True
         if instance.uid == self.ids['btn_autofocus'].uid:
-            refresh_text_entry(instance, "Autofocus enabled!")
+            refresh_text_entry(instance, "AF added")
         logger.debug("Autofocus activated.")
 
 

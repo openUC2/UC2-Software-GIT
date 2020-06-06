@@ -1,0 +1,156 @@
+[ DEBUG    ] [ UC2_init_load ] [ 20200605 11:55:35 ] Logging successfully initialized to -> uc2-20200605_115535.log
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr: --- Logging error ---
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr: Traceback (most recent call last):
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 994, in emit
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:     msg = self.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 840, in format
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:     return fmt.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 577, in format
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:     record.message = record.getMessage()
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 338, in getMessage
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     msg = msg % self.args
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr: TypeError: not all arguments converted during string formatting
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr: Call stack:
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 193, in _run_module_as_main
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     "__main__", mod_spec)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy\__main__.py", line 45, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     cli.main()
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 430, in main
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     run()
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 267, in run_file
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     runpy.run_path(options.target, run_name=compat.force_str("__main__"))
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 263, in run_path
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     pkg_name=pkg_name, script_name=fname)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 96, in _run_module_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     mod_name, mod_spec, pkg_name, script_name)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\main.py", line 50, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     fluidiscopeInit.controller_init()
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 33, in controller_init
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     mqtt_init()
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 75, in mqtt_init
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 100, in mqtt_connect_to_server
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr:     logger.info("MQTTClient: connecting to broker ", broker)
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr: Message: 'MQTTClient: connecting to broker '
+[ WARNING  ] [ kivy          ] [ 20200605 11:55:40 ] stderr: Arguments: ('0.0.0.0',)
+[ ERROR    ] [ UC2_init      ] [ 20200605 11:55:40 ] MQTTClient: Connection failed
+[ ERROR    ] [ UC2_init      ] [ 20200605 11:55:40 ] [WinError 10049] Die angeforderte Adresse ist in diesem Kontext ungültig
+[ DEBUG    ] [ UC2_init_load ] [ 20200605 11:55:59 ] Logging successfully initialized to -> uc2-20200605_115559.log
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: --- Logging error ---
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: Traceback (most recent call last):
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 994, in emit
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     msg = self.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 840, in format
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     return fmt.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 577, in format
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     record.message = record.getMessage()
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 338, in getMessage
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     msg = msg % self.args
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: TypeError: not all arguments converted during string formatting
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: Call stack:
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 193, in _run_module_as_main
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     "__main__", mod_spec)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy\__main__.py", line 45, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     cli.main()
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 430, in main
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     run()
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 267, in run_file
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     runpy.run_path(options.target, run_name=compat.force_str("__main__"))
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 263, in run_path
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     pkg_name=pkg_name, script_name=fname)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 96, in _run_module_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     mod_name, mod_spec, pkg_name, script_name)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\main.py", line 50, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     fluidiscopeInit.controller_init()
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 33, in controller_init
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     mqtt_init()
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 75, in mqtt_init
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 100, in mqtt_connect_to_server
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr:     logger.info("MQTTClient: connecting to broker ", broker)
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: Message: 'MQTTClient: connecting to broker '
+[ WARNING  ] [ kivy          ] [ 20200605 11:56:39 ] stderr: Arguments: ('0.0.0.0',)
+[ ERROR    ] [ UC2_init      ] [ 20200605 11:56:39 ] MQTTClient: Connection failed
+[ ERROR    ] [ UC2_init      ] [ 20200605 11:56:39 ] [WinError 10049] Die angeforderte Adresse ist in diesem Kontext ungültig
+[ DEBUG    ] [ UC2_init_load ] [ 20200605 11:57:06 ] Logging successfully initialized to -> uc2-20200605_115706.log
+[ DEBUG    ] [ UC2_init_load ] [ 20200605 12:07:23 ] Logging successfully initialized to -> uc2-20200605_120723.log
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: --- Logging error ---
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Traceback (most recent call last):
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 994, in emit
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     msg = self.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 840, in format
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     return fmt.format(record)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 577, in format
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     record.message = record.getMessage()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\logging\__init__.py", line 338, in getMessage
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     msg = msg % self.args
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: TypeError: not all arguments converted during string formatting
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Call stack:
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 193, in _run_module_as_main
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     "__main__", mod_spec)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy\__main__.py", line 45, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     cli.main()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 430, in main
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     run()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "c:\Users\renelachmann\.vscode\extensions\ms-python.python-2020.5.80290\pythonFiles\lib\python\debugpy\no_wheels\debugpy/..\debugpy\server\cli.py", line 267, in run_file
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     runpy.run_path(options.target, run_name=compat.force_str("__main__"))
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 263, in run_path
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     pkg_name=pkg_name, script_name=fname)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 96, in _run_module_code
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     mod_name, mod_spec, pkg_name, script_name)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\runpy.py", line 85, in _run_code
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     exec(code, run_globals)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\main.py", line 51, in <module>
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     fluidiscopeInit.controller_init()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 36, in controller_init
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     mqtt_init()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 73, in mqtt_init
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     mqtt_connect_to_server(broker="0.0.0.0", mqttclient_name="raspi1", mqttclient_pass="1ipsar", mqttclient_ID=device_ID, port=1883, keepalive=60)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscopeInit.py", line 98, in mqtt_connect_to_server
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     logger.info("MQTTClient: connecting to broker ", broker)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Message: 'MQTTClient: connecting to broker '
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Arguments: ('0.0.0.0',)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Exception in thread Thread-6:
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: Traceback (most recent call last):
+[ ERROR    ] [ UC2_init      ] [ 20200605 12:07:52 ] MQTTClient: Connection failed
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\threading.py", line 916, in _bootstrap_inner
+[ ERROR    ] [ UC2_init      ] [ 20200605 12:07:52 ] [WinError 10049] Die angeforderte Adresse ist in diesem Kontext ungültig
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     self.run()
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] App: Loading kv <C:\Users\renelachmann\Documents\Programming\UC2_Software-GIT\GUI\RASPBERRY_PI\RASPIapp_py3\fluidiscope.kv>
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\threading.py", line 864, in run
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     self._target(*self._args, **self._kwargs)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\paho\mqtt\client.py", line 2913, in _thread_main
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     self.loop_forever(retry_first_connection=True)
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\paho\mqtt\client.py", line 1604, in loop_forever
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     self.reconnect()
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:   File "C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\paho\mqtt\client.py", line 926, in reconnect
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr:     raise ValueError('Invalid host.')
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: ValueError: Invalid host.
+[ WARNING  ] [ kivy          ] [ 20200605 12:07:52 ] stderr: 
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] Resource: add <C:\WINDOWS\Fonts> in path list
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] Resource: add <C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\kivy\data\fonts> in path list
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] Atlas: Load <C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\kivy\data\images\defaulttheme.atlas>
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] Atlas: Need to load 1 images
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] Atlas: Load <C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\kivy\data\images\defaulttheme-0.png>
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:52 ] ImageSDL2: Load <C:\Users\renelachmann\Anaconda3\envs\kivy_py36\lib\site-packages\kivy\data\images\defaulttheme-0.png>
+[ INFO     ] [ kivy          ] [ 20200605 12:07:53 ] GL: NPOT texture support is available
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:53 ] Base: Create provider from mouse
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:53 ] Base: Create provider from wm_touch
+[ DEBUG    ] [ kivy          ] [ 20200605 12:07:53 ] Base: Create provider from wm_pen
+[ INFO     ] [ kivy          ] [ 20200605 12:07:53 ] Base: Start application main loop
+[ DEBUG    ] [ UC2_init_load ] [ 20200605 12:20:32 ] Logging successfully initialized to -> uc2-20200605_121929.log
+[ INFO     ] [ UC2_init_load ] [ 20200605 12:20:54 ] Logging successfully initialized to -> uc2-20200605_121929.log
+[ WARNING  ] [ kivy          ] [ 20200606 15:13:32 ] stderr: test
+[ WARNING  ] [ kivy          ] [ 20200606 15:15:40 ] stderr: test
+[ WARNING  ] [ kivy          ] [ 20200606 15:22:56 ] test
+[ WARNING  ] [ kivy          ] [ 20200606 15:23:03 ] test
