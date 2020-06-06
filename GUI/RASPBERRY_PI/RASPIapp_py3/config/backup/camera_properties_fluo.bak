@@ -3,6 +3,8 @@ awbGain:
 - 1.5
 awbMode: false
 brightness: 50
+camProp_defined: 0
+camProp_use_global: 0
 colorEffects: null
 contrast: 0
 crop:

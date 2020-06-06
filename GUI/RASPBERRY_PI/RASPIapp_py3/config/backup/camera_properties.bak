@@ -1,27 +1,18 @@
+analog_gain: 0
 awbGain:
 - 1.5
 - 1.5
-awbMode: auto
-brightness: 50
-colorEffects: null
-contrast: 0
-crop:
-- 0.0
-- 0.0
-- 1.0
-- 1.0
+awbMode: off
+camProp_defined: 0
+camProp_use_global: 0
 exposureCompensation: 0
-exposureMode: auto
-hflip: []
-imageEffects: none
+exposureMode: off
+image_denoise: false
 iso: 100
 meterMode: average
-previewLength: 3
 resolution:
 - 3280
 - 2464
-rotation: 0
-saturation: 0
 sensor_mode: 0
 sensor_mode_size:
 - - 800
@@ -42,5 +33,5 @@ sensor_mode_size:
   - 480
 sharpness: 0
 shutterSpeed: 0
-vflip: false
-videoStabilization: false
+video_denoise: false
+video_stabilization: false

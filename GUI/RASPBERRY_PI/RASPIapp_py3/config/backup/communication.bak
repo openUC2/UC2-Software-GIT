@@ -5,3 +5,4 @@ mqtt_device_name: RAS01
 mqtt_ip: 192.168.2.140
 mqtt_keepalive: 60
 mqtt_port: 1883
+mqtt_use_login: false
