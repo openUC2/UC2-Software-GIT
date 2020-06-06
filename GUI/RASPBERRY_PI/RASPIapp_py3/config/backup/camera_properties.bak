@@ -20,6 +20,9 @@ previewLength: 3
 resolution:
 - 3280
 - 2464
+rotation: 0
+saturation: 0
+sensor_mode: 0
 sensor_mode_size:
 - - 800
   - 480
@@ -37,9 +40,6 @@ sensor_mode_size:
   - 720
 - - 640
   - 480
-rotation: 0
-saturation: 0
-sensor_mode: 0
 sharpness: 0
 shutterSpeed: 0
 vflip: false

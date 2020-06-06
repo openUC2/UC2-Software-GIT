@@ -1,7 +1,7 @@
 awbGain:
 - 1.5
 - 1.5
-awbMode: 'off'
+awbMode: false
 brightness: 50
 colorEffects: null
 contrast: 0

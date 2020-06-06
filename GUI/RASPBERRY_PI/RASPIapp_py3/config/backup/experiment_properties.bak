@@ -1,8 +1,8 @@
 active: 0
 active_methods: []
-autofocus_busy: False
-autofocus_now: False
-autofocus_new: True
+autofocus_busy: false
+autofocus_new: true
+autofocus_now: false
 autofocus_num: 0
 autofocus_samples: 15
 autofocus_stepsize: 25
@@ -14,10 +14,10 @@ image_set_num: 1
 images_left: 13
 images_taken: 0
 images_total: 13
+imaging_active: false
 imaging_cause: SNAP
 imaging_method: Bright
 imaging_num: 0
-imaging_active: False
 interval: 10
 interval_autofocus: 0.1
 last_expt_date: '20200121'
