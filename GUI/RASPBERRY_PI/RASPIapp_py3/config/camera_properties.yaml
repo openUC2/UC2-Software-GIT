@@ -2,11 +2,11 @@ analog_gain: 0
 awbGain:
 - 1.5
 - 1.5
-awbMode: off
+awbMode: false
 camProp_defined: 0
 camProp_use_global: 0
 exposureCompensation: 0
-exposureMode: off
+exposureMode: false
 image_denoise: false
 iso: 100
 meterMode: average

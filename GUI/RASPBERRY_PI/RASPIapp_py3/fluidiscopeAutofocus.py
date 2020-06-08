@@ -139,51 +139,56 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
     else:
         camStats.append(get_camstats(fg.camera,printme=False))
 
+    # test conditions
+    update_condition = fg.config['autofocus']['camProp_defined'] or (fg.camera.resolution==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode'])
+
     # if parameters not globally fixed OR not yet fixed by Autofocus-routine
-    if not fg.config[camdict]['camProp_use_global'] and not fg.config['autofocus']['camProp_defined']:
+    if not fg.config[camdict]['camProp_use_global']:
+        if update_condition:
+            # set basic modes 
+            fg.camera.image_denoise = fg.config[camdict]['image_denoise']
+            fg.camera.iso = fg.config[camdict]['iso']
+            fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
+            fg.camera.resolution = fg.config[camdict]['resolution']
+            fg.camera.sensor_mode = fg.config['autofocus']['sensor_mode']
+            fg.camera.video_denoise = fg.config[camdict]['video_denoise']
+            fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
+            
+            
+            # wait for camera to settle on new setup
+            sleep(0.5)
+            
+            # prepare Buffer
+            rawCapture = PiRGBArray(fg.camera, fg.config['autofocus']['resolution'])
 
-        # set basic modes 
-        fg.camera.image_denoise = fg.config[camdict]['image_denoise']
-        fg.camera.iso = fg.config[camdict]['iso']
-        fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
-        fg.camera.resolution = fg.config[camdict]['resolution']
-        fg.camera.sensor_mode = fg.config['autofocus']['sensor_mode']
-        fg.camera.video_denoise = fg.config[camdict]['video_denoise']
-        fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
-        
-        
-        # wait for camera to settle on new setup
-        sleep(0.5)
-        
-        # prepare Buffer
-        rawCapture = PiRGBArray(fg.camera, fg.config['autofocus']['resolution'])
+            # take an image to use auto-functions for parameter estimation
+            fg.camera.capture(rawCapture, format="bgr", use_video_port=True, bayer=False)
+            rawCapture.truncate(0)
+            camStats.append(get_camstats(fg.camera,printme=False))
 
-        # take an image to use auto-functions for parameter estimation
-        fg.camera.capture(rawCapture, format="bgr", use_video_port=True, bayer=False)
-        rawCapture.truncate(0)
-        camStats.append(get_camstats(fg.camera,printme=False))
+            # refresh autofocus-dictionary
+            fg.config[camdict]['analog_gain'] = camStats[-1]['analog_gain']
+            fg.config[camdict]['awb_gains'] = camStats[-1]['awb_gains']
+            fg.config[camdict]['digital_gain'] = camStats[-1]['digital_gain']
+            fg.config[camdict]['framerate'] = camStats[-1]['framerate']
+            fg.config[camdict]['shutter_speed'] = camStats[-1]['shutter_speed']
+            
+            # overwrite camera parameters AND (therwith) FIX 
+            fg.camera.awb_gains = fg.config[camdict]['awb_gains'] 
+            fg.camera.awb_mode = fg.config[camdict]['awb_mode']
+            fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
+            fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
+            fg.camera.framerate = fg.config[camdict]['framerate']
+            fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
 
-        # refresh autofocus-dictionary
-        fg.config[camdict]['analog_gain'] = camStats[-1]['analog_gain']
-        fg.config[camdict]['awb_gains'] = camStats[-1]['awb_gains']
-        fg.config[camdict]['digital_gain'] = camStats[-1]['digital_gain']
-        fg.config[camdict]['framerate'] = camStats[-1]['framerate']
-        fg.config[camdict]['shutter_speed'] = camStats[-1]['shutter_speed']
-        
-        # overwrite camera parameters AND (therwith) FIX 
-        fg.camera.awb_gains = fg.config[camdict]['awb_gains'] 
-        fg.camera.awb_mode = fg.config[camdict]['awb_mode']
-        fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
-        fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
-        fg.camera.framerate = fg.config[camdict]['framerate']
-        fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
-
-        # set True to use setting for future 
-        fg.config[camdict]['camProp_defined'] = 1
-        logger.debug("Camera preparation done for {}.".format(camdict))
+            # set True to use setting for future 
+            fg.config[camdict]['camProp_defined'] = 1
+            logger.debug("Camera preparation done for {}.".format(camdict))
     
     if rawCapture is None:
+        logging.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
         rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
+        logging.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
 
     return camStats, rawCapture
 
@@ -313,44 +318,15 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
     sharpness = []
     timstart = time()
     ttotal = time()
+    pos_now = pos_start
+    wait_time = None
 
     # faster way to acquire images and especially ensure same illumination properties etc per image as opposed to long-warm ups for single captures
     for n in range(NIterTotal):
-        for frame in fg.camera.capture_continuous(rawCapture, format="rgb", use_video_port=True):
 
-            # get raw numpy-array of shape [Y,X,Channel]
-            image = frame.array
-            tim.append(time() - timstart)
-            logger.debug('Calculating image-sharpness with measure={} for image {}/{} in round {}/{} .'.format(smethod,m,steps_nbr,n+1,NIterTotal))
-            sharpness, tproc = autofocus_getMeasure(image, sharpness, tproc)
+        # the loop
+        sharpness, tproc, tim, pos_now, poslist, wait_time, m,rawCapture  = autofocus_image(self=self,rawCapture=rawCapture,sharpness=sharpness,smethod=smethod,motor=motor,direction=direction,pos_start=pos_now,poslist=poslist,scan_range=scan_range,steps_dist=steps_dist,steps_nbr=steps_nbr,m=m,n=n,NIterTotal=NIterTotal,wait_time=wait_time,timstart=timstart,tim=tim,tproc=tproc,save_name=save_name,status=status,save_im=save_im,upd_val=upd_val)
 
-            # if save
-            if save_im:
-                saven = "{}Image_{}-{}of{}.tif".format(save_name,status,str(n),str(m))
-                tif.imwrite(saven, image, photometric='rgb')
-                logger.debug("Store Autofocus-Image {}".format(saven))
-            if m==0:
-                # move motor to start
-                step_2_start = get_distvec(pos_start, pos_start - direction* scan_range//2)
-                wait_time, pos_now = autofocus_move_motor(self,stepsize=step_2_start,motor=motor,pos_now=pos_now, wait_time=None)
-                poslist.append(poslist[-1]+step_2_start)
-            else: 
-                # move motor 1 step up
-                wait_time, pos_now  = autofocus_move_motor(self,stepsize=direction*steps_dist,motor=motor,pos_now=pos_now,wait_time=wait_time)
-                poslist.append(pos_now)
-
-            # clear the stream in preparation for the next frame
-            timstart = time()
-            rawCapture.truncate(0)
-
-            # update display
-            autofocus_display_update(self, upd_val, m, steps_nbr, n, NIterTotal*(steps_nbr+1))
-
-            # set counter
-            m += 1
-            if m > steps_nbr:
-                break
-        
         # iterate the stack inversely 
         m=1
         direction *= -1
@@ -358,6 +334,67 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
 
     # done?
     return sharpness, poslist, pos_now, tim, tproc, ttotal, wait_time
+
+def fix_rawCapture():
+    '''
+    Decorator that fixes potential errors in call structure with PiRGBArray (eg rawCapture).
+    Assumes that applied function provided kwargs via keyword.
+    '''
+    def decorate_me(func):
+        def rawCapture_silencer(*args,**kwargs):
+            try:
+                return func(*args,**kwargs)
+            except Exception as e:
+                logging.debug(e)
+                logging.warn("Continue image-acquisition, but with non-intended default setting of raspicam")
+                rawCaptureNew = PiRGBArray(fg.camera, fg.camera.resolution)
+                kwargs['rawCapture'] = rawCaptureNew
+                return func(*args,**kwargs)
+            return rawCapture_silencer
+    return decorate_me
+
+
+#@fix_rawCapture()
+def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_start,poslist,scan_range,steps_dist,steps_nbr,m,n,NIterTotal,wait_time,timstart,tim,tproc,save_name,status,save_im,upd_val):
+    '''
+    Calculations on image acquired.
+    '''
+    for frame in fg.camera.capture_continuous(rawCapture, format="rgb", use_video_port=True):
+        image = frame.array
+
+        # calculation
+        tim.append(time() - timstart)
+        logger.debug('Calculating image-sharpness with measure={} for image {}/{} in round {}/{} .'.format(smethod,m,steps_nbr,n+1,NIterTotal))
+        sharpness, tproc = autofocus_getMeasure(image, sharpness, tproc)
+
+        # if save
+        if save_im:
+            saven = "{}Image_{}-{}of{}.tif".format(save_name,status,str(n),str(m))
+            tif.imwrite(saven, image, photometric='rgb')
+            logger.debug("Store Autofocus-Image {}".format(saven))
+        if m==0:
+            # move motor to start
+            step_2_start = get_distvec(pos_start, pos_start - direction* scan_range//2)
+            wait_time, pos_now = autofocus_move_motor(self,stepsize=step_2_start,motor=motor,pos_now=pos_start, wait_time=None)
+            poslist.append(poslist[-1]+step_2_start)
+        else: 
+            # move motor 1 step up
+            pos_now = pos_start
+            wait_time, pos_now  = autofocus_move_motor(self,stepsize=direction*steps_dist,motor=motor,pos_now=pos_now,wait_time=wait_time)
+            poslist.append(pos_now)
+        # clear the stream in preparation for the next frame
+        timstart = time()
+        rawCapture.truncate(0)
+        logger.debug(pos_now)
+        # update display
+        autofocus_display_update(self, upd_val, m, steps_nbr, n, NIterTotal*(steps_nbr+1))
+
+        # set counter
+        m += 1
+        if m > steps_nbr:
+            break
+    
+    return sharpness, tproc, tim, pos_now, poslist, wait_time, m, rawCapture
 
 
 def autofocus_getMeasure(im, sharpness, tproc):

@@ -711,18 +711,18 @@ def abort_measurement(self, instance):
                         "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", ]
     change_enable_status_chain(self, True, activate_methods)
     if not instance.uid == self.ids['btn_snap'].uid:
-        event_delete('meas')
-        event_delete('meas_disp')
-        af.autofocus_afterclean(self, instance,'cam_fluo')
-        af.autofocus_afterclean(self, instance,'cam')
-        if 'autofocus_measure' in fg.EVENT:
-            event_delete('autofocus_measure')
-            af.autofocus_afterclean(self, instance,'cam_af')
-
+        abort_measurement_delete_events()
         fg.config['experiment']['last_expt_num'] = fg.expt_num
         show_notification_labels(self, instance)
             
-
+def abort_measurement_delete_events():
+    event_delete('meas')
+    event_delete('meas_disp')
+    af.autofocus_afterclean(self, instance,'cam_fluo')
+    af.autofocus_afterclean(self, instance,'cam')
+    if 'autofocus_measure' in fg.EVENT:
+        event_delete('autofocus_measure')
+        af.autofocus_afterclean(self, instance,'cam_af')
 
 def event_delete(event_name):
     try:
@@ -1147,7 +1147,7 @@ def run_autofocus(self, instance, key):
             fg.EVENT['autofocus_now'] = Clock.schedule_once(
                 partial(af.autofocus_callback, self, instance), 0.1)
             fg.EVENT['autofocus_clean'] = Clock.schedule_once(
-                partial(af.autofocus_afterclean, self, instance), 0.2) 
+                partial(af.autofocus_afterclean, self, instance, 'cam_af'), 0.2) 
         else:  # auto-deactivate autofocus
             set_autofocus(self, instance)
             change_activation_status(instance)
