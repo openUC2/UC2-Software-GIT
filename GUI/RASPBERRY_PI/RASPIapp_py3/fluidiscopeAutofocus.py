@@ -58,7 +58,7 @@ def autofocus_callback(self, instance, key, *rargs):
         logger.debug('Autofocus finished.')
         if instance.uid == self.ids['btn_autofocus_now'].uid:
             autofocus_afterclean(self=self,instance=instance,camdict='cam_af')
-            change_activation_status(instance)
+            toolbox.change_activation_status(instance)
 #
 #
 # %%
