@@ -3,8 +3,9 @@ awb_gains:
 - 1.5
 - 1.5
 awb_mode: off
+bayer: false
+camProp_defined: false
 camProp_use_global: 0
-camProp_defined: 0
 digital_gain: 0
 exposure_compensation: 0
 exposure_mode: off
@@ -17,5 +18,6 @@ resolution:
 - 1232
 sensor_mode: 4
 shutter_speed: 40000
+use_video_port: true
 video_denoise: false
 video_stabilization: false

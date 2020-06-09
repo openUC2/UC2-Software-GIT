@@ -10,6 +10,6 @@ conversion_factor_z: 1
 standard_move_dist_xy: 80
 standard_move_dist_z: 80
 standard_move_time_xy: 1.0
-standard_move_time_z: 1.1
+standard_move_time_z: 1.2
 stepsize_xy: 84
 stepsize_z: 70

@@ -1,30 +1,23 @@
-awbGain:
+analog_gain: 0
+awb_gains:
 - 1.5
 - 1.5
-awbMode: false
-brightness: 50
-camProp_defined: 0
+awb_mode: off
+bayer: true
+camProp_defined: false
 camProp_use_global: 0
-colorEffects: null
-contrast: 0
-crop:
-- 0.0
-- 0.0
-- 1.0
-- 1.0
-exposureCompensation: 0
-exposureMode: false
-hflip: []
-imageEffects: none
+digital_gain: 0
+exposure_compensation: 0
+exposure_mode: off
+framerate: 30
+image_denoise: false
 iso: 100
-meterMode: average
-previewLength: 3
+meter_mode: average
 resolution:
-- 2592
-- 1944
-rotation: 0
-saturation: 0
-sharpness: 0
-shutterSpeed: 0
-vflip: false
-videoStabilization: false
+- 3280
+- 2464
+sensor_mode: 3
+shutter_speed: 40000
+use_video_port: false
+video_denoise: false
+video_stabilization: false

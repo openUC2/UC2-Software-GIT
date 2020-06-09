@@ -38,7 +38,7 @@ logger = logger_createChild('autofocus','UC2')
 # ----------------------------------- #
 
 
-def autofocus_callback(self, instance, *rargs):
+def autofocus_callback(self, instance, key, *rargs):
     '''
         Tests whether autofocus is already running or anything else is blocking. If not: blocks all measurements (and further autofocus-calls) and resets autofocus-count if scheduled.
         To block running autofocus, click "AF now" as implemented in Toolbox.run_autofocus-function.
@@ -49,12 +49,16 @@ def autofocus_callback(self, instance, *rargs):
     else:
         # wait 1s before checking again
         while fg.config['experiment']['imaging_active']:
-            sleep(1)
+            Clock.schedule_once(
+                partial(toolbox.run_autofocus, self, instance, key), 1)
         logger.debug('Autofocus started.')
         fg.config['experiment']['autofocus_busy'] = True
         autofocus_routine(self)
         fg.config['experiment']['autofocus_busy'] = False
         logger.debug('Autofocus finished.')
+        if instance.uid == self.ids['btn_autofocus_now'].uid:
+            autofocus_afterclean(self=self,instance=instance,camdict='cam_af')
+            change_activation_status(instance)
 #
 #
 # %%
@@ -150,19 +154,23 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
             fg.camera.iso = fg.config[camdict]['iso']
             fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
             fg.camera.resolution = fg.config[camdict]['resolution']
-            fg.camera.sensor_mode = fg.config['autofocus']['sensor_mode']
+            fg.camera.sensor_mode = fg.config[camdict]['sensor_mode']
             fg.camera.video_denoise = fg.config[camdict]['video_denoise']
             fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
+
+            # Bayer-mode not possible with video-port
+            if fg.config[camdict]['use_video_port']:
+                fg.config[camdict]['bayer'] = False
             
             
             # wait for camera to settle on new setup
             sleep(0.5)
             
             # prepare Buffer
-            rawCapture = PiRGBArray(fg.camera, fg.config['autofocus']['resolution'])
+            rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
 
             # take an image to use auto-functions for parameter estimation
-            fg.camera.capture(rawCapture, format="bgr", use_video_port=True, bayer=False)
+            fg.camera.capture(rawCapture, format="rgb", use_video_port=fg.config[camdict]['use_video_port'], bayer=fg.config[camdict]['bayer'])
             rawCapture.truncate(0)
             camStats.append(get_camstats(fg.camera,printme=False))
 
@@ -186,9 +194,9 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
             logger.debug("Camera preparation done for {}.".format(camdict))
     
     if rawCapture is None:
-        logging.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
+        logger.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
         rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
-        logging.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
+        logger.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
 
     return camStats, rawCapture
 
@@ -280,8 +288,8 @@ def autofocus_getParameters(self):
     pos_min = fg.config['motor']['calibration_z_min']
     smethod = fg.config['autofocus']['technique']
     max_steps = fg.config['autofocus']['max_steps'] 
-    fg.config['autofocus']['resolution'] = fg.config['cam']['sensor_mode_size'][fg.config['autofocus']['sensor_mode']]
-    imres = fg.config['autofocus']['resolution']
+    fg.config['cam_af']['resolution'] = fg.config['cam']['sensor_mode_size'][fg.config['cam_af']['sensor_mode']]
+    imres = fg.config['cam_af']['resolution']
     motor = fg.config['autofocus']['motor']
     save_im = fg.config['autofocus']['save_images']
     NIterTotal = fg.config['autofocus']['scan_iterations']
@@ -310,7 +318,7 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
     scan_range = steps_dist * steps_nbr
     poslist = [pos_start,]
     pos_now = pos_start
-    upd_val = 100 / ((steps_nbr+1)*NIterTotal)
+    upd_val = 100 / (steps_nbr*NIterTotal)
 
     # prepare containers
     tim = []
@@ -325,7 +333,7 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
     for n in range(NIterTotal):
 
         # the loop
-        sharpness, tproc, tim, pos_now, poslist, wait_time, m,rawCapture  = autofocus_image(self=self,rawCapture=rawCapture,sharpness=sharpness,smethod=smethod,motor=motor,direction=direction,pos_start=pos_now,poslist=poslist,scan_range=scan_range,steps_dist=steps_dist,steps_nbr=steps_nbr,m=m,n=n,NIterTotal=NIterTotal,wait_time=wait_time,timstart=timstart,tim=tim,tproc=tproc,save_name=save_name,status=status,save_im=save_im,upd_val=upd_val)
+        sharpness, tproc, tim, pos_now, poslist, wait_time, m,rawCapture  = autofocus_image(self=self,rawCapture=rawCapture,sharpness=sharpness,smethod=smethod,motor=motor,direction=direction,pos_now=pos_now,poslist=poslist,scan_range=scan_range,steps_dist=steps_dist,steps_nbr=steps_nbr,m=m,n=n,NIterTotal=NIterTotal,wait_time=wait_time,timstart=timstart,tim=tim,tproc=tproc,save_name=save_name,status=status,save_im=save_im,upd_val=upd_val)
 
         # iterate the stack inversely 
         m=1
@@ -345,8 +353,8 @@ def fix_rawCapture():
             try:
                 return func(*args,**kwargs)
             except Exception as e:
-                logging.debug(e)
-                logging.warn("Continue image-acquisition, but with non-intended default setting of raspicam")
+                logger.debug(e)
+                logger.warn("Continue image-acquisition, but with non-intended default setting of raspicam")
                 rawCaptureNew = PiRGBArray(fg.camera, fg.camera.resolution)
                 kwargs['rawCapture'] = rawCaptureNew
                 return func(*args,**kwargs)
@@ -355,16 +363,19 @@ def fix_rawCapture():
 
 
 #@fix_rawCapture()
-def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_start,poslist,scan_range,steps_dist,steps_nbr,m,n,NIterTotal,wait_time,timstart,tim,tproc,save_name,status,save_im,upd_val):
+def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_now,poslist,scan_range,steps_dist,steps_nbr,m,n,NIterTotal,wait_time,timstart,tim,tproc,save_name,status,save_im,upd_val):
     '''
     Calculations on image acquired.
     '''
+    # to account for 3 steps we need  4 images ;)
+    steps_nbr = steps_nbr + 1
+
     for frame in fg.camera.capture_continuous(rawCapture, format="rgb", use_video_port=True):
         image = frame.array
 
         # calculation
         tim.append(time() - timstart)
-        logger.debug('Calculating image-sharpness with measure={} for image {}/{} in round {}/{} .'.format(smethod,m,steps_nbr,n+1,NIterTotal))
+        logger.debug('Calculating image-sharpness with measure={} for image {}/{} in round {}/{} at MOTOR_POS={}.'.format(smethod,m,steps_nbr,n+1,NIterTotal,pos_now))
         sharpness, tproc = autofocus_getMeasure(image, sharpness, tproc)
 
         # if save
@@ -374,18 +385,19 @@ def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_start,
             logger.debug("Store Autofocus-Image {}".format(saven))
         if m==0:
             # move motor to start
-            step_2_start = get_distvec(pos_start, pos_start - direction* scan_range//2)
-            wait_time, pos_now = autofocus_move_motor(self,stepsize=step_2_start,motor=motor,pos_now=pos_start, wait_time=None)
+            step_2_start = get_distvec(pos_now, pos_now - direction* scan_range//2)
+            wait_time, pos_now = autofocus_move_motor(self,stepsize=step_2_start,motor=motor,pos_now=pos_now, wait_time=None)
             poslist.append(poslist[-1]+step_2_start)
+            logger.debug("Starting-image and measure taken for m==0 in first iteration.")
+        elif m == steps_nbr:
+            poslist.append(pos_now)
         else: 
             # move motor 1 step up
-            pos_now = pos_start
             wait_time, pos_now  = autofocus_move_motor(self,stepsize=direction*steps_dist,motor=motor,pos_now=pos_now,wait_time=wait_time)
             poslist.append(pos_now)
         # clear the stream in preparation for the next frame
         timstart = time()
         rawCapture.truncate(0)
-        logger.debug(pos_now)
         # update display
         autofocus_display_update(self, upd_val, m, steps_nbr, n, NIterTotal*(steps_nbr+1))
 
@@ -470,14 +482,13 @@ def autofocus_display_update(self, upd_val, myd, fine_steps, myc, iter_max, *lar
         logger.debug("Updated autofocus progressbar to {}".format(
             self.ids['pb_autofocus'].value))
         # update message-display
-        msg = "Autofocus: Step {}/{} in iteration {}/{}.".format(
-            myd, fine_steps, myc, iter_max)
-        self.ids['lbl_warning'].text = msg
-        self.ids['user_notify_expt'].text = msg
+        #msg = "Autofocus: Step {}/{} in iteration {}/{}.".format(myd, fine_steps, myc, iter_max)
+        #self.ids['lbl_warning'].text = msg
+        #self.ids['user_notify_expt'].text = msg
     else:
         self.ids['pb_autofocus'].value = 0
-        self.ids['lbl_warning'].text = ""
-        self.ids['user_notify_expt'].text = ""
+        #self.ids['lbl_warning'].text = ""
+        #self.ids['user_notify_expt'].text = ""
 
 
 def autofocus_getRange(scanrange, pos_start, pos_min, pos_max):
@@ -548,6 +559,8 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
 
     s1 = np.array(s)[:,channel]
     res = []
+    xrssl = []
+    yrssl = []
 
     for m in range(NIterTotal):
         ttotal = time()
@@ -594,13 +607,30 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
             saven = "{}SharpnessFIT_{}_dir{}_of{}.npy".format(save_name,status,str(m),str(NIterTotal))
             np.save(saven, autofocus_res)
         if plotme:
-            autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name,nbr_dir=m,nbr_iter=NIterTotal,status=status)
-    
+            autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name,nbr_dir=m+1,nbr_iter=NIterTotal,status=status)
+
+        xrssl.append(xrss)
+        yrssl.append(yfit_rss)
+
     # position of highest contrast -> assure that its INT
     if fg.config['autofocus']['result_averaging']:
-        pos_max = int(np.mean(np.array(res)[:,1]))
+        res = np.array(res)
+        try:
+            pos_max = int(np.mean(res[:,1]))
+        except:
+            resh = []
+            for m in range(res.shape[0]):
+                if res[m].ndim == 3:
+                    resh.append(res[m,1])
+                else:
+                    resh.append(xrssl[np.argmax(yrssl)])
+            pos_max = int(np.mean(resh))
+
     else: 
-        pos_max = int(res[1,1])
+        try:
+            pos_max = int(res[1,1])
+        except:
+            pos_max = xlrss[np.argmax(ylrss)]
     #pos_max = xr[np.argmax(yfit)]
     #max_val = np.max(yfit)
 

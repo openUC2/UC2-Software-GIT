@@ -77,6 +77,7 @@ def mqtt_init():
     fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
 
     # instanciate devices
+    #for if 
     fg.ledarr = MQTTDevice(setup_name,  "LAR01")
     fg.motors = [MQTTDevice(setup_name, "MOT02"), MQTTDevice(
         setup_name, "MOT02"), MQTTDevice(setup_name, "MOT01")]

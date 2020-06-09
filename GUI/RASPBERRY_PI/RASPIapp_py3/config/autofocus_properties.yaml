@@ -3,23 +3,19 @@ camProp_defined: 1
 camProp_use_global: 0
 corr_test: 1
 duration_max: 10
-interval_min: 10
+interval_min: 60
 max_steps: 100
 maxmin: 0.05
 motor: 2
 result_averaging: true
-roi:
-- 1
-- 1
 run_only_once: true
 save_images: false
 save_sharpness: true
 scan_iterations: 2
 scan_method: 0
-sensor_mode: 4
-step_dist_coarse: 50
-step_dist_fine: 5
-steps_coarse: 5
+step_dist_coarse: 10
+step_dist_fine: 1
+steps_coarse: 7
 steps_fine: 4
 success: 1
 technique: Tenengrad

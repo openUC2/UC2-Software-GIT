@@ -1,19 +1,20 @@
 analog_gain: 0
-awbGain:
+awb_mode: off
+awb_gains:
 - 1.5
 - 1.5
-awbMode: off
-camProp_defined: 0
+bayer: false
+camProp_defined: false
 camProp_use_global: 0
-exposureCompensation: 0
-exposureMode: off
+exposure_compensation: 0
+exposure_mode: off
 image_denoise: false
 iso: 100
-meterMode: average
+meter_mode: average
 resolution:
 - 3280
 - 2464
-sensor_mode: 0
+sensor_mode: 3
 sensor_mode_size:
 - - 800
   - 480
@@ -31,7 +32,7 @@ sensor_mode_size:
   - 720
 - - 640
   - 480
-sharpness: 0
-shutterSpeed: 0
+shutter_speed: 40000
+use_video_port: false
 video_denoise: false
 video_stabilization: false

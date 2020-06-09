@@ -630,6 +630,7 @@ def run_measurement(self, instance):
 
         # let the device settle for a bit
         time.sleep(0.2)
+        fg.config['experiment']['active'] = 1
 
         # schedule callback-function
         # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
@@ -711,18 +712,21 @@ def abort_measurement(self, instance):
                         "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", ]
     change_enable_status_chain(self, True, activate_methods)
     if not instance.uid == self.ids['btn_snap'].uid:
-        abort_measurement_delete_events()
+        abort_measurement_delete_events(self=self,instance=instance)
         fg.config['experiment']['last_expt_num'] = fg.expt_num
         show_notification_labels(self, instance)
+
+    # deactivate activity-tracker
+    fg.config['experiment']['active'] = 0
             
-def abort_measurement_delete_events():
+def abort_measurement_delete_events(self,instance):
     event_delete('meas')
     event_delete('meas_disp')
-    af.autofocus_afterclean(self, instance,'cam_fluo')
-    af.autofocus_afterclean(self, instance,'cam')
+    af.autofocus_afterclean(self=self, instance=instance,camdict='cam_fluo')
+    af.autofocus_afterclean(self=self, instance=instance,camdict='cam')
     if 'autofocus_measure' in fg.EVENT:
         event_delete('autofocus_measure')
-        af.autofocus_afterclean(self, instance,'cam_af')
+        af.autofocus_afterclean(self=self, instance=instance,camdict='cam_af')
 
 def event_delete(event_name):
     try:
@@ -1109,13 +1113,22 @@ def autofocus(self, instance):
     '''
     set_autofocus(self, instance)
     change_activation_status(instance)
+
+    # distinguish between now and scheduled during measurement
     key = 'autofocus_now' if (
         instance.uid == self.ids['btn_autofocus_now'].uid) else 'autofocus'
+    
+    # if not existing, add routine
     if not key in fg.EVENT:
         run_autofocus(self, instance, key)
     else:
-        event_delete(key)
-
+        try:
+            event_delete(key)
+            event_delete('autofocus_measure')
+            af.autofocus_afterclean(self=self, instance=instance,camdict='cam_af')
+        except Exception as e:
+            logger.debug(e)
+            
 
 def set_autofocus(self, instance):
     '''
@@ -1137,6 +1150,15 @@ def set_autofocus(self, instance):
             refresh_text_entry(instance, "AF added")
         logger.debug("Autofocus activated.")
 
+def autofocus_wait_condition(condition,waittime,*args,**kwargs):
+    '''
+    Let's a function wait until a condition is met.
+    '''
+    if condition: 
+        fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(
+            af.autofocus_callback, kwargs['self'], kwargs['instance'], kwargs['key']), kwargs['intervaltime'])
+    else: 
+        fg.EVENT['autofocus_measure'] = Clock.schedule_once(partial(autofocus_wait_condition,fg.config['experiment']['active'],af.autofocus_callback,self=kwargs['self'], instance=kwargs['instance'], key=kwargs['key'],intervaltime=kwargs['intervaltime']),1)
 
 def run_autofocus(self, instance, key):
     '''
@@ -1145,18 +1167,20 @@ def run_autofocus(self, instance, key):
     if key == 'autofocus_now':
         if not fg.config['experiment']['autofocus_busy']:
             fg.EVENT['autofocus_now'] = Clock.schedule_once(
-                partial(af.autofocus_callback, self, instance), 0.1)
-            fg.EVENT['autofocus_clean'] = Clock.schedule_once(
-                partial(af.autofocus_afterclean, self, instance, 'cam_af'), 0.2) 
+                partial(af.autofocus_callback, self, instance, key), 0.1)
         else:  # auto-deactivate autofocus
             set_autofocus(self, instance)
             change_activation_status(instance)
     else:
-        fg.EVENT['autofocus_measure'] = Clock.schedule_interval(partial(
-            af.autofocus_callback, self, instance), fg.config['autofocus']['interval_min'] * 60)
-        logger.debug('Added Autofocus routine to callback.')
+        if 'autofocus_measure' in fg.EVENT:
+            event_delete('autofocus_measure')
+        else:
+            fg.EVENT['autofocus_measure'] = Clock.schedule_once(partial(autofocus_wait_condition,fg.config['experiment']['active'],af.autofocus_callback,self=self, instance=instance, key=key,intervaltime=fg.config['autofocus']['interval_min'] * 60),1)
+            logger.debug('Added Autofocus routine to callback.')
 
 
+# not used anymore?
+'''
 def autofocus_callback(self, instance, *rargs):
     # start autofocus if necessary and only if it is not already in progress
     if fg.config['experiment']['is_autofocus_request'] == True:
@@ -1173,7 +1197,7 @@ def autofocus_callback(self, instance, *rargs):
             # update display entries
             update_measurement_status_display(self)
         return True
-
+'''
 
 def switch_start_condition(self, instance):
     dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
