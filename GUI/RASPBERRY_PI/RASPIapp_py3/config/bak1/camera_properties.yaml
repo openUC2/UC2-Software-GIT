@@ -1,0 +1,28 @@
+awb_gain:
+- 1.5
+- 1.5
+awb_mode: auto
+brightness: 50
+colorEffects: null
+contrast: 0
+crop:
+- 0.0
+- 0.0
+- 1.0
+- 1.0
+exposure_compensation: 0
+exposure_mode: auto
+hflip: []
+imageEffects: none
+iso: 100
+meter_mode: average
+previewLength: 3
+resolution:
+- 3280
+- 2464
+rotation: 0
+saturation: 0
+sharpness: 0
+shutterSpeed: 0
+vflip: false
+videoStabilization: false

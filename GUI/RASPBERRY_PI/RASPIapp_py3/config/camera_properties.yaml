@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 awbGain:
 - 1.5
 - 1.5
@@ -17,6 +18,20 @@ imageEffects: none
 iso: 100
 meterMode: average
 previewLength: 3
+=======
+analog_gain: 0
+awb_gain:
+- 1.5
+- 1.5
+awb_mode: false
+camProp_defined: 0
+camProp_use_global: 0
+exposure_compensation: 0
+exposure_mode: false
+image_denoise: false
+iso: 100
+meter_mode: average
+>>>>>>> Stashed changes
 resolution:
 - 3280
 - 2464
