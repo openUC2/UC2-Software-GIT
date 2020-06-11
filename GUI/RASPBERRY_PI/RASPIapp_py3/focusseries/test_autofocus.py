@@ -12,19 +12,39 @@ from scipy import ndimage
 import os
 import numpy as np
 from scipy.ndimage import gaussian_filter
+from scipy.optimize import curve_fit
+
+# Define model function to be used to fit to the sharpness above:
+def gauss(x, mu, sigma):
+    return np.exp(-(x-mu)**2/(2.*sigma**2))
 
 mypath = './'
-sharpness = []
+ydata = []
 
-for file in glob.glob(os.path.join(mypath, "*.tif")):
+for file in sorted(glob.glob(os.path.join(mypath, "*.tif")),key=os.path.getmtime):
+    print(file)
     im = plt.imread(file)
-    im = gaussian_filter(im, 5) #convolve(image, mykernel)
-    mysharpness = np.std(im)
-    sharpness.append(mysharpness)
-    print(mysharpness)
-    mymetric =  (im[:,:,0]-im[:,:,1])**2+(im[:,:,1]-im[:,:,2])**2+(im[:,:,0]-im[:,:,2])**2
-    plt.imshow(mymetric), plt.show()
-    print(np.mean(mymetric))
-    
-    
-plt.plot(np.array(sharpness))
+    im = im[:,:,0]
+    im = gaussian_filter(im,10) #convolve(image, mykernel)
+    myydata = np.std(im)
+    ydata.append(myydata)
+    print(myydata)
+
+# preprocess 
+ydata = np.array(ydata)[1:] 
+ydata -= np.min(ydata)
+ydata /= np.max(ydata)
+xdata = np.linspace(0, 1, ydata.shape[0])
+
+# %%
+# p0 is the initial guess for the fitting coefficients (A, mu and sigma above)
+p0 = [1/2, 1.]
+
+coeff, var_matrix = curve_fit(gauss, xdata, ydata, p0=p0)
+coeff
+# Get the fitted curve
+hist_fit = gauss(xdata, coeff[0], coeff[1])
+
+plt.plot(xdata, ydata, label='raw data')
+plt.plot(xdata, hist_fit, label='Fitted ydata')
+plt.show()
