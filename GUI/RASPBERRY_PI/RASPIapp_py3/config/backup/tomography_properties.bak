@@ -1,0 +1,9 @@
+backlash: 10
+endPOS: 200
+motor: 2
+startPOS: 100
+steps: 10
+stepsize: 10
+steptime: 0.11
+take_image: true
+totaltime: 5

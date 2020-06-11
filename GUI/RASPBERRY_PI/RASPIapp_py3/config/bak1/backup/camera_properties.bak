@@ -1,7 +1,7 @@
-awb_gain:
+awbGain:
 - 1.5
 - 1.5
-awb_mode: 'auto'
+awbMode: 'auto'
 brightness: 50
 colorEffects: null
 contrast: 0
@@ -10,12 +10,12 @@ crop:
 - 0.0
 - 1.0
 - 1.0
-exposure_compensation: 0
-exposure_mode: auto
+exposureCompensation: 0
+exposureMode: auto
 hflip: []
 imageEffects: none
 iso: 100
-meter_mode: average
+meterMode: average
 previewLength: 3
 resolution:
 - 3280

@@ -1,38 +1,23 @@
-awb_gain:
+analog_gain: 0
+awb_gains:
 - 1.5
 - 1.5
-<<<<<<< Updated upstream
-awbMode: 'auto'
-=======
-awb_mode: false
->>>>>>> Stashed changes
-brightness: 50
-colorEffects: null
-contrast: 0
-crop:
-- 0.0
-- 0.0
-- 1.0
-- 1.0
-<<<<<<< Updated upstream
-exposureCompensation: 0
-exposureMode: auto
-=======
+awb_mode: off
+bayer: true
+camProp_defined: false
+camProp_use_global: 0
+digital_gain: 0
 exposure_compensation: 0
-exposure_mode: false
->>>>>>> Stashed changes
-hflip: []
-imageEffects: none
+exposure_mode: off
+framerate: 30
+image_denoise: false
 iso: 100
 meter_mode: average
-previewLength: 3
 resolution:
 - 3280
 - 2464
-rotation: 0
-saturation: 0
-sharpness: 0
-shutterSpeed: 1000000
-sensor_mode: 4
-vflip: false
-videoStabilization: false
+sensor_mode: 3
+shutter_speed: 40000
+use_video_port: false
+video_denoise: false
+video_stabilization: false
