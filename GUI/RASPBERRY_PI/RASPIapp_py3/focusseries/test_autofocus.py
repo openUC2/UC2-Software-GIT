@@ -38,13 +38,15 @@ xdata = np.linspace(0, 1, ydata.shape[0])
 
 # %%
 # p0 is the initial guess for the fitting coefficients (A, mu and sigma above)
-p0 = [1/2, 1.]
+p0 = [1/2, 10.]
 
 coeff, var_matrix = curve_fit(gauss, xdata, ydata, p0=p0)
 coeff
 # Get the fitted curve
 hist_fit = gauss(xdata, coeff[0], coeff[1])
+hist_fit_0 = gauss(xdata, p0[0], p0[1])
 
 plt.plot(xdata, ydata, label='raw data')
+plt.plot(xdata, hist_fit_0, label='init fit ')
 plt.plot(xdata, hist_fit, label='Fitted ydata')
 plt.show()
