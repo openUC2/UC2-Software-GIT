@@ -568,7 +568,7 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
         x = poslist[offset+m*steps:offset+(m+1)*steps]
 
         try:
-            p0 = [1., 0., 1.]
+            p0 = None #[1., 0., 1.]
             coeff, xr, xn, xrss, yfit, yfit_rss = autofocus_curveFit(
                 x, y, p0, use_scipy)
             if all(coeff == p0):
@@ -625,7 +625,6 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
                 else:
                     resh.append(xrssl[np.argmax(yrssl)])
             pos_max = int(np.mean(resh))
-
     else: 
         try:
             pos_max = int(res[1,1])
@@ -658,11 +657,21 @@ def autofocus_curveFit(x, y, p0, use_scipy):
     :yrss:  sub-sampled y-fitted values
 
     '''
-
+    # we better normalize it to have one parameter fixed
+    y-=np.min(y)
+    y/=np.max(y)
     xr = [np.min(x), np.max(x), len(x)]
+
+    # estimate the parameters according to a likely set
+    if p0 is None:
+        p0 = (1., np.mean(x), 3.) # A, mu, sigma
+        print(p0)
+    
+    # whether to use scipy
     if use_scipy:
         from scipy.optimize import curve_fit
         coeff, var_matrix = curve_fit(fitf_gauss, x, y, p0=p0)  # coeff=[A, mu, sigma]
+        logger.debug('Fitting for Focus-Stack found parameters {}'.format(coeff))
         a_fit = fitf_gauss(x, *coeff)  # Get the fitted curve
         xn = np.linspace(xr[0], xr[1], num=xr[2])
         xrss = np.linspace(xr[0], xr[1], num=xr[2] * 4)

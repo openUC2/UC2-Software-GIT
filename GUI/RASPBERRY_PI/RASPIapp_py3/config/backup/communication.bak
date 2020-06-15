@@ -6,6 +6,7 @@ mqtt_device_MOTORS:
 - MOT02
 - MOT02
 - MOT01
+mqtt_setup: S013
 mqtt_device_id_prefix: RASPI_
 mqtt_device_name: RAS01
 mqtt_ip: localhost

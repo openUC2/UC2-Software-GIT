@@ -1,8 +1,8 @@
 analog_gain: 0
-awb_mode: off
 awb_gains:
 - 1.5
 - 1.5
+awb_mode: off
 bayer: false
 camProp_defined: false
 camProp_use_global: 0

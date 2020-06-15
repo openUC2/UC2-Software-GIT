@@ -278,7 +278,7 @@ def settings_save_restore(self, instance, restore):
 
     # store if necessary
     if not restore:
-        logger.debug("Writing Settings into file for {}".format(instance.id))
+        logger.debug("Writing Settings into file for {}".format(repr(instance.text)))
         write_config()
 
 
@@ -287,7 +287,7 @@ def slider_setNA(self, instance):
     logger.debug("Instance.Value: " + str(instance.value))
     toolbox.setNA(int(instance.value))
     toolbox.fill_matrix(self, instance)
-    logger.debug("NA set by slider: {0}".format(fg.config['light']['NA']))
+    logger.debug("NA set by slider: {}".format(fg.config['light']['NA']))
 
 
 def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
@@ -325,7 +325,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
 
                     if not sync_only and np.sum(self.ids[prop_help].fl_value) > 0:
                         fg.ledarr.send("PXL", pos, list(
-                            self.ids[prop_help].fl_value))
+                            self.ids[prop_help].fl_value),logging=0)
                         time.sleep(fg.config['experiment']['i2c_send_delay'])
                         #logger.debug("sent:{0} of {1}".format(support_str,type(list(support_str))))
     fg.config['light']['update_matrix_active'] = False

@@ -15,6 +15,7 @@ global config
 global camera
 global motors
 global ledarr
+global fluo
 global mqttclient
 
 global code_path
@@ -27,7 +28,7 @@ global copy_path
 global expt_num
 global today
 global i2c
-global setup_number
+#global setup_number
 
 # datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") -> important for saving the expimernts
 today = datetime.datetime.now().strftime("%Y%m%d")
@@ -38,10 +39,11 @@ else:
 started_first_exp = False
 
 i2c = False
-setup_number = "004"
-VERSION = '0.3'
+#setup_number = "004"
+VERSION = '0.4'
 config = []
 EVENT = {}
 APP = []
 motors = []
 ledarr = []
+fluo = []

@@ -1366,22 +1366,29 @@ def matrix_switch(self, instance):
 
 
 def fill_matrix(self, instance, ignore_NA=False):
+
+    # clear display-values
     fg.ledarr.send("CLEAR")
-    fg.config['light']['user'] = [[0] * 8 for i in range(8)]
+    #fg.config['light']['user'] = [[0] * 8 for i in range(8)]
+
+    # prepare range to be filled
     options = [[3, 3, 2, 2], [2, 2, 4, 4], [1, 1, 6, 6], [0, 0, 8, 8]]
-    coords = options[3]
+    coords = options[3] if ignore_NA else options[fg.config['light']['NA'] - 1]
+    
+    # get color
+    color = fg.config['light']['color_picked']
+    #time.sleep(0.02)
 
-    if not ignore_NA:
-        coords = options[fg.config['light']['NA'] - 1]
-
-    color = [fg.config['light']['intensity']] * 3
-    time.sleep(0.02)
+    # draw rect
     if not fg.my_dev_flag:
         fg.ledarr.send("RECT", coords, 1, color)
+
+    # write into user-light-settings
     for row in range(coords[2]):
         for col in range(coords[3]):
-            fg.config['light']['user'][row + coords[0]][col + coords[1]] = 1
+            fg.config['light']['user'][row + coords[0]][col + coords[1]] = color
 
+    # display new pattern
     fluidiscopeIO.update_matrix(self, ignore_NA=True)
 
 

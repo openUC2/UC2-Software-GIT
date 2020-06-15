@@ -68,21 +68,38 @@ def arduino_init():
 def mqtt_init():
     # connect to server
     from random import randint
-    setup_name = "S" + fg.setup_number
+    setup_name = fg.config['comcat']['mqtt_setup']
     device_ID = fg.config['comcat']['mqtt_device_id_prefix'] + str(randint(0, 100000))
     device_MQTT_name = fg.config['comcat']['mqtt_device_name']
     mqtt_connect_to_server(broker=fg.config['comcat']['mqtt_ip'], mqttclient_name=fg.config['comcat']['mqtt_client_name'], mqttclient_pass=fg.config['comcat']['mqtt_client_pass'], mqttclient_ID=device_ID, port=fg.config['comcat']['mqtt_port'], keepalive=fg.config['comcat']['mqtt_keepalive'], use_login=fg.config['comcat']['mqtt_use_login'])
 
-    # register Raspberry
-    fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
+    # register devices
+    fg.raspi = mqtt_register_devices(device_MQTT_name,setup_name)
+    #fg.raspi = MQTTDevice(setup_name, device_MQTT_name)
+    fg.ledarr = mqtt_register_devices(fg.config['comcat']['mqtt_device_LEDS'],setup_name)
+    fg.motors = mqtt_register_devices(fg.config['comcat']['mqtt_device_MOTORS'],setup_name)
+    fg.fluo = mqtt_register_devices(fg.config['comcat']['mqtt_device_LASER'],setup_name)
+    #fg.ledarr = MQTTDevice(setup_name,  fg.config['comcat']['mqtt_device_LEDS'])
+    #fg.motors = [MQTTDevice(setup_name, "MOT02"), MQTTDevice(setup_name, "MOT02"), MQTTDevice(setup_name, "MOT01")]
+    #fg.fluo = MQTTDevice(setup_name, "MOT01")
 
-    # instanciate devices
-    #for if 
-    fg.ledarr = MQTTDevice(setup_name,  "LAR01")
-    fg.motors = [MQTTDevice(setup_name, "MOT02"), MQTTDevice(
-        setup_name, "MOT02"), MQTTDevice(setup_name, "MOT01")]
-    fg.fluo = MQTTDevice(setup_name, "MOT01")
+def mqtt_register_devices(devices,setup_name):
+    '''
+    Adds devices to pointers.
 
+    Note: no ERROR-catches! 
+    '''
+    if devices is None or devices == '':
+        namer = None
+    elif type(devices) == str:
+        namer = MQTTDevice(setup_name, devices)
+    else:
+        namer = []
+        for m in devices:
+            namer.append(MQTTDevice(setup_name, m))
+
+    # done?
+    return namer
 
 def mqtt_connect_to_server(broker, mqttclient_name, mqttclient_pass, mqttclient_ID, port=1883, keepalive=60, use_login=False):
     mqtt.Client.connected_flag = False  # create flag in class
