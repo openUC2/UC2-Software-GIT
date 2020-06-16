@@ -1,4 +1,4 @@
-active_motor: 1
+active_motor: 0
 calibration_z_lastupdate: 19.12.2018
 calibration_z_max: 5000
 calibration_z_min: -5000

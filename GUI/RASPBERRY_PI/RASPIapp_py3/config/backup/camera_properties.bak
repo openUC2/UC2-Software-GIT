@@ -5,6 +5,7 @@ awb_gains:
 awb_mode: off
 bayer: false
 camProp_defined: false
+camProp_fix_properties: true
 camProp_use_global: 0
 exposure_compensation: 0
 exposure_mode: off

@@ -131,7 +131,7 @@ def autofocus_afterclean(self, instance, camdict):
     '''
     fg.config[camdict]['camProp_defined'] = False
 
-def autofocus_setupCAM(camStats, camdict,rawCapture=None):
+def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
     '''
         Prepares camera. 
         Make sure that Autofocus-config entries are updated before running this. 
@@ -142,6 +142,10 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
         camStats = []
     else:
         camStats.append(get_camstats(fg.camera,printme=False))
+
+    if camdict==None:
+        camdict = 'cam'
+        logger.warn('No camdict was given to Autofocus_setupCAM routine! For stability set to: {}.'.format(camdict))
 
     # test conditions
     update_condition = fg.config['autofocus']['camProp_defined'] or (fg.camera.resolution==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode'])
@@ -161,7 +165,6 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
             # Bayer-mode not possible with video-port
             if fg.config[camdict]['use_video_port']:
                 fg.config[camdict]['bayer'] = False
-            
             
             # wait for camera to settle on new setup
             sleep(0.5)
@@ -190,7 +193,8 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
             fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
 
             # set True to use setting for future 
-            fg.config[camdict]['camProp_defined'] = 1
+            fg.config[camdict]['camProp_defined'] = True
+            fg.config['experiment']['active_camProp'] = camdict
             logger.debug("Camera preparation done for {}.".format(camdict))
     
     if rawCapture is None:
@@ -568,63 +572,81 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
         x = poslist[offset+m*steps:offset+(m+1)*steps]
 
         try:
-            p0 = None #[1., 0., 1.]
-            coeff, xr, xn, xrss, yfit, yfit_rss = autofocus_curveFit(
-                x, y, p0, use_scipy)
-            if all(coeff == p0):
+            try:
+                p0 = None #[1., 0., 1.]
+                coeff, xr, xn, xrss, yfit, yfit_rss = autofocus_curveFit(
+                    x, y, p0, use_scipy)
+                if all(coeff == p0):
+                    p0l = [1., 0.]
+                    succs = False
+                else:
+                    succs = True
+
+            except RuntimeError as err:
+                logger.debug("intercepted")
+                logger.debug(err)
+                # try linear fit again
                 p0l = [1., 0.]
+                if use_scipy:
+                    from scipy.optimize import curve_fit
+                    coeff, var_matrixl = curve_fit(
+                    fitf_lin, x, y, p0=p0l)
+                xr = [np.min(x), np.max(x), len(x)]
+                xrss = x
+                yrss = y
+                yfit = y
                 succs = False
-            else:
-                succs = True
 
-        except RuntimeError as err:
-            logger.debug("intercepted")
-            logger.debug(err)
-            # try linear fit again
-            p0l = [1., 0.]
-            if use_scipy:
-                from scipy.optimize import curve_fit
-                coeff, var_matrixl = curve_fit(
-                fitf_lin, x, y, p0=p0l)
-            succs = False
+            res.append(coeff)
 
-        res.append(coeff)
+            # save out dictionary:
+            if storeme:    
+                autofocus_res = {'z_Pos': x,
+                                'sharpness': y,
+                                'iteration': m,
+                                'iteration_limit': NIterTotal,
+                                'steps_nbr': xr[2],
+                                'steps_dist': xr[1] - xr[0],
+                                'backlash': fg.config['autofocus']['backlash'],
+                                'im_taken_before': fg.config['experiment']['images_taken'],
+                                'total_time': ttotal - time(),
+                                'A,mu,sigma': coeff,
+                                'success': succs,
+                                }
+                saven = "{}SharpnessFIT_{}_dir{}_of{}.npy".format(save_name,status,str(m),str(NIterTotal))
+                np.save(saven, autofocus_res)
+            if plotme:
+                autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name,nbr_dir=m+1,nbr_iter=NIterTotal,status=status)
 
-         # save out dictionary:
-        if storeme:    
-            autofocus_res = {'z_Pos': x,
-                            'sharpness': y,
-                            'iteration': m,
-                            'iteration_limit': NIterTotal,
-                            'steps_nbr': xr[2],
-                            'steps_dist': xr[1] - xr[0],
-                            'backlash': fg.config['autofocus']['backlash'],
-                            'im_taken_before': fg.config['experiment']['images_taken'],
-                            'total_time': ttotal - time(),
-                            'A,mu,sigma': coeff,
-                            'success': succs,
-                            }
-            saven = "{}SharpnessFIT_{}_dir{}_of{}.npy".format(save_name,status,str(m),str(NIterTotal))
-            np.save(saven, autofocus_res)
-        if plotme:
-            autofocus_plotOptSearch(x=x,y=y,yfit=yfit,xrss=xrss,yfit_rss=yfit_rss,smethod=smethod,name_im=save_name,nbr_dir=m+1,nbr_iter=NIterTotal,status=status)
-
-        xrssl.append(xrss)
-        yrssl.append(yfit_rss)
+            xrssl.append(xrss)
+            yrssl.append(yfit_rss)
+        except:
+            logger.warn('FindOptimum broke -> was skipped and no output was produced for iteration {} of {}.'.format(m+1,NIterTotal))
+            xrssl.append([])
+            yrssl.append([])
 
     # position of highest contrast -> assure that its INT
     if fg.config['autofocus']['result_averaging']:
         res = np.array(res)
         try:
             pos_max = int(np.mean(res[:,1]))
-        except:
+        except Exception as e:
+            logger.warn(e)
             resh = []
             for m in range(res.shape[0]):
-                if res[m].ndim == 3:
-                    resh.append(res[m,1])
+                if len(res[m]) == 3:
+                    resh.append(res[m][1])
                 else:
-                    resh.append(xrssl[np.argmax(yrssl)])
-            pos_max = int(np.mean(resh))
+                    if not yrssl[m] == []: 
+                        resh.append(xrssl[m][np.argmax(yrssl[m])])
+            
+            # exclude values with too big difference
+            try:
+                mymask = [(abs(m / resh[0] - 1) < 0.05) for m in resh]
+                pos_max = int(np.mean(resh[m]))
+            except Exception as e: 
+                logger.warn(e)
+                pos_max = int(resh[0])
     else: 
         try:
             pos_max = int(res[1,1])

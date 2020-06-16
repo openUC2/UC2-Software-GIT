@@ -59,6 +59,9 @@ class MQTTDevice(object):
                 #    self.topic = self.topic_base + sep[0]
                 #    sep = sep[1:]
                 cmd += delim.join(sep)
+                cmd += delim
+            elif type(arg) == dict:
+                pass
             else:
                 # if i == 0:
                 #    sep = arg.split(MQTTDevice.delim_inst)
@@ -66,9 +69,9 @@ class MQTTDevice(object):
                 #    arg = delim.join(sep[1:])
                 #    arg += delim if not (arg == "") else ""
                 cmd += str(arg)
-           # if i > 0:
-            cmd += delim
-            # print("MQTTDevice_extractCommand -> i={}: topic_spec={}, cmd={}.".format(i,self.topic_base, cmd[:-1]))  # verbose output -> maybe rather put into logfile?
+                cmd += delim
+                # if i > 0:
+                
         try:
             logme = kwargs['logging']
         except:

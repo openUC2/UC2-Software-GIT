@@ -379,16 +379,6 @@ def select_method(self, instance, aimed_component_group):
             counter_active_methods = [
                 "btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
         imaging_methods_change(self, instance)
-    # elif aimed_component_group == "imaging_method_fluo":
-    #    active_method = "btn_imaging_technique_fluo"
-    #    switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3"]
-    #    if not any([self.ids[x].fl_active for x in switch_entries]):
-    #        inactive_methods =["btn_imaging_measiter", "btn_imaging_totaldurat","btn_imaging_dplus", "btn_imaging_dminus","btn_imaging_hplus", "btn_imaging_hminus",
-    #                                "btn_imaging_mplus", "btn_imaging_mminus","btn_imaging_splus", "btn_imaging_sminus",]
-    #        counter_active_methods = ["btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
-    #    else:
-    #        inactive_methods = None
-    #        counter_active_methods = None
     elif aimed_component_group == "select_imaging_time_entry":
         method_dictionary = {"MEAS\nITER": 0, "TOTAL\nDURAT": 1}
         switch_entries = ["btn_imaging_measiter", "btn_imaging_totaldurat"]
@@ -483,23 +473,18 @@ def select_method_switches(instance, method_dictionary, switch_entries):
     return [popped_entry, switch_entries]
 
 
-def get_imaging_method(self):
-    if check_active(self.ids['btn_imaging_technique_1']):
-        imaging_technique = self.ids['btn_imaging_technique_1'].text
-    elif check_active(self.ids['btn_imaging_technique_2']):
-        imaging_technique = self.ids['btn_imaging_technique_2'].text
-    elif check_active(self.ids['btn_imaging_technique_3']):
-        imaging_technique = self.ids['btn_imaging_technique_3'].text
-    elif check_active(self.ids['btn_imaging_technique_4']):
-        imaging_technique = self.ids['btn_imaging_technique_4'].text
-    elif check_active(self.ids['btn_imaging_technique_5']):
-        imaging_technique = self.ids['btn_imaging_technique_5'].text
-    elif check_active(self.ids['btn_take_background']):
-        imaging_technique = self.ids['btn_take_background'].text
-    elif check_active(self.ids['btn_take_foreground']):
-        imaging_technique = self.ids['btn_imaging_technique_3'].text
-    else:
-        imaging_technique = None
+def get_imaging_method(self,instance):
+    imaging_technique = None
+    #imaging_dict = ['btn_imaging_technique_1','btn_imaging_technique_1','btn_imaging_technique_2','btn_imaging_technique_3','btn_imaging_technique_4','btn_imaging_technique_5','btn_take_background']
+    imaging_dict=fg.config['experiment']['imaging_method_dic']
+    for m in imaging_dict:
+        if check_active(self.ids[imaging_dict[m]]):
+            imaging_technique = self.ids[imaging_dict[m]].text
+    
+    if check_active(self.ids['btn_take_foreground']):
+        imaging_technique = self.ids[imaging_dict['Custom']].text
+    
+
     return imaging_technique
 
 
@@ -603,7 +588,7 @@ def run_measurement(self, instance):
     fluidiscopeIO.prepareFolder()
 
     # put data into config-dictionary
-    set_measurement_parameter(self)
+    set_measurement_parameter(self, instance)
 
     # clear arduino and set to flyby (= do not save patterns)
     if not fg.my_dev_flag:
@@ -632,8 +617,12 @@ def run_measurement(self, instance):
         time.sleep(0.2)
         fg.config['experiment']['active'] = 1
 
+        # prepare camera if selected
+        if (not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
+            camStats, _ = af.autofocus_setupCAM(camStats=None, camdict='cam')
+            fg.config['cam']['camProp_use_global'] = True
+
         # schedule callback-function
-        # fg.EVENT = Clock.schedule_interval(partial(autofocus_callback, self, instance), fg.config['experiment']['interval_autofocus'])
         update_interval = 1  # for timer display refresh
         fg.EVENT['meas'] = Clock.schedule_interval(partial(
             imaging_callback, self, instance), fg.config['experiment']['interval'])  # in seconds
@@ -646,12 +635,12 @@ def run_measurement(self, instance):
             #logger.debug("not implemented yet")
 
 
-def set_measurement_parameter(self):
+def set_measurement_parameter(self, instance):
     fg.config['light']['intensity_expt'] = fg.config['light']['intensity']
     if fg.config['experiment']['imaging_cause'] == 'SNAP':
         fg.config['experiment']['snap_num'] += 1
     else:
-        fg.config['experiment']['imaging_method'] = get_imaging_method(self)
+        fg.config['experiment']['imaging_method'] = get_imaging_method(self, instance)
         fg.config['experiment']['imaging_num'] = 0
         fg.config['experiment']['time_left'] = fg.config['experiment']['duration']
         fg.config['experiment']['time_passed'] = 0
@@ -699,8 +688,7 @@ def update_measurement_status_display_timer(self, interval, *rargs):
 
 def abort_measurement(self, instance):
     deactivate(instance)
-    imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-                          "Custom": "btn_imaging_technique_3", "FPM": "btn_imaging_technique_4", "Fluor": "btn_imaging_technique_5"}
+    imaging_method_dic = fg.config['experiment']['imaging_method_dic']
     change_enable_status(instance, False)
     while not fg.config['experiment']['active_methods'] == []:
         key = fg.config['experiment']['active_methods'].pop(0)
@@ -714,14 +702,18 @@ def abort_measurement(self, instance):
     if not instance.uid == self.ids['btn_snap'].uid:
         abort_measurement_delete_events(self=self,instance=instance)
         fg.config['experiment']['last_expt_num'] = fg.expt_num
-        show_notification_labels(self, instance)
+        #show_notification_labels(self, instance)
 
     # deactivate activity-tracker
     fg.config['experiment']['active'] = 0
+    fg.config['cam']['camProp_use_global'] = False
+    if fg.config['experiment']['active_camProp'] in ['cam','cam_fluo']:
+        fg.config['experiment']['active_camProp'] = None
             
 def abort_measurement_delete_events(self,instance):
     event_delete('meas')
     event_delete('meas_disp')
+    event_delete('take_image_callback')
     af.autofocus_afterclean(self=self, instance=instance,camdict='cam_fluo')
     af.autofocus_afterclean(self=self, instance=instance,camdict='cam')
     if 'autofocus_measure' in fg.EVENT:
@@ -738,19 +730,6 @@ def event_delete(event_name):
     except:
         logger.debug(
             "Event: ~{}~ was not found (anymore) and hence nothing was don.".format(event_name))
-
-# not used anymore?? ---------------------------------------
-# def take_snapshot(self, instance):
-#    take_image(self, instance.text)
-#
-#    if instance.text in ["SNAP", "BG", "FG"]:  # switch color
-#        imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-#                              "Custom": "btn_imaging_technique_3"}
-#        select_method(self, instance, "take_image")
-#        change_enable_status(self.ids[imaging_method_dic[fg.config['experiment']['imaging_method']]], True)
-#
-#    fg.ledarr.send("CLEAR")
-# ----------------------------------------------------------
 
 
 def filename_take_image_now_refine(filename='', imaging_cause='MEAS', file_format='.jpg'):
@@ -775,8 +754,6 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
     if fg.my_dev_flag:
         logger.debug("Image taken -- DEV-MODE --.")
     else:
-        # prepare camera
-        camera_set_parameter(method=method)
         # select for imaging cause ->
         if imaging_cause == 'AF':
             fg.camera.capture(rawCapture, 'rgb')
@@ -828,19 +805,27 @@ def take_image(self, *args):
     if fg.config['experiment']['imaging_cause'] == 'AF':  # case of autofocus
         image_name = set_image_name(im_cause='AF', method='CUS')
         file_name_write = uni.Path(fg.expt_path, image_name)
-        #time.sleep(0.1)
-        #time.sleep(fg.config['imaging']['speed'])
         tin_returnval = take_image_now(self, 'AF', file_name_write)
         fg.ledarr.send("CLEAR")
     elif fg.config['experiment']['imaging_cause'] == 'SNAP':
+        # prepare camera
+        if fg.config['experiment']['active_camProp'] == None and not ( fg.config[camdict]['camProp_defined'] and fg.config[camdict]['camProp_use_global']):
+            camera_set_parameter(method=method)
+            deact = True
+            time.sleep(0.1)
+        
         # workaround to do snaps in OSLO workshop
-        time.sleep(0.1)
         image_name = set_image_name(
             im_cause=fg.config['experiment']['imaging_cause'], method='Custom')
         file_name_write = uni.Path(fg.expt_path, image_name)
         tin_returnval = take_image_now(
             self, fg.config['experiment']['imaging_cause'], file_name_write)
         logger.debug('Snap done')
+
+        # afterclean for CAM-Properties
+        if deact:
+            fg.config[camdict]['camProp_defined'] = False
+            fg.config['experiment']['active_camProp'] = None
     else:
         for myl in range(0, len(fg.config['experiment']['active_methods'])):
             # active method
@@ -1039,8 +1024,8 @@ def imaging_callback(self, instance, *largs):
     # skip imaging step during autofocus
     if not fg.config['experiment']['autofocus_busy']:
         # take image
-        fg.config['experiment']['imaging_method'] = 'MEAS'
-        take_image_callback(self)
+        #fg.config['experiment']['imaging_method'] = 'MEAS' # WHY IS THIS HERE???
+        
         deact_me = False
         if (fg.config['experiment']['time_left'] - fg.config['experiment']['interval']) >= 0:
             # update config entries
@@ -1048,6 +1033,10 @@ def imaging_callback(self, instance, *largs):
 
             # update display entries
             update_measurement_status_display(self)
+
+            # take image
+            take_image_callback(self)
+
             return True
         elif any([fg.config['experiment']['time_left'] == 0, fg.config['experiment']['time_left'] - fg.config['experiment']['interval'] < 0]):
             update_measurement_parameters(self)
@@ -1057,17 +1046,17 @@ def imaging_callback(self, instance, *largs):
             deact_me = True
 
         if deact_me:
-            fg.config['experiment']['success'] = True
-            imaging_method_dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-                                  "Custom": "btn_imaging_technique_3", "Fluor": "btn_imaging_technique_fluor"}
-            switch_start_condition(self, instance)
-            deactivate(
-                self.ids[imaging_method_dic[fg.config['experiment']['imaging_method']]])
-            keys = ['meas_disp', 'autofocus_measure']
-            if keys[0] in fg.EVENT:
-                event_delete(keys[0])
-            if keys[1] in fg.EVENT:
-                event_delete(keys[1])
+            abort_measurement(self, self.ids['btn_take_image'])
+            #fg.config['experiment']['success'] = True
+            #switch_start_condition(self, instance)
+            #for m in fg.config['experiment']['active_methods']:
+            #    deactivate(
+            #        self.ids[fg.config['experiment']['imaging_method_dic'][m]])
+            #keys = ['meas_disp', 'autofocus_measure']
+            #if keys[0] in fg.EVENT:
+            #    event_delete(keys[0])
+            #if keys[1] in fg.EVENT:
+            #    event_delete(keys[1])
             return False
 
 # ----------------------------------------------------------------
@@ -1083,7 +1072,7 @@ def tomography_startmeas(self, instance):
     pass
 
 
-def tomograhy_callback(self, instance, acquire_images=False):
+def tomography_callback(self, instance, acquire_images=False):
     for imnbr in range(fg.config['experiment']['tomography_steps']):
         if acquire_images:
             take_image(self)
@@ -1200,8 +1189,7 @@ def autofocus_callback(self, instance, *rargs):
 '''
 
 def switch_start_condition(self, instance):
-    dic = {"Bright": 'btn_imaging_technique_1', "qDPC": "btn_imaging_technique_2",
-           "Custom": "btn_imaging_technique_3", "FPM": "btn_imaging_technique_4", "Fluor": "btn_imaging_technique_5"}
+    dic = fg.config['experiment']['imaging_method_dic']
     deactivate(instance)
 
     if "Measurement" in instance.text:
@@ -1944,11 +1932,9 @@ def preview_switch(self, instance):
 def preview_size_switch(self, instance):
     # status of button will be changed in SUPER-routine
     fg.config['imaging']['window_big_active'] = not(instance.fl_active)
-    #print("Prev size switch.")
-    #logger.debug('Preview-Size-Switch: Testing the contents of the different config-entries for window size. ');logger.debug(fg.config['imaging']['window']);logger.debug(fg.config['imaging']['window_small']);logger.debug(fg.config['imaging']['window_big'])
     fg.config['imaging']['window'] = [m for m in fg.config['imaging']['window_small']] if instance.fl_active else [
-        m for m in fg.config['imaging']['window_big']]  # set preview-window-size to small if big-window button was already active (and henc gets deactivated)
-    #logger.debug(fg.config['imaging']['window']);logger.debug('Preview-Size-Switch: END')
+        m for m in fg.config['imaging']['window_big']]  
+        
     if self.ids['btn_preview'].fl_active:
         camera_preview(self, True)
 
@@ -1960,22 +1946,23 @@ def preview_activation(self, instance):
 
 
 def camera_preview(self, start):
-    if not fg.my_dev_flag:
-        if start is True:  # and (fg.popup_last_im is False):
-            try:
-                fg.camera.start_preview()
-                fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']
-                fg.camera.preview.alpha = fg.config['imaging']['alpha']
-                fg.camera.preview.window = fg.config['imaging']['window']
-            finally:
-                logger.debug("Preview started")
+    if 0:
+        if not fg.my_dev_flag:
+            if start is True:  # and (fg.popup_last_im is False):
+                try:
+                    fg.camera.start_preview()
+                    fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']
+                    fg.camera.preview.alpha = fg.config['imaging']['alpha']
+                    fg.camera.preview.window = fg.config['imaging']['window']
+                finally:
+                    logger.debug("Preview started")
+            else:
+                try:
+                    fg.camera.stop_preview()
+                finally:
+                    logger.debug("Preview stopped!")
         else:
-            try:
-                fg.camera.stop_preview()
-            finally:
-                logger.debug("Preview stopped!")
-    else:
-        warn_dev_mode(self)
+            warn_dev_mode(self)
 
 
 def camera_preview_change_status(self, instance):
