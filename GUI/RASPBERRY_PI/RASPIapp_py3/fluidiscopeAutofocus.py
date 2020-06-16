@@ -172,7 +172,13 @@ def autofocus_setupCAM(camStats, camdict,rawCapture=None):
             rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
 
             # take an image to use auto-functions for parameter estimation
-            fg.camera.capture(rawCapture, format="rgb", use_video_port=fg.config[camdict]['use_video_port'], bayer=fg.config[camdict]['bayer'])
+            try:
+                fg.camera.capture(rawCapture, format="rgb", use_video_port=fg.config[camdict]['use_video_port'], bayer=fg.config[camdict]['bayer'])
+            except:
+                err = sys.exc_info()[0]
+                logger.debug("Picamera REsolution error: ")
+                logger.debug(err)
+                fg.camera.capture(rawCapture, format="rgb", use_video_port=False, bayer=fg.config[camdict]['bayer'])
             rawCapture.truncate(0)
             camStats.append(get_camstats(fg.camera,printme=False))
 
