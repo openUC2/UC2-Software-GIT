@@ -16,6 +16,7 @@ from datetime import datetime
 from os import listdir, path
 from glob import glob
 from time import sleep, time
+from fractions import Fraction
 
 import logging
 import tifffile as tif
@@ -66,6 +67,47 @@ def autofocus_callback(self, instance, key, *rargs):
 # @            Parameters           @ #
 # ----------------------------------- #
 
+def convert_Fraction_array(a):
+    '''
+    Tests and converts an array if fraction.
+    '''
+    return_tuple = False
+    #logger.debug(a)
+
+    # run on each element if is of list/tuple
+    if isinstance(a,(tuple,list)):
+
+        # make tuple changeable
+        if isinstance(a,tuple):
+            a = list(a)
+            return_tuple = True
+        
+        # convert entries to floats
+        for m in range(len(a)):
+            a[m] = convert_Fraction_atom(a[m])
+        
+        # format back
+        if return_tuple:
+            a = tuple(a)
+
+    else:
+        a = convert_Fraction_atom(a)
+
+    # done?
+    return a
+
+def convert_Fraction_atom(a):
+    '''
+    Tests if entry is Fraction and converts.
+    '''
+    if isinstance(a,Fraction):
+        a = a.numerator / a.denominator
+        #logger.debug("Converted atom.")
+    
+    # done?
+    return a
+
+
 def get_camstats(camera,printme=False):
     '''
     Retrieves all available camera-properties and stores them into a dictionary.
@@ -86,6 +128,7 @@ def get_camstats(camera,printme=False):
     for m in all_getter:
         try: 
             camProp[m[5:]] = eval('camera.' + m + '()')
+            camProp[m[5:]] = convert_Fraction_array(camProp[m[5:]])
         except:
             pass
 
@@ -148,7 +191,12 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
         logger.warn('No camdict was given to Autofocus_setupCAM routine! For stability set to: {}.'.format(camdict))
 
     # test conditions
-    update_condition = fg.config['autofocus']['camProp_defined'] or (fg.camera.resolution==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode'])
+    update_condition = not (fg.config[camdict]['camProp_defined'] or ([fg.camera.resolution[0],fg.camera.resolution[1]]==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode']))
+
+    # light a candle
+    fg.ledarr.send("NA+3")
+    fg.ledarr.send("RECT+0+0+8+8+1", 120,120,120)
+    sleep(fg.config['imaging']['speed'])
 
     # if parameters not globally fixed OR not yet fixed by Autofocus-routine
     if not fg.config[camdict]['camProp_use_global']:
@@ -182,15 +230,21 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             fg.config[camdict]['awb_gains'] = camStats[-1]['awb_gains']
             fg.config[camdict]['digital_gain'] = camStats[-1]['digital_gain']
             fg.config[camdict]['framerate'] = camStats[-1]['framerate']
-            fg.config[camdict]['shutter_speed'] = camStats[-1]['shutter_speed']
+            fg.config[camdict]['shutter_speed'] = camStats[-1]['exposure_speed']
             
-            # overwrite camera parameters AND (therwith) FIX 
+            # overwrite camera parameters AND (therwith) FIX -> exposure_mode  must be last to be able to change shutter_speed properly
             fg.camera.awb_gains = fg.config[camdict]['awb_gains'] 
             fg.camera.awb_mode = fg.config[camdict]['awb_mode']
             fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
-            fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
             fg.camera.framerate = fg.config[camdict]['framerate']
             fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
+            sleep(1)
+            fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
+            logger.debug('analog_gain={}, digital_gain={}, shutter_speed={}.'.format(fg.camera.analog_gain,fg.camera.digital_gain, fg.camera.shutter_speed))
+            # wait for camera_gains to settle
+            #sleep(1)
+            #import os
+            #fg.camera.capture(os.path.join(os.getcwd(),'data','test1'),format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
 
             # set True to use setting for future 
             fg.config[camdict]['camProp_defined'] = True
@@ -201,6 +255,10 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
         logger.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
         rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
         logger.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
+
+    # turn the candle out
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
 
     return camStats, rawCapture
 
@@ -220,7 +278,8 @@ def autofocus_routine(self, camStats=None):
         > scan_range: half of the total (symmetric) scanning distance
     '''
     # turn on light (so that Photon-flux can already be passively evaluated by Sensor)
-    fio.update_matrix(self, ignore_NA=True, sync_only=False)
+    fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
+    #fio.update_matrix(self, ignore_NA=False, sync_only=False, pattern='CUS')
     sleep(0.2)
 
     # get parameters
@@ -233,6 +292,11 @@ def autofocus_routine(self, camStats=None):
     # initialize camera-properties and create Image-Buffer
     camStats = [] if camStats is None else camStats
     camStats, rawCapture = autofocus_setupCAM(camStats,camdict='cam_af')
+
+    # leave light on
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
 
     # Coarse scan -> get coarse-sharpness measures + new position of motor
     sharpness_coarse, poslist, pos_coarse, tim, tproc, ttotal, wait_time = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_coarse_dist, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
@@ -258,6 +322,7 @@ def autofocus_routine(self, camStats=None):
         # move to new center with z motor AND clear LED-array
         wait_time, pos_now  = autofocus_move_motor(self,stepsize=step_2opt_fine,motor=motor,pos_now=pos_fine,wait_time=wait_time)
     
+    fg.ledarr.send("CLEAR")
     fg.ledarr.send("CLEAR")
 
     # done?

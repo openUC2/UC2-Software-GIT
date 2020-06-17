@@ -130,7 +130,7 @@ def verify_user_config(userload, defaultdict):
 
 def write_config():
     main_load = fluid_load(fg.config_file)
-    trackme = ''
+    trackme = []
     try:
         for sub in main_load:
             trackme = sub
@@ -138,7 +138,8 @@ def write_config():
             fluid_dump(sub_file, fg.config[sub])
     except Exception as exc:
         logger.error(exc)
-        logger.warning('Please consider Leaving the Application. Error happened when writing into: {}.'.format(trackme))
+        logger.warning('Please consider Leaving the Application. Error happened when writing into: {}. Content was:'.format(trackme))
+        logger.warning(fg.config[trackme])
         # exit()
     logger.debug("Config written.")
 
