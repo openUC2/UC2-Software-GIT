@@ -157,7 +157,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, message):
     #print("on message")
-    a = time.time()
+    a = time.time().str
     logger.info("Time on receive={0}".format(a))
     #print("Time on receive={0}".format(a))
     if message == "off":
