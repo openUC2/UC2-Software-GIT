@@ -127,3 +127,4 @@ GUI/RASPIappV2
 
 # external contents
 external/
+HARDWARE_CONTROL/ESP32/.DS_Store
