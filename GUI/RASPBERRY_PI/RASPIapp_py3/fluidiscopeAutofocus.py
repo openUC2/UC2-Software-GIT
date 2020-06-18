@@ -193,18 +193,14 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
     # test conditions
     update_condition = not (fg.config[camdict]['camProp_defined'] or ([fg.camera.resolution[0],fg.camera.resolution[1]]==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode']))
 
-    # if autofocus -> maybe measurement is running?
-    if camdict == 'cam_af' and fg.config['experiment']['active']: 
-        update_condition = False
+    # light a candle
+    fg.ledarr.send("NA+3")
+    fg.ledarr.send("RECT+0+0+8+8+1", 120,120,120)
+    sleep(fg.config['imaging']['speed'])
 
     # if parameters not globally fixed OR not yet fixed by Autofocus-routine
     if not fg.config[camdict]['camProp_use_global']:
         if update_condition:
-
-            # light a candle
-            fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
-            sleep(fg.config['imaging']['speed'])
-
             # set basic modes 
             fg.camera.image_denoise = fg.config[camdict]['image_denoise']
             fg.camera.iso = fg.config[camdict]['iso']
@@ -214,7 +210,7 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             fg.camera.video_denoise = fg.config[camdict]['video_denoise']
             fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
 
-            # Bayer-mode not possible with video-port => catch-error
+            # Bayer-mode not possible with video-port
             if fg.config[camdict]['use_video_port']:
                 fg.config[camdict]['bayer'] = False
             
@@ -245,25 +241,24 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             sleep(1)
             fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
             logger.debug('analog_gain={}, digital_gain={}, shutter_speed={}.'.format(fg.camera.analog_gain,fg.camera.digital_gain, fg.camera.shutter_speed))
+            # wait for camera_gains to settle
+            #sleep(1)
+            #import os
+            #fg.camera.capture(os.path.join(os.getcwd(),'data','test1'),format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
 
             # set True to use setting for future 
             fg.config[camdict]['camProp_defined'] = True
             fg.config['experiment']['active_camProp'] = camdict
             logger.debug("Camera preparation done for {}.".format(camdict))
     
-            # turn the candle out
-            fg.ledarr.send("CLEAR")
-            fg.ledarr.send("CLEAR")
-
-        # not measure all parameters, but just set new sensor_mode and resolution
-        else:
-            fg.camera.sensor_mode = fg.config[camdict]['sensor_mode']
-            fg.camera.resolution = fg.config[camdict]['resolution']
-
     if rawCapture is None:
         logger.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
         rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
         logger.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
+
+    # turn the candle out
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
 
     return camStats, rawCapture
 
@@ -283,9 +278,9 @@ def autofocus_routine(self, camStats=None):
         > scan_range: half of the total (symmetric) scanning distance
     '''
     # turn on light (so that Photon-flux can already be passively evaluated by Sensor)
-    fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
+    fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
     #fio.update_matrix(self, ignore_NA=False, sync_only=False, pattern='CUS')
-    sleep(fg.config['experiment']['i2c_send_delay'])
+    sleep(0.2)
 
     # get parameters
     image_name_template, steps_coarse_dist, steps_coarse_nbr, scanrange_coarse, steps_fine_dist, steps_fine_nbr, scanrange_fine, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal, channel, use_scipy = autofocus_getParameters(self)
@@ -296,16 +291,12 @@ def autofocus_routine(self, camStats=None):
 
     # initialize camera-properties and create Image-Buffer
     camStats = [] if camStats is None else camStats
-    if fg.config['experiment']['active']:
-        camera_bak = [fg.camera.sensor_mode, fg.camera.resolution]
     camStats, rawCapture = autofocus_setupCAM(camStats,camdict='cam_af')
 
     # leave light on
-    #fg.ledarr.send("CLEAR")
-    #fg.ledarr.send("CLEAR")
-    #fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
-    fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
-    sleep(fg.config['experiment']['i2c_send_delay'])
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
 
     # Coarse scan -> get coarse-sharpness measures + new position of motor
     sharpness_coarse, poslist, pos_coarse, tim, tproc, ttotal, wait_time = autofocus_scan(self, names=image_name_template, rawCapture=rawCapture, smethod=smethod, pos_start=pos_start, pos_min=pos_min, pos_max=pos_max, max_steps=max_steps, steps_nbr=steps_coarse_nbr, steps_dist=steps_coarse_dist, direction = 1, NIterTotal=NIterTotal,motor=motor, status='coarse', save_im=save_im, save_name=image_name_template)
@@ -333,11 +324,6 @@ def autofocus_routine(self, camStats=None):
     
     fg.ledarr.send("CLEAR")
     fg.ledarr.send("CLEAR")
-
-    # clear camera to former properties
-    if fg.config['experiment']['active']:
-        fg.camera.sensor_mode = camera_bak[0]
-        fg.camera.resolution = camera_bak[1]
 
     # done?
     return True
