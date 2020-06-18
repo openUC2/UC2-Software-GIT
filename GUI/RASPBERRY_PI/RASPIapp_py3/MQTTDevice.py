@@ -52,13 +52,11 @@ class MQTTDevice(object):
         cmd = ""
         delim = MQTTDevice.delim_inst  # so that it is not different per instances
         #self.logger.debug("MQTTclient_extractCommand -> starting for: {}".format(args))
-
+        logme = True
         # check whether logging-directive was attached
         if type(args[-1])== dict:
-            try:
+            if 'logging' in args[-1]:
                 logme = args[-1]['logging']
-            except:
-                logme = True
             args=args[0]
 
         for i, arg in enumerate(args):

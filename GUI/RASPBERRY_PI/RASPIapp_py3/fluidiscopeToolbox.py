@@ -33,7 +33,7 @@ import shutil
 if os.name == 'nt':
     pass
 else:
-    from PIL import Image
+    #from PIL import Image
     import picamera
 
 
@@ -761,7 +761,7 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
                                      fg.config['autofocus']['use_channel']]
             return image
         else:
-            fg.camera.capture(filename)  # add 'rgb' to take raw images
+            fg.camera.capture(filename,format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
             if 'Fluor' in fg.config['experiment']['active_methods']:
                 logger.debug(
                     "RAW: Start acquistion into RAM, extract and concat Green-Channel.")
@@ -775,7 +775,7 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
                 # and lossless compressed
                 np.savez_compressed(filename, rawstream)
                 logger.debug("RAW: done.")
-    return True
+    return True, filename
 
 
 def take_image_callback(self, *args):
@@ -804,8 +804,8 @@ def take_image(self, *args):
     active_modes = []
     if fg.config['experiment']['imaging_cause'] == 'AF':  # case of autofocus
         image_name = set_image_name(im_cause='AF', method='CUS')
-        file_name_write = uni.Path(fg.expt_path, image_name)
-        tin_returnval = take_image_now(self, 'AF', file_name_write)
+        file_name_write = str(uni.Path(fg.expt_path, image_name))
+        tin_returnval, filename = take_image_now(self, 'AF', file_name_write)
         fg.ledarr.send("CLEAR")
     elif fg.config['experiment']['imaging_cause'] == 'SNAP':
         # prepare camera
@@ -817,10 +817,13 @@ def take_image(self, *args):
         # workaround to do snaps in OSLO workshop
         image_name = set_image_name(
             im_cause=fg.config['experiment']['imaging_cause'], method='Custom')
-        file_name_write = uni.Path(fg.expt_path, image_name)
-        tin_returnval = take_image_now(
+        file_name_write = str(uni.Path(fg.expt_path, image_name))
+        tin_returnval, file_name_write = take_image_now(
             self, fg.config['experiment']['imaging_cause'], file_name_write)
         logger.debug('Snap done')
+
+        # last image
+        config['experiment']['expt_last_image'] = file_name_write
 
         # afterclean for CAM-Properties
         if deact:
@@ -834,8 +837,8 @@ def take_image(self, *args):
                 myl, len(fg.config['experiment']['active_methods']) - 1, active_method))
             image_name = set_image_name(
                 im_cause=fg.config['experiment']['imaging_cause'], method=active_method)
-            file_name_write = uni.Path(fg.expt_path, image_name)
-            #logger.debug("file_name_write = " + file_name_write)
+            file_name_write = str(uni.Path(fg.expt_path, image_name))
+
             # make sure preview is off
             set_active_again = False
             if check_active(self.ids['btn_preview']):
@@ -853,7 +856,7 @@ def take_image(self, *args):
                         str(fg.config['light']['intensity_expt'])
                     time.sleep(fg.config['experiment']['i2c_send_delay'])
                     # time.sleep(fg.config['imaging']['speed'])
-                    tin_returnval = take_image_now(
+                    tin_returnval, file_name_write = take_image_now(
                         self, fg.config['experiment']['imaging_cause'], file_name_write_fluo)
                     fg.fluo.send("FLUO", 0)
                     time.sleep(fg.config['experiment']['i2c_send_delay'])
@@ -865,20 +868,20 @@ def take_image(self, *args):
                     if active_method in ["BG", "FG"]:
                         # imaging
                         if active_method == "BG":
-                            tin_returnval = take_image_now(
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write)
                         else:
                             fg.ledarr.send("NA+2")
                             fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write)
                     else:
                         if active_method == 'Bright':
                             fg.ledarr.send("NA+3")
                             fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write)
                         elif active_method == "qDPC":
                             pattern_list = prepare_illu_pattern_list()
@@ -891,7 +894,7 @@ def take_image(self, *args):
                             fluidiscopeIO.update_matrix(
                                 self, ignore_NA=True, sync_only=False)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("CLEAR")
                         elif active_method == "FPM":
@@ -905,7 +908,7 @@ def take_image(self, *args):
                                 fg.ledarr.send("PXL", myc, col, col, col)
                                 # time.sleep(fg.config['imaging']['speed'])
                                 time.sleep(1.0)  # fastened
-                                tin_returnval = take_image_now(
+                                tin_returnval, file_name_write = take_image_now(
                                     self, fg.config['experiment']['imaging_cause'], fnwh)
                                 logger.debug(
                                     "Storing LED={} to {}.".format(myc, fnwh))
@@ -913,39 +916,38 @@ def take_image(self, *args):
                                 time.sleep(0.04)
                         elif active_method == "RECT":
                             # set now with small NA image
-                            file_name_write = uni.Path(
-                                fg.expt_path, image_name)
-                            # fluidiscopeIO.update_matrix(self, instance, ignoreNA=True, sync_only=False)
-                            # time.sleep(0.5)
+                            str(uni.Path(
+                                fg.expt_path, image_name))
+                            
                             fg.ledarr.send("RECT+3+3+2+2+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval = take_image_now(
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write)
                             fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
                         else:
                             #
                             image_name += "-Tomo"
-                            file_name_write = uni.Path(
-                                fg.expt_path, image_name)
-                            tin_returnval = take_image_now(
+                            file_name_write = str(uni.Path(
+                                fg.expt_path, image_name))
+                            tin_returnval, file_name_write = take_image_now(
                                 self, fg.config['experiment']['imaging_cause'], file_name_write, method='')
             finally:
                 pass
         if not fg.config['experiment']['imaging_cause'] == 'SNAP':
             if active_method in ['Bright', 'qDPC', 'Custom', 'Fluor']:
                 fg.config['experiment']['imaging_num'] += 1
-            fg.config['experiment']['expt_last_image'] = file_name_write + \
-                fg.config['imaging']['extension']
+            fg.config['experiment']['expt_last_image'] = file_name_write
         fg.ledarr.send("CLEAR")
     if set_active_again:
         camera_preview(self, True)
         for x in active_modes:
             buttons_light(self, self.ids[x])
-    # True -> normal images taken;
-    # image -> case of autofocus
+
+
+    # done ? 
     return tin_returnval
 
-    #logger.debug("fg.config['experiment']['expt_last_image']" + fg.config['experiment']['expt_last_image'])
+
 
 
 def set_image_name(im_cause=None, method=None, mytime=None):
@@ -980,7 +982,6 @@ def resizeImage(infile, resize_factor=5):  # used to show image in preview
         cv.Resize(im, thumbnail)
         fname = infile + "_thumbnail.jpg"  # path
         cv.imwrite(fname, thumbnail)
-        # fg.config['experiment']['expt_last_image'] = fname
         return fname
 
 
@@ -1651,23 +1652,25 @@ def devmode_switch(func):
 
 
 def show_last_im(self, instance):
-    # (1) Create Layout
+    
+    
     # Layout of Popup
     box = BoxLayout(orientation='vertical')
+    
     # insert Image
     subbox_1 = BoxLayout(size_hint_y=0.9)
     usr_src = str(fg.config['experiment']['expt_last_image'])
-    # usr_src = '20180613_203118_Bright.jpg'
-    logger.debug("show last img src: " + usr_src)
-    logger.debug("Is File: " + str(os.path.isfile(usr_src)))
+    logger.debug("Displaying last image={} ".format(usr_src))
+    
     # resize image and show smaller one -> try different factors
-    usr_src = resizeImage(usr_src, resize_factor=5)
-    widget_image = Image(source=usr_src)
+    widget_image = Image(source=usr_src,allow_stretch=True,keep_ratio=True)
     subbox_1.add_widget(widget_image)
+
     # add Button area
     subbox_2 = BoxLayout(size_hint_y=0.1, padding=(10, 5, 10, 5))
     popup_button = Button(text='Close')
     subbox_2.add_widget(popup_button)
+
     # Add to Layout of Popup
     box.add_widget(subbox_1)
     box.add_widget(subbox_2)
@@ -1682,9 +1685,6 @@ def show_last_im(self, instance):
 
     # (4) Open Popup
     popup.open()
-    # fg.popup_last_im = True
-
-    # fg.config_active['experiment_properties']['directory_copy'] = selection
 
 
 '''Copy with progress bar?
@@ -1946,7 +1946,7 @@ def preview_activation(self, instance):
 
 
 def camera_preview(self, start):
-    if 0:
+    if 1:
         if not fg.my_dev_flag:
             if start is True:  # and (fg.popup_last_im is False):
                 try:
