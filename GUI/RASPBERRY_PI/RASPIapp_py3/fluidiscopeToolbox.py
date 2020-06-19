@@ -741,10 +741,40 @@ def filename_take_image_now_refine(filename='', imaging_cause='MEAS', file_forma
         filename += '-' + str(fg.config['experiment']['autofocus_num'])
     return filename + file_format
 
-# really just takes an image
 
+
+def take_image_atom(filename=None,fileformat='jpeg',rawCapture=None,rawFormat='rgb',camdict='cam',use_video_port=None, use_bayer=None):
+    '''
+    Finally takes the image depending on conditions chosen (storage vs others).
+    '''
+    # security check because video_port seems to break when used with full resolution (independend of awb_mode, exposure_mode AND framerate)
+    if use_video_port == None:
+        use_video_port = False if fg.camera.resolution == fg.camera.MAX_RESOLUTION else fg.config[camdict]['use_video_port']
+
+    # Bayer only works in non-video mode
+    if use_bayer == None:
+        use_bayer = False if ((fg.camera.sensor_mode not in [2,3]) or use_video_port) else fg.config[camdict]['bayer']
+
+    if (filename is None) and rawCapture is None:
+        pass    
+    elif (filename is None) and rawCapture is not None: 
+        fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
+        logger.debug('Image captured into rawCapture with format {}.'.format(rawFormat))
+    elif filename is not None and rawCapture is None:
+        fg.camera.capture(filename, format=fileformat, use_video_port=use_video_port, bayer=use_bayer)
+        logger.debug('Image captured into file with format {}.'.format(fileformat))
+    elif filename is not None and rawCapture is not None:
+        fg.camera.capture(filename, format=fileformat, use_video_port=use_video_port, bayer=use_bayer)
+        fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
+        logger.debug('Image captured into file and rawCapture with formats {} and {}.'.format(fileformat, rawFormat))
+
+    # done?
+    return rawCapture
 
 def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
+    '''
+    Prepares filename and switches between modes. 
+    '''
     # get correct filename
     filename = filename_take_image_now_refine(
         filename=filename, imaging_cause=imaging_cause, file_format='.jpg')
@@ -756,24 +786,30 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
     else:
         # select for imaging cause ->
         if imaging_cause == 'AF':
-            fg.camera.capture(rawCapture, 'rgb')
+            #fg.camera.capture(rawCapture, 'rgb')
+            take_image_atom(rawCapture=rawCapture,rawFormat='rgb',camdict='cam_af')
             image = rawCapture.array[:, :,
                                      fg.config['autofocus']['use_channel']]
+            rawCapture.truncate(0)
             return image
         else:
-            fg.camera.capture(filename,format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
+            #fg.camera.capture(filename,format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
+            take_image_atom(filename=filename,fileformat="jpeg",camdict='cam')
+            
             if 'Fluor' in fg.config['experiment']['active_methods']:
                 logger.debug(
                     "RAW: Start acquistion into RAM, extract and concat Green-Channel.")
                 filename[:-4] + '-rawG.npz'
                 stream = picamera.array.PiBayerArray(fg.camera)
                 # 'rgb' -> Error: unable to locate bayer-pattern at end of buffer
-                fg.camera.capture(stream, 'jpeg', bayer=True)
+                #fg.camera.capture(stream, 'jpeg', bayer=True)
+                take_image_atom(rawCapture=stream,rawFormat='rgb',camdict='cam_fluo')
                 rawstream = np.transpose(
                     np.dstack((stream.array[1::2, ::2, 1], stream.array[::2, 1::2, 1])), [2, 0, 1])
                 logger.debug("RAW: Save as compressed numpy.")
                 # and lossless compressed
                 np.savez_compressed(filename, rawstream)
+                stream.truncate(0)
                 logger.debug("RAW: done.")
     return True, filename
 

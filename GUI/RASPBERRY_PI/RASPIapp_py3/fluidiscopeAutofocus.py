@@ -23,6 +23,7 @@ import tifffile as tif
 # math
 import numpy as np
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 
 
 if not fg.my_dev_flag:
@@ -202,30 +203,30 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
         if update_condition:
 
             # light a candle
-            fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
+            fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
             sleep(fg.config['imaging']['speed'])
 
             # set basic modes 
             fg.camera.image_denoise = fg.config[camdict]['image_denoise']
             fg.camera.iso = fg.config[camdict]['iso']
             fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
-            fg.camera.resolution = fg.config[camdict]['resolution']
             fg.camera.sensor_mode = fg.config[camdict]['sensor_mode']
+            fg.camera.resolution = fg.config[camdict]['resolution']
             fg.camera.video_denoise = fg.config[camdict]['video_denoise']
             fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
 
             # Bayer-mode not possible with video-port => catch-error
             if fg.config[camdict]['use_video_port']:
                 fg.config[camdict]['bayer'] = False
-            
+
             # wait for camera to settle on new setup
             sleep(0.5)
             
             # prepare Buffer
-            rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
+            rawCapture = PiRGBArray(fg.camera, fg.camera.resolution)
 
             # take an image to use auto-functions for parameter estimation
-            fg.camera.capture(rawCapture, format="rgb", use_video_port=fg.config[camdict]['use_video_port'], bayer=fg.config[camdict]['bayer'])
+            toolbox.take_image_atom(rawCapture=rawCapture,rawFormat='rgb',camdict=camdict)
             rawCapture.truncate(0)
             camStats.append(get_camstats(fg.camera,printme=False))
 
@@ -237,8 +238,8 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             fg.config[camdict]['shutter_speed'] = camStats[-1]['exposure_speed']
             
             # overwrite camera parameters AND (therwith) FIX -> exposure_mode  must be last to be able to change shutter_speed properly
-            fg.camera.awb_gains = fg.config[camdict]['awb_gains'] 
             fg.camera.awb_mode = fg.config[camdict]['awb_mode']
+            fg.camera.awb_gains = fg.config[camdict]['awb_gains']
             fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
             fg.camera.framerate = fg.config[camdict]['framerate']
             fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
@@ -283,7 +284,7 @@ def autofocus_routine(self, camStats=None):
         > scan_range: half of the total (symmetric) scanning distance
     '''
     # turn on light (so that Photon-flux can already be passively evaluated by Sensor)
-    fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
+    fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
     #fio.update_matrix(self, ignore_NA=False, sync_only=False, pattern='CUS')
     sleep(fg.config['experiment']['i2c_send_delay'])
 
@@ -304,7 +305,7 @@ def autofocus_routine(self, camStats=None):
     #fg.ledarr.send("CLEAR")
     #fg.ledarr.send("CLEAR")
     #fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
-    fg.ledarr.send("RECT+1+1+6+6+1", 120,120,120)
+    fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
     sleep(fg.config['experiment']['i2c_send_delay'])
 
     # Coarse scan -> get coarse-sharpness measures + new position of motor
@@ -498,9 +499,22 @@ def autofocus_getMeasure(im, sharpness, tproc):
     '''
     # calculate sharpness measure
     tprocstart = time()
+
+    # pre-filter with a (coarse) Gauss-kernel to get rid of high-freq-noise
+    im = gaussian_filter(im, 5) #convolve(image, mykernel)
+
     if fg.config['autofocus']['scan_method'] == 1:
-        # (fast) sharpness Filter-based
-        pass
+         # (fast) sharpness Filter-based on canny
+        #from skimage import filters
+        #edges = filters.sobel(im)
+        # Get x-gradient in "sx"
+        #sx = ndimage.sobel(im,axis=0,mode='constant')
+        # Get y-gradient in "sy"
+        #sy = ndimage.sobel(im,axis=1,mode='constant')
+        # Get square root of sum of squares
+        #edges=np.hypot(sx,sy)
+        mysharpness = np.std(im)
+        sharpness.append(mysharpness)
     elif fg.config['autofocus']['scan_method'] == 2:
         # (fast) byte-stream reading based
         pass
