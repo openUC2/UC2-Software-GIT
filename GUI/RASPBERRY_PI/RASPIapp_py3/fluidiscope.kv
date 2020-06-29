@@ -491,7 +491,7 @@
                         padding: (5,5,5,5)
                         GridLayout:
                             size_hint_x: 0.8
-                            cols: 5
+                            cols: 6
                             row: 1
                             spacing: 2
                             FluidButton:
@@ -514,6 +514,10 @@
                                 id: btn_imaging_technique_5
                                 text: "Fluor"
                                 on_press: root.select_imaging_method(self)
+                            FluidButton:
+                                id: btn_imaging_technique_6
+                                text: "Ext"
+                                on_press: root.select_imaging_method(self)
                         BoxLayout:
                             padding: (2,0,2,0)
                             size_hint_x: 0.05
@@ -524,8 +528,9 @@
                             #padding: (5,0,0,0)
                             FluidButton:
                                 id: btn_imaging_technique_tomography
+                                fl_active: False
                                 text: "Tomo"
-                                on_press: root.tomography_activation(self)
+                                on_press: root.tomography_btn_logic(self) 
                     BoxLayout:
                         size_hint_y: 0.2
                         orientation: 'vertical'
@@ -1207,7 +1212,6 @@
                             id: scr_light_set_2_btn_back
                             text: "Back"
                             on_press: root.options_settings_back()
-            # scr_tomo
             Screen:
                 name: "scr_tomo"
                 BoxLayout:
@@ -1236,6 +1240,7 @@
                                 size_hint_x: 0.1
                                 text: 'MOT\nOR'
                             FluidToggleGroup:
+                                id: tomo_toggleGroup_motor
                                 size_hint_x: 0.9
                                 cols: 3
                                 rows: 1
@@ -1246,22 +1251,22 @@
                                     text: 'X'
                                     group: "tomo_motor_dir"
                                     allow_no_selection: False
-                                    on_press: root.tomography_btn_logic(self)
-                                    on_release: root.current_active = 0 
+                                    #on_press: root.current_active = 0 
+                                    on_release: root.tomography_btn_logic(self)
                                 ToggleButton:
                                     id: tomo_btn_mot_sel_1
                                     text: 'Y'
                                     group: "tomo_motor_dir"
                                     allow_no_selection: False
-                                    on_press: root.tomography_btn_logic(self)
-                                    on_release: root.current_active = 1
+                                    #on_press: root.current_active = 1
+                                    on_release: root.tomography_btn_logic(self)
                                 ToggleButton:
                                     id: tomo_btn_mot_sel_2
                                     text: 'Z'
                                     group: "tomo_motor_dir"
                                     allow_no_selection: False
-                                    on_press: root.tomography_btn_logic(self)
-                                    on_release: root.current_active = 2
+                                    #on_press: root.current_active = 2
+                                    on_release: root.tomography_btn_logic(self)
                                     state: 'down'
                         BoxLayout:
                             size_hint_y: 0.25
@@ -1282,38 +1287,8 @@
                                     id: tomography_btn_set_pos_end
                                     text: 'Set\nEnd'
                                     on_press: root.tomography_btn_logic(self)
-                            FluidiBox:
-                                size_hint_x: 0.5
-                                border_width: 2
-                                border_color: 0.5,0.5,0.5,0
-                                orientation: 'vertical'
-                                BoxLayout:
-                                    FluidLabel:
-                                        text: 'Start from'
-                                        bgcolor: 0.2,0.2,0.2,1
-                                FluidToggleGroup:
-                                    cols: 2
-                                    padding: (2,0,2,0)
-                                    current_active:  1
-                                    ToggleButton:
-                                        id: tomo_btn_start_pos_sel
-                                        text: 'Selection'
-                                        group: "tomo_pos_start"
-                                        on_press: root.current_active = 0
-                                    ToggleButton:
-                                        id: tomo_btn_start_pos_man
-                                        text: 'Manual'
-                                        group: "tomo_pos_start"
-                                        allow_no_selection: False
-                                        on_press: root.current_active = 1
-                                        state: 'down'
-                        BoxLayout:
-                            size_hint_y: 0.25
-                            orientation: 'horizontal'
-                            Label:
-                                size_hint_x: 0.1
-                                text: 'STE\nPS'
                             FluidToggleGroup:
+                                id: tomo_toggleGroup_stepTime
                                 size_hint_x: 0.5
                                 cols: 2
                                 rows: 1
@@ -1324,159 +1299,98 @@
                                     text: '#Steps'
                                     group: "tomo_steps_config"
                                     allow_no_selection: False
-                                    on_press: root.current_active = 0
+                                    on_press: current_active = 0
                                     state: 'down'
+                                    on_release: root.tomography_btn_logic(self)
                                 ToggleButton:
                                     id: tomo_btn_time
                                     text: 'Time/Step'
                                     group: "tomo_steps_config"
                                     allow_no_selection: False
-                                    on_press: root.current_active = 1
-                            FluidiBox:
-                                size_hint_x: 0.2
-                                ToggleButton:
-                                    id: tomo_btn_backlash
-                                    text: 'back\nlash'
-                                    state: 'normal'
-                                    on_press: tomography_btn_logic(self)
-                            FluidiBox:
-                                size_hint_x: 0.2
-                                ToggleButton:
-                                    id: tomo_btn_take_image
-                                    text: 'Take\nImage'
-                                    state: 'normal'
-                                    on_press: tomography_btn_logic(self)
+                                    on_press: current_active = 1
+                                    on_release: root.tomography_btn_logic(self)
+
                         BoxLayout:
                             size_hint_y: 0.25
                             orientation: 'horizontal'
                             GridLayout:
-                                cols: 6
+                                cols: 4
                                 rows: 1
                                 padding: 2,0,2,0
                                 Button:
                                     id: tomo_btn_set_0
-                                    text: '+++'
-                                    value: 100
-                                    on_press: root.tomography_btn_logic(self)
-                                Button:
-                                    id: tomo_btn_set_1
                                     text: '++'
                                     value: 10
                                     on_press: root.tomography_btn_logic(self)
                                 Button:
-                                    id: tomo_btn_set_2
+                                    id: tomo_btn_set_1
                                     text: '+'
                                     value: 1
                                     on_press: root.tomography_btn_logic(self)
                                 Button:
-                                    id: tomo_btn_set_3
+                                    id: tomo_btn_set_2
                                     text: '-'
                                     value: -1
                                     on_press: root.tomography_btn_logic(self)
                                 Button:
-                                    id: tomo_btn_set_4
+                                    id: tomo_btn_set_3
                                     text: '--'
                                     value: -10
-                                    on_press: root.tomography_btn_logic(self)
-                                Button:
-                                    id: tomo_btn_set_5
-                                    text: '---'
-                                    value: -100
-                                    on_press: root.tomography_btn_logic(self)          
+                                    on_press: root.tomography_btn_logic(self)         
                     BoxLayout:
                         # labels for selection display
                         size_hint_y: 0.25
-                        orientation: 'vertical'
-                        BoxLayout:
-                            size_hint_y: 0.33
-                            orientation: 'horizontal'
+                        orientation: 'horizontal'
+                        GridLayout:
+                            cols: 6
+                            #1.1
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'Motor'
                             Label: 
-                                id: tomography_lbl_tm_motor
+                                id: tomography_lbl_motor
                                 size_hint_x: 0.1
                                 text: '2'
-                            Label: 
-                                size_hint_x: 0.2
-                                text: 'Backlash'
-                            Label: 
-                                id: tomography_lbl_tm_backlash
-                                size_hint_x: 0.1
-                                text: ''
-                            Label: 
-                                size_hint_x: 0.2
-                                text: 'Image'
-                            Label: 
-                                id: tomography_lbl_tm_take_image
-                                size_hint_x: 0.1
-                                text: ''
-                        BoxLayout:
-                            size_hint_y: 0.33
-                            orientation: 'horizontal'
+                            #1.2
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'startPOS'
                             Label: 
-                                id: tomography_lbl_tm_startPOS
+                                id: tomography_lbl_posSTART
                                 size_hint_x: 0.1
                                 text: ''
+                            #1.3
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'endPOS'
                             Label: 
-                                id: tomography_lbl_tm_endPOS
+                                id: tomography_lbl_posEND
                                 size_hint_x: 0.1
                                 text: ''
+                            #2.1
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'Steps'
                             Label: 
-                                id: tomography_lbl_tm_steps
+                                id: tomography_lbl_steps
                                 size_hint_x: 0.1
-                                text: ''    
-                        BoxLayout:
-                            size_hint_y: 0.33
-                            orientation: 'horizontal'
+                                text: ''   
+                            #2.2
                             Label: 
                                 size_hint_x: 0.2
                                 text: 'stepSize'
                             Label: 
-                                id: tomography_lbl_tm_stepsize
+                                id: tomography_lbl_stepsize
                                 size_hint_x: 0.1
                                 text: ''
+                            #2.3
                             Label: 
                                 size_hint_x: 0.2
-                                text: 'stepTime'
+                                text: 'stepTime\n[s]'
                             Label: 
-                                id: tomography_lbl_tm_steptime
+                                id: tomography_lbl_steptime
                                 size_hint_x: 0.1
                                 text: ''
-                            Label: 
-                                size_hint_x: 0.2
-                                text: 'totalTime'
-                            Label: 
-                                id: tomography_lbl_tm_totaltime
-                                size_hint_x: 0.1
-                                text: ''  
-                    BoxLayout:
-                        size_hint_y: 0.033
-                        padding: (2,0,2,0)
-                        FluidLineHor:                   
-                        # inserts a pre-defined line
-                    BoxLayout:
-                        size_hint_y: 0.15
-                        orientation: 'vertical'
-                        ProgressBar:
-                            id: tomography_progress_bar
-                            max: 100
-                            value: 0
-                        FluidButton:
-                            id: tomography_btn_startmeas
-                            text: "Start"
-                            fl_active: False
-                            on_press: tomography_startmeas(self)
-
             # scr_cam_set_1
             Screen:
                 name: "scr_cam_set_1"

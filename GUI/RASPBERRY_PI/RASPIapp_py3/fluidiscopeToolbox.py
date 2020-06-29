@@ -15,6 +15,7 @@ import fluidiscopeGlobVar as fg
 import fluidiscopeIO
 import fluidiscopeInit
 import fluidiscopeAutofocus as af
+import fluidiscopeTomography as tomo
 from fluidiscopeLogging import logger_createChild
 
 # python packages
@@ -30,17 +31,20 @@ import sys
 import unipath as uni
 from distutils.dir_util import copy_tree
 import shutil
+import tifffile as tif
 if os.name == 'nt':
     pass
 else:
     #from PIL import Image
     import picamera
+    from picamraw import PiRawBayer, PiCameraVersion
 
 
 if not (fg.my_dev_flag):
     if fg.i2c:
         from I2CDevice import I2CDevice
     from picamera.array import PiRGBArray
+    from picamera.array import PiBayerArray
     from picamera import PiCamera
 
 # define color variables
@@ -361,21 +365,21 @@ def select_method(self, instance, aimed_component_group):
                                   "scr_motor_set_cal_zero", "scr_motor_set_cal_max"]
     elif aimed_component_group == "imaging_method":
         method_dictionary = {"Bright": 0, "qDPC": 1,
-                             "Custom": 2, "FPM": 3, "Fluor": 4}
+                             "Custom": 2, "FPM": 3, "Fluor": 4, "Ext": 5}
         #hswitch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2", "btn_imaging_technique_3", "btn_imaging_technique_fluor"]
         switch_entries = ["btn_imaging_technique_1", "btn_imaging_technique_2",
-                          "btn_imaging_technique_3", "btn_imaging_technique_4", "btn_imaging_technique_5"]
+                          "btn_imaging_technique_3", "btn_imaging_technique_4", "btn_imaging_technique_5", "btn_imaging_technique_6"]
         [active_method, inactive_methods] = select_method_switches(
             instance, method_dictionary, switch_entries)
         inactive_methods = []  # implemented to allow for multiple selection
         if len(fg.config['experiment']['active_methods']) == 0:
             inactive_methods.extend(["btn_imaging_measiter", "btn_imaging_totaldurat", "btn_imaging_dplus", "btn_imaging_dminus", "btn_imaging_hplus", "btn_imaging_hminus",
-                                     "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", ])
+                                     "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", "btn_imaging_technique_tomography" ])
             counter_active_methods = [
                 "btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
         elif len(fg.config['experiment']['active_methods']) == 1 and check_active(instance):
             inactive_methods.extend(["btn_imaging_measiter", "btn_imaging_totaldurat", "btn_imaging_dplus", "btn_imaging_dminus", "btn_imaging_hplus", "btn_imaging_hminus",
-                                     "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", ])
+                                     "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", "btn_imaging_technique_tomography"])
             counter_active_methods = [
                 "btn_take_image", "btn_snap", "btn_take_foreground", "btn_take_background"]
         imaging_methods_change(self, instance)
@@ -606,7 +610,7 @@ def run_measurement(self, instance):
         if instance.text == "Start Measurement":
             instance.text = "Stop Measurement"
 
-        # put values into display:
+        # put values into display
         update_measurement_status_display(self)
 
         # activate and deactivate according buttons
@@ -622,7 +626,10 @@ def run_measurement(self, instance):
             camStats, _ = af.autofocus_setupCAM(camStats=None, camdict='cam')
             fg.config['cam']['camProp_use_global'] = True
 
-        # schedule callback-function
+        # run measurement once 
+        imaging_callback(self, instance)
+
+        # and add callback
         update_interval = 1  # for timer display refresh
         fg.EVENT['meas'] = Clock.schedule_interval(partial(
             imaging_callback, self, instance), fg.config['experiment']['interval'])  # in seconds
@@ -755,8 +762,11 @@ def take_image_atom(filename=None,fileformat='jpeg',rawCapture=None,rawFormat='r
     if use_bayer == None:
         use_bayer = False if ((fg.camera.sensor_mode not in [2,3]) or use_video_port) else fg.config[camdict]['bayer']
 
+    
+
     if (filename is None) and rawCapture is None:
-        pass    
+        rawCapture = PiBayerArray(fg.camera, fg.camera.resolution) if use_bayer else PiRGBArray(fg.camera, fg.camera.resolution)
+        fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
     elif (filename is None) and rawCapture is not None: 
         fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
         logger.debug('Image captured into rawCapture with format {}.'.format(rawFormat))
@@ -787,30 +797,44 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
         # select for imaging cause ->
         if imaging_cause == 'AF':
             #fg.camera.capture(rawCapture, 'rgb')
-            take_image_atom(rawCapture=rawCapture,rawFormat='rgb',camdict='cam_af')
+            take_image_atom(rawCapture=rawCapture,rawFormat='rgb',camdict='cam_af',use_bayer=True)
             image = rawCapture.array[:, :,
                                      fg.config['autofocus']['use_channel']]
             rawCapture.truncate(0)
             return image
         else:
             #fg.camera.capture(filename,format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
-            take_image_atom(filename=filename,fileformat="jpeg",camdict='cam')
-            
-            if 'Fluor' in fg.config['experiment']['active_methods']:
-                logger.debug(
-                    "RAW: Start acquistion into RAM, extract and concat Green-Channel.")
-                filename[:-4] + '-rawG.npz'
-                stream = picamera.array.PiBayerArray(fg.camera)
-                # 'rgb' -> Error: unable to locate bayer-pattern at end of buffer
-                #fg.camera.capture(stream, 'jpeg', bayer=True)
-                take_image_atom(rawCapture=stream,rawFormat='rgb',camdict='cam_fluo')
-                rawstream = np.transpose(
-                    np.dstack((stream.array[1::2, ::2, 1], stream.array[::2, 1::2, 1])), [2, 0, 1])
-                logger.debug("RAW: Save as compressed numpy.")
-                # and lossless compressed
-                np.savez_compressed(filename, rawstream)
-                stream.truncate(0)
+            if method in ['Fluor','Ext']:
+                #logger.debug("RAW: Start acquistion into RAM, extract and concat Green-Channel.")
+                take_image_atom(filename=filename,fileformat="jpeg",camdict='cam',use_video_port=False,use_bayer=True)
+
+                # directly store the green-channel RAW -> https://picamera.readthedocs.io/en/release-1.13/api_array.html#pibayerarray
+                mdict = {'Fluor':fg.config['experiment']['fluo_bayer_explizit'], 'Ext': fg.config['tomo']['bayer_explizit']}
+                if mdict[method]:
+                    rawBayerCapture = PiBayerArray(fg.camera)
+                    rawBayerCapture = take_image_atom(rawCapture=rawBayerCapture,rawFormat="jpeg",use_video_port=False,use_bayer=True)
+                    #raw_bayer_stack = np.dstack((rawBayerCapture.array[1::2, ::2,1],rawBayerCapture.array[::2, 1::2,1]))
+                    raw_bayer_stack = rawBayerCapture.array[1::2, ::2,1]
+                    filename_raw = filename[:-4] + '-rawG_every2nd.tif'
+                    tif.imwrite(filename_raw, raw_bayer_stack)
+                    
+                    # work-around for now: read in image to read out EXIF-content from end of file
+                    # from: https://github.com/osmosystems/picamraw
+                    #raw_bayer = PiRawBayer(
+                    #    filepath=filename,  # A JPEG+RAW file, e.g. an image captured using raspistill with the "--raw" flag
+                    #    camera_version=PiCameraVersion.V2,
+                    #    sensor_mode=2
+                    #)
+                    #raw_bayer_stack = np.dstack((raw_bayer.bayer_array[1::2, ::2],raw_bayer.bayer_array[::2, 1::2]))
+                    #tif.imwrite(filename_raw, rawstream)
+                    #logger.debug("RAW: Save as compressed numpy.")
+                    # and lossless compressed
+                    #np.savez_compressed(filename, rawstream)
+
+                    rawBayerCapture.truncate(0)
                 logger.debug("RAW: done.")
+            else:
+                take_image_atom(filename=filename,fileformat="jpeg",camdict='cam')
     return True, filename
 
 
@@ -818,6 +842,8 @@ def take_image_callback(self, *args):
     '''
     Callback function to make sure GUI stays responsive while image is taken. Event is only called once and hence will delete itself. If autofocus is running: schedules image-callback after autofocus routine. 
     Note: Autofocus stops all measurement-counting times. Hence: maybe a first call has to be blocked, but no list will be kept. 
+
+    TODO: for now only called once and then not used any further. Need to try more without accumulation/delete events once it worked.
     '''
     # autofocus active?
     if fg.config['experiment']['autofocus_busy']:
@@ -825,11 +851,20 @@ def take_image_callback(self, *args):
         logger.warn('Tried take_image_callback() during autofocus-routine. How did I get here?')
     else:
         fg.EVENT['take_image_callback'] = Clock.schedule_once(
-            partial(take_image, self), 0.01)
+            partial(take_image_wrapper, self, args), 0.01)
     return True
 
+def take_image_wrapper(self, *args):
+    '''
+    Mean hack introduced to post-add tomo-mode into how images are taken.
+    '''
+    if fg.config['experiment']['tomo_active']:
+        tomo.tomography_callback(self)
+    else:
+        take_image(self)
 
-def take_image(self, *args):
+
+def take_image(self, imname_append=None, *args):
     '''
     Method that switches through different imaging modalities. 
     Does hold the respective algorithms.
@@ -839,7 +874,7 @@ def take_image(self, *args):
     set_active_again = False
     active_modes = []
     if fg.config['experiment']['imaging_cause'] == 'AF':  # case of autofocus
-        image_name = set_image_name(im_cause='AF', method='CUS')
+        image_name = set_image_name(im_cause='AF', method='CUS') + imname_append
         file_name_write = str(uni.Path(fg.expt_path, image_name))
         tin_returnval, filename = take_image_now(self, 'AF', file_name_write)
         fg.ledarr.send("CLEAR")
@@ -918,7 +953,7 @@ def take_image(self, *args):
                             fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write)
+                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
                         elif active_method == "qDPC":
                             pattern_list = prepare_illu_pattern_list()
                             # Clock.schedule_once(partial(
@@ -931,7 +966,7 @@ def take_image(self, *args):
                                 self, ignore_NA=True, sync_only=False)
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write)
+                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='CUS')
                             fg.ledarr.send("CLEAR")
                         elif active_method == "FPM":
                             # 1 image per LED
@@ -945,7 +980,7 @@ def take_image(self, *args):
                                 # time.sleep(fg.config['imaging']['speed'])
                                 time.sleep(1.0)  # fastened
                                 tin_returnval, file_name_write = take_image_now(
-                                    self, fg.config['experiment']['imaging_cause'], fnwh)
+                                    self, fg.config['experiment']['imaging_cause'], fnwh,method='FPM')
                                 logger.debug(
                                     "Storing LED={} to {}.".format(myc, fnwh))
                                 fg.ledarr.send("CLEAR")
@@ -958,20 +993,23 @@ def take_image(self, *args):
                             fg.ledarr.send("RECT+3+3+2+2+1", col, col, col)
                             time.sleep(fg.config['imaging']['speed'])
                             tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write)
+                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='RECT')
                             fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
+                        elif active_method == "Ext":
+                            tin_returnval, file_name_write = take_image_now(
+                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='Ext')
                         else:
                             #
-                            image_name += "-Tomo"
-                            file_name_write = str(uni.Path(
-                                fg.expt_path, image_name))
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write, method='')
+                            pass
             finally:
                 pass
         if not fg.config['experiment']['imaging_cause'] == 'SNAP':
             if active_method in ['Bright', 'qDPC', 'Custom', 'Fluor']:
                 fg.config['experiment']['imaging_num'] += 1
+            elif active_method == 'Ext':
+                if fg.config['tomo']['done']:
+                    fg.config['experiment']['imaging_num'] += 1
+
             fg.config['experiment']['expt_last_image'] = file_name_write
         fg.ledarr.send("CLEAR")
     if set_active_again:
@@ -1006,6 +1044,8 @@ def set_image_name(im_cause=None, method=None, mytime=None):
         image_name += "{}-".format(method)
     if not mytime == None:
         image_name += "{}-".format(now)
+    if fg.config['experiment']['tomo_active']:
+        image_name += "tomo_{}-".format(fg.config['tomo']['step_number'])
     return image_name
 
 
@@ -1096,39 +1136,13 @@ def imaging_callback(self, instance, *largs):
             #    event_delete(keys[1])
             return False
 
+
 # ----------------------------------------------------------------
-#                      Tomographic-Functions
-
-
-def tomography_settings(self, instance):
-
-    logger.debug("Got to tomography settings")
-
-
-def tomography_startmeas(self, instance):
-    pass
-
-
-def tomography_callback(self, instance, acquire_images=False):
-    for imnbr in range(fg.config['experiment']['tomography_steps']):
-        if acquire_images:
-            take_image(self)
-        move_motor(self, instance, fg.config['experiment']['tomography_direction'],
-                   fg.config['experiment']['tomography_stepsize'])
-
+#                      Tomography Functions
 
 def tomography_btn_logic(self, instance):
-    '''
-    Additional Click-logic of the tomography-page is contained here.
-    '''
-    dict_names_btnset = ['tomo_btn_set_0', 'tomo_btn_set_1',
-                         'tomo_btn_set_2', 'tomo_btn_set_3', 'tomo_btn_set_4', 'tomo_btn_set_5']
-    dict_uids_btnset = [None] * len(dict_names_btnset)
-    print(dict_uids_btnset)
-    for myc in range(len(dict_names_btnset)):
-        dict_uids_btnset[myc] = self.ids[dict_names_btnset[myc]].uid
-    if instance.uid in (dict_uids_btnset):
-        print(instance.value)
+    tomo.tomography_btn_logic(self, instance)
+
 # ----------------------------------------------------------------
 #                      AUTOFOCUS Functions
 
@@ -1539,10 +1553,15 @@ def motor_steps_settings(self, instance):
 def move_motor(self, instance, motor_sel, motor_stepsize=None):
     '''
     Security check, GUI and config updates while actually invoking the motor-movement.
+    Note: historically grown doublings and irritations. Have to fix all of this somewhen...
     '''
     # prepare selection of right motor
-    testdict = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}
-    cmd = testdict[motor_sel]
+    if isinstance(motor_sel,str):
+        #cmd = motor_sel
+        #letter_motor = {"DRVX":'x',"DRVY":'y',"DRVZ":'z'}[motor_sel]
+        motor_sel = {"DRVX":0,"DRVY":1,"DRVZ":2}[motor_sel]
+    cmd = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}[motor_sel]
+    letter_motor = {0:'x',1:'y',2:'z'}[motor_sel]
     limit_reached = False
     if motor_sel in [0, 1]:
         stepsize_app = '_xy'
@@ -1583,7 +1602,7 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
 
         # manage progress_bar + actual motor-position on config
         refresh_progress_bar = 0.2
-        fg.config['motor']['calibration_z_pos'] += stepsize
+        fg.config['motor']['calibration_' + letter_motor + '_pos'] += stepsize
 
         # invert direction if going down
         if instance is not None:

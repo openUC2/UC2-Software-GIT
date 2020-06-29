@@ -202,9 +202,10 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
     if not fg.config[camdict]['camProp_use_global']:
         if update_condition:
 
-            # light a candle
-            fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
-            sleep(fg.config['imaging']['speed'])
+            # light a candle -> for now: no illumination if Ext is in methods
+            if not 'Ext' in fg.config['experiment']['active_methods']:
+                fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
+                sleep(fg.config['imaging']['speed'])
 
             # set basic modes 
             fg.camera.image_denoise = fg.config[camdict]['image_denoise']
@@ -563,7 +564,7 @@ def autofocus_move_motor(self,stepsize,motor,pos_now,wait_time=None):
 
     # move and update config
     toolbox.move_motor(self=self, instance=None, motor_sel=motor, motor_stepsize=stepsize)
-    fg.config['motor']['calibration_'+letter[motor]+'_pos'] += stepsize
+    #fg.config['motor']['calibration_'+letter[motor]+'_pos'] += stepsize
     pos_now +=stepsize
 
     # wait for movement to finish

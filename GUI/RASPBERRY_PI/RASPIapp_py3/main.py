@@ -99,8 +99,8 @@ class Fluidiscope(BoxLayout):
     def tomography_btn_logic(self, instance):
         toolbox.tomography_btn_logic(self, instance)
 
-    def tomography_startmeas(self, instance):
-        toolbox.tomography_startmeas(self, instance)
+    #def tomography_startmeas(self, instance):
+    #    toolbox.tomography_startmeas(self, instance)
 
     def btn_camera_live_settings(self, instance):
         toolbox.camera_live_settings(self, instance)
