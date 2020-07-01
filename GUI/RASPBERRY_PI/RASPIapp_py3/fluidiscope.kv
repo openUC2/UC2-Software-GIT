@@ -1641,12 +1641,17 @@
                     GridLayout:
                         size_hint_y: 0.6
                         id: scr_motor_set_grid
-                        cols: 4
+                        cols: 6
                         spacing: 15
                         Label:
-                            text: 'stepsize_xy'
+                            text: 'stepsize_x'
                         TextInput:
-                            id: scr_motor_set_grid_lbl_value_stepsize_xy
+                            id: scr_motor_set_grid_lbl_value_stepsize_x
+                            text: ''
+                        Label:
+                            text: 'stepsize_y'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_stepsize_y
                             text: ''
                         Label:
                             text: 'stepsize_z'
@@ -1659,9 +1664,14 @@
                             id: scr_motor_set_grid_lbl_value_change_amount
                             text: ''
                         Label:
-                            text: 'conv.\nFactor xy'
+                            text: 'conv.\nFactor x'
                         TextInput:
-                            id: scr_motor_set_grid_lbl_value_conversion_factor_xy
+                            id: scr_motor_set_grid_lbl_value_conversion_factor_x
+                            text: ''
+                        Label:
+                            text: 'conv.\nFactor y'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_conversion_factor_y
                             text: ''
                         Label:
                             text: 'conv.\nFactor z'
@@ -1674,9 +1684,14 @@
                             id: scr_motor_set_grid_lbl_value_active_motor
                             text: ''
                         Label:
-                            text: 'st.dist\nxy'
+                            text: 'st.dist\nx'
                         TextInput:
-                            id: scr_motor_set_grid_lbl_value_standard_move_dist_xy
+                            id: scr_motor_set_grid_lbl_value_standard_move_dist_x
+                            text: ''
+                        Label:
+                            text: 'st.dist\ny'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_standard_move_dist_y
                             text: ''
                         Label:
                             text: 'st.dist\nz'
@@ -1684,9 +1699,14 @@
                             id: scr_motor_set_grid_lbl_value_standard_move_dist_z
                             text: ''
                         Label:
-                            text: 'st.time\nxy'
+                            text: 'st.time\nx'
                         TextInput:
-                            id: scr_motor_set_grid_lbl_value_standard_move_time_xy
+                            id: scr_motor_set_grid_lbl_value_standard_move_time_x
+                            text: ''
+                        Label:
+                            text: 'st.time\ny'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_standard_move_time_y
                             text: ''
                         Label:
                             text: 'st.time\nz'
@@ -1694,25 +1714,21 @@
                             id: scr_motor_set_grid_lbl_value_standard_move_time_z
                             text: ''
                         Label:
+                            text: 'Cal. x\n pos'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_calibration_x_pos
+                            text: ''
+                        Label:
+                            text: 'Cal. y\n pos'
+                        TextInput:
+                            id: scr_motor_set_grid_lbl_value_calibration_y_pos
+                            text: ''
+                        Label:
                             text: 'Cal. z\n pos'
                         TextInput:
                             id: scr_motor_set_grid_lbl_value_calibration_z_pos
                             text: ''
-                        Label:
-                            text: 'Cal. z\n min'
-                        TextInput:
-                            id: scr_motor_set_grid_lbl_value_calibration_z_min
-                            text: ''
-                        Label:
-                            text: 'Cal. z\n max'
-                        TextInput:
-                            id: scr_motor_set_grid_lbl_value_calibration_z_max
-                            text: ''
-                        Label:
-                            text: 'Cal. z\n last-time'
-                        TextInput:
-                            id: scr_motor_set_grid_lbl_value_calibration_z_lastupdate
-                            text: ''
+                        
                     # Buttons for save, restore
                     BoxLayout:
                         size_hint_y: 0.2

@@ -880,11 +880,13 @@ def take_image(self, imname_append=None, *args):
         fg.ledarr.send("CLEAR")
     elif fg.config['experiment']['imaging_cause'] == 'SNAP':
         # prepare camera
-        if fg.config['experiment']['active_camProp'] == None and not ( fg.config[camdict]['camProp_defined'] and fg.config[camdict]['camProp_use_global']):
-            camera_set_parameter(method=method)
+        if (not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
+            camStats, _ = af.autofocus_setupCAM(camStats=None, camdict='cam')
+            #fg.config['cam']['camProp_use_global'] = True
+            #camera_set_parameter(method=method)
             deact = True
             time.sleep(0.1)
-        
+    
         # workaround to do snaps in OSLO workshop
         image_name = set_image_name(
             im_cause=fg.config['experiment']['imaging_cause'], method='Custom')
@@ -894,11 +896,11 @@ def take_image(self, imname_append=None, *args):
         logger.debug('Snap done')
 
         # last image
-        config['experiment']['expt_last_image'] = file_name_write
+        fg.config['experiment']['expt_last_image'] = file_name_write
 
         # afterclean for CAM-Properties
         if deact:
-            fg.config[camdict]['camProp_defined'] = False
+            fg.config['cam']['camProp_defined'] = False
             fg.config['experiment']['active_camProp'] = None
     else:
         for myl in range(0, len(fg.config['experiment']['active_methods'])):
@@ -1528,9 +1530,9 @@ def motor_steps_settings(self, instance):
     # get key-name
     key_name = "stepsize_"
     if check_active(self.ids['btn_motor_dir_x']):
-        key_stepsize = key_name + "xy"
+        key_stepsize = key_name + "x"
     elif check_active(self.ids['btn_motor_dir_y']):
-        key_stepsize = key_name + "xy"
+        key_stepsize = key_name + "y"
     elif check_active(self.ids['btn_motor_dir_z']):
         key_stepsize = key_name + "z"
     # define stepsize
@@ -1560,21 +1562,17 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
         #cmd = motor_sel
         #letter_motor = {"DRVX":'x',"DRVY":'y',"DRVZ":'z'}[motor_sel]
         motor_sel = {"DRVX":0,"DRVY":1,"DRVZ":2}[motor_sel]
-    cmd = {0: "DRVX", 1: "DRVY", 2: "DRVZ"}[motor_sel]
-    letter_motor = {0:'x',1:'y',2:'z'}[motor_sel]
+    cmd = fg.config['motor']['motor_dict'][motor_sel]
+    letter_motor = fg.config['motor']['motor_names'][motor_sel]
     limit_reached = False
-    if motor_sel in [0, 1]:
-        stepsize_app = '_xy'
-    else:
-        stepsize_app = '_z'
 
     # convert motor-stepsize given the CONFIG-Factor
     if motor_stepsize == None:
-        stepsize = floor(fg.config['motor']['stepsize' + stepsize_app] /
-                         fg.config['motor']['conversion_factor' + stepsize_app])
+        stepsize = floor(fg.config['motor']['stepsize_' + letter_motor] /
+                         fg.config['motor']['conversion_factor_' + letter_motor])
     else:
         stepsize = floor(motor_stepsize /
-                         fg.config['motor']['conversion_factor' + stepsize_app])
+                         fg.config['motor']['conversion_factor_' + letter_motor])
     if instance is not None:
         if instance.text == '<<':
             stepsize *= -1
@@ -1611,17 +1609,14 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
 
         # update display -> if AF-thread non-blocking, than IF-condition not necessary anymore
         if instance is not None:
-            move_motor_display(self, instance, fg.config['motor']['active_motor'], stepsize, refresh_progress_bar)
+            move_motor_display(self, instance, letter_motor, stepsize, refresh_progress_bar)
 
 
 def move_motor_display(self, instance, active_motor, stepsize, refresh_progress_bar, *rargs):
-    if active_motor in [0, 1]:
-        max_time = fg.config['motor']['standard_move_time_xy'] * \
-            stepsize / fg.config['motor']['standard_move_dist_xy']
-    else:  # z-drive
-        max_time = fg.config['motor']['standard_move_time_z'] * \
-            stepsize / fg.config['motor']['standard_move_dist_z']
-    upd_val = 100 * refresh_progress_bar / max_time
+    
+    max_time = fg.config['motor']['standard_move_time_' + active_motor] * \
+            stepsize / fg.config['motor']['standard_move_dist_' + active_motor]
+    upd_val = 100 * refresh_progress_bar / max_time if max_time > 0 else 50
     logger.debug('Update Motor-Display by {}.'.format(upd_val))
     fg.EVENT['pb_motor'] = Clock.schedule_interval(partial(
         move_motor_display_update, self, instance, upd_val), refresh_progress_bar)
@@ -1639,12 +1634,8 @@ def move_motor_display_update(self, instance, upd_val, event_obj, *rargs):
 
 
 def btn_motor_refresh_text(self, instance):
-    if instance.text in ['x', 'y']:
-        refresh_entry = 'stepsize_xy'
-    else:
-        refresh_entry = 'stepsize_z'
     refresh_text_entry(self.ids["lbl_motor_stepsize"], str(
-        fg.config["motor"][refresh_entry]))
+        fg.config["motor"]['stepsize_' + instance.text]))
 
 # for now only implemented for z motor
 

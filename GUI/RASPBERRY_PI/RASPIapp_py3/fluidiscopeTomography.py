@@ -63,10 +63,14 @@ def tomography_btn_logic(self, instance):
 
     # set start/end-position for tomo-stack
     elif instance.uid in btns_pos:
+        motor_letter = {"DRVX":'x',"DRVY":'y',"DRVZ":'z'}[fg.config['tomo']['motor']]
         if btns_pos.index(instance.uid) == 0: 
-            fg.config['tomo']['posSTART'] = fg.config['motor']['calibration_z_pos']
+            fg.config['tomo']['posSTART'] = fg.config['motor']['calibration_'+ motor_letter +'_pos']
         else: 
-            fg.config['tomo']['posEND'] = fg.config['motor']['calibration_z_pos']
+            fg.config['tomo']['posEND'] = fg.config['motor']['calibration_'+ motor_letter + '_pos']
+        
+        # update total distance on change of start and end
+        fg.config['tomo']['total_dist'] = fg.config['tomo']['posEND'] - fg.config['tomo']['posSTART']
         
     # select whether time or step-number shall be changed
     elif instance.uid in btns_stepTime:
@@ -76,15 +80,19 @@ def tomography_btn_logic(self, instance):
     # change value of step-number or time per step
     elif instance.uid in btns_setpos:
         if fg.config['tomo']['steptime_active'] == 0:
+            # update step value
             update_val = int(instance.value)
             fg.config['tomo']['steps'] += update_val 
+            
+            # update distance per step
+            fg.config['tomo']['stepsize'] = int(fg.config['tomo']['total_dist'] / fg.config['tomo']['steps'])
         else: 
             update_val = int(instance.value)/10
-            fg.config['tomo']['steptime'] += update_val 
+            fg.config['tomo']['steptime'] = round(fg.config['tomo']['steptime'] + update_val,1)
         
     # (de-)activate TOMO-measurement (as individual option to each measurement)
     elif instance.uid == self.ids['btn_imaging_technique_tomography'].uid:
-        fg.config['experiment']['tomo_active'] = not(fg.config['experiment']['tomo_active'] )
+        fg.config['experiment']['tomo_active'] = False if instance.fl_active else True
         toolbox.change_activation_status(instance)
     
 
