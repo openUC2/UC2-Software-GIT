@@ -88,14 +88,14 @@ And (as before) go to the boot-options now enabling `Desktop Autologin` to boot 
     
 ## Setup UC2-env for our GUI
 
-For easy Python-environment handling, install the [Berryconda](https://github.com/jjhelmus/berryconda) derivate of [Anaconda](https://www.anaconda.com/). We prepared some convenient-scripts that you can download from our [SCRIPTS-section](../../SCRIPTS/SETUP_UC2env) to install Berryconda, setup a UC2env for development and activate it as standard.
+For easy Python-environment handling, install the [Berryconda](https://github.com/jjhelmus/berryconda) derivate of [Anaconda](https://www.anaconda.com/). We prepared some convenient-scripts that you can download from our [SCRIPTS-section](SCRIPTS/SETUP_UC2env) to install Berryconda, setup a UC2env for development and activate it as standard.
 
 ### Disclaimer
 By using this install script you **agree** to the following [license agreement](https://github.com/jjhelmus/berryconda/blob/master/LICENSE.txt) available in the following [repository](https://github.com/jjhelmus/berryconda).
 
 
 ### Installing
-* **Download all files** of the [SCRIPTS-section](../../SCRIPTS/SETUP_UC2env)
+* **Download all files** of the [SCRIPTS-section](SCRIPTS/SETUP_UC2env)
 For downloading the files, first create two new directories:
     ```
     $ mkdir -p ~/UC2/SCRIPTS
@@ -103,13 +103,13 @@ For downloading the files, first create two new directories:
     ```
     and then download the Script files there as follows:
     ```
-    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/00-UC2_Prerequisites.sh
-    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/01-UC2_Berryconda.sh
-    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/SCRIPTS/SETUP_UC2env/02-UC2_CreateEnvironment.sh
+    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/GUI/RASPBERRY_PI/SCRIPTS/SETUP_UC2env/00-UC2_Prerequisites.sh
+    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/GUI/RASPBERRY_PI/SCRIPTS/SETUP_UC2env/01-UC2_Berryconda.sh
+    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/GUI/RASPBERRY_PI/SCRIPTS/SETUP_UC2env/02-UC2_CreateEnvironment.sh
     ```
 * After downloading all 3 files, make the files runable via:
     ```
-    $ chmod +x 00-UC2_Prerequsites.sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
+    $ chmod +x 00-UC2_Prerequisites.sh 01-UC2_Berryconda.sh 02-UC2_CreateEnvironment.sh
 
     ```
 * **Run** 01-UC2_Berryconda.sh and after that 02-UC2_CreateEnvironment.sh by typing:
@@ -159,8 +159,8 @@ For downloading the files, first create two new directories:
     gstreamer1.0-plugins-{bad,base,good,ugly} \
     gstreamer1.0-{omx,alsa} python-dev libmtdev-dev \
     xclip xsel libjpeg-dev
-    python -m pip install --upgrade --user pip setuptools
-    python -m pip install --upgrade --user Cython==0.29.10 pillow   
+    python -m pip install --upgrade pip setuptools
+    python -m pip install --upgrade Cython==0.29.10 pillow   
     ```
      <p align="center">
     <img src="./IMAGES/script06.png" width="400" alt="">
@@ -184,7 +184,7 @@ For downloading the files, first create two new directories:
     $ cd ~/UC2
     $ git clone https://github.com/kivy/kivy
     $ cd kivy
-    $ python -m pip install --user .
+    $ python -m pip install .
     ```
     The installation of kivy again will take a while (~15min, MEM<=500mb), so lean back and enjoy a coffee. 
 * **Setup the device** Once Kivy is finished, configure the touch-screen of RasPi (if installed) as valid input-method. Hence, in the terminal run
