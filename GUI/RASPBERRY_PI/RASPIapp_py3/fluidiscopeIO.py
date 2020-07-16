@@ -326,7 +326,7 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
 
                     if not sync_only and np.sum(self.ids[prop_help].fl_value) > 0:
                         fg.ledarr.send("PXL", pos, list(
-                            self.ids[prop_help].fl_value),logging=0)
+                            self.ids[prop_help].fl_value),logging=1)
                         time.sleep(fg.config['experiment']['i2c_send_delay'])
                         #logger.debug("sent:{0} of {1}".format(support_str,type(list(support_str))))
     fg.config['light']['update_matrix_active'] = False
@@ -334,12 +334,14 @@ def update_matrix(self, ignore_NA=False, sync_only=True, pattern='CUS'):
 
 def prepareFolder():
     # increase the number of current experiment by 1
-    fg.expt_num = fg.config['experiment']['last_expt_num'] + 1
     fg.started_first_exp = True
 
-    # chekc if the correct date is chosen - if not create a new folder
+    # check if the correct date is chosen - if not create a new folder
     if fg.config['experiment']['last_expt_date'] != fg.today:
         fg.expt_num = 1
+    else:
+        fg.config['experiment']['last_expt_num'] += 1
+        fg.expt_num = fg.config['experiment']['last_expt_num']
 
     expt_folder = "expt_" + format_num(fg.expt_num)
     fg.expt_path = str(uni.Path(fg.save_path, expt_folder))
