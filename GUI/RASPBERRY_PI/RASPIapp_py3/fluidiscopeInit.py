@@ -22,7 +22,7 @@ else:
     from MQTTDevice import MQTTDevice
     import paho.mqtt.client as mqtt
 
-if not fg.my_dev_flag:
+if fg.is_use_picamera:
     import picamera
 
 # logging Functions ------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ def camera_init():
         arch = os.uname()[4]
     except:
         arch = os.name
-    if "arm" in arch:
+    if fg.is_use_picamera:
         fg.camera = picamera.PiCamera()
         #print("cam is online")
         logger.debug("Cam is online.")

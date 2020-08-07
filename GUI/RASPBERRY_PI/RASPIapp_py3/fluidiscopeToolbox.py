@@ -18,7 +18,14 @@ import fluidiscopeAutofocus as af
 import fluidiscopeTomography as tomo
 from fluidiscopeLogging import logger_createChild
 
+import vimba_camera as vbc
 # python packages
+import threading
+import sys
+import cv2
+from typing import Optional
+from vimba import *
+
 import warnings
 from datetime import datetime
 import time
@@ -32,20 +39,20 @@ import unipath as uni
 from distutils.dir_util import copy_tree
 import shutil
 import tifffile as tif
-if os.name == 'nt':
-    pass
-else:
+if fg.is_use_picamera:
     #from PIL import Image
     import picamera
     from picamraw import PiRawBayer, PiCameraVersion
 
 
-if not (fg.my_dev_flag):
-    if fg.i2c:
-        from I2CDevice import I2CDevice
+if fg.is_use_picamera:
     from picamera.array import PiRGBArray
     from picamera.array import PiBayerArray
     from picamera import PiCamera
+
+if not (fg.my_dev_flag):
+    if fg.i2c:
+        from I2CDevice import I2CDevice
 
 # define color variables
 button_color_active = [0.0, 4.0, 0.0, 1.0]
@@ -295,6 +302,7 @@ def end_fluidiscope(app):
     try:
         if not fg.my_dev_flag:
             fg.ledarr.send("CLEAR")
+        if fg.is_use_picamera:
             fg.camera.close()
     finally:
         logger.info("Closed camera")
@@ -594,6 +602,12 @@ def run_measurement(self, instance):
     # put data into config-dictionary
     set_measurement_parameter(self, instance)
 
+    # setup vimba camera
+    if fg.is_use_vimba:
+        with Vimba.get_instance():
+            with get_camera() as cam:
+                setup_camera(cam) 
+
     # clear arduino and set to flyby (= do not save patterns)
     if not fg.my_dev_flag:
         fg.ledarr.send("CLEAR")
@@ -622,7 +636,8 @@ def run_measurement(self, instance):
         fg.config['experiment']['active'] = 1
 
         # prepare camera if selected
-        if (not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
+        if (fg.is_use_picamera and not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
+            
             camStats, _ = af.autofocus_setupCAM(camStats=None, camdict='cam')
             fg.config['cam']['camProp_use_global'] = True
 
@@ -754,6 +769,7 @@ def take_image_atom(filename=None,fileformat='jpeg',rawCapture=None,rawFormat='r
     '''
     Finally takes the image depending on conditions chosen (storage vs others).
     '''
+
     # security check because video_port seems to break when used with full resolution (independend of awb_mode, exposure_mode AND framerate)
     if use_video_port == None:
         use_video_port = False if fg.camera.resolution == fg.camera.MAX_RESOLUTION else fg.config[camdict]['use_video_port']
@@ -791,8 +807,15 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
     # start
     logger.debug(
         "Taking image and store to: {}".format(filename))
-    if fg.my_dev_flag:
+    if not fg.is_use_picamera and not fg.is_use_vimba:
         logger.debug("Image taken -- DEV-MODE --.")
+    if fg.is_use_vimba:
+        logger.debug("Taking image VIMBA")
+        with Vimba.get_instance() as vimba:
+            with get_camera() as cam:
+                frame = cam.get_frame()
+                myframe = frame.as_opencv_image()
+                cv2.imwrite(filename, np.squeeze(myframe))
     else:
         # select for imaging cause ->
         if imaging_cause == 'AF':
@@ -880,7 +903,7 @@ def take_image(self, imname_append=None, *args):
         fg.ledarr.send("CLEAR")
     elif fg.config['experiment']['imaging_cause'] == 'SNAP':
         # prepare camera
-        if (not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
+        if (fg.is_use_picamera and not fg.config['cam']['camProp_use_global']) and fg.config['cam']['camProp_fix_properties'] and (not fg.config['cam']['camProp_defined']):
             camStats, _ = af.autofocus_setupCAM(camStats=None, camdict='cam')
             #fg.config['cam']['camProp_use_global'] = True
             #camera_set_parameter(method=method)
@@ -1070,7 +1093,8 @@ def camera_set_parameter(method='CUS'):
         elif method == 'Fluor':
             method_key = 'cam_fluo'
 
-        # setup cam with proper parameters to keep constant over imaging process
+    # setup cam with proper parameters to keep constant over imaging process
+    if fg.is_use_picamera:
         af.autofocus_setupCAM(camStats=[],camdict=method_key,rawCapture=None)
         
     # done?        
@@ -1082,7 +1106,7 @@ def crop_image():
 
 
 def camera_capture(filename, *rargs):
-    if not fg.my_dev_flag:
+    if fg.is_use_picamera:
         logger.debug("Camera capture: " + filename)
         filename = filename + fg.config['imaging']['extension']
         if len(rargs) > 0:
@@ -1094,6 +1118,7 @@ def camera_capture(filename, *rargs):
             fg.camera.capture(filename)
             return True
         # fg.ledarr.send("CLEAR")
+    # TODO: Add vimba caputre here
 
 
 def imaging_callback(self, instance, *largs):
@@ -1167,7 +1192,8 @@ def autofocus(self, instance):
         try:
             event_delete(key)
             event_delete('autofocus_measure')
-            af.autofocus_afterclean(self=self, instance=instance,camdict='cam_af')
+            if fg.is_use_picamera:
+                af.autofocus_afterclean(self=self, instance=instance,camdict='cam_af')
         except Exception as e:
             logger.debug(e)
             
@@ -1968,6 +1994,7 @@ def textinput_convert(text_input):
 # do Preview
 def preview_switch(self, instance):
     #print("Preview switch.")
+
     if instance.uid == self.ids['btn_preview_big'].uid:
         preview_size_switch(self, instance)
     else:
@@ -1992,33 +2019,29 @@ def preview_activation(self, instance):
 
 
 def camera_preview(self, start):
-    if 1:
-        if not fg.my_dev_flag:
-            if start is True:  # and (fg.popup_last_im is False):
-                try:
-                    fg.camera.start_preview()
-                    fg.camera.preview.fullscreen = fg.config['imaging']['fullscreen']
-                    fg.camera.preview.alpha = fg.config['imaging']['alpha']
-                    fg.camera.preview.window = fg.config['imaging']['window']
-                finally:
-                    logger.debug("Preview started")
-            else:
-                try:
-                    fg.camera.stop_preview()
-                finally:
-                    logger.debug("Preview stopped!")
-        else:
-            warn_dev_mode(self)
 
+    # TODO: Override this funciton with an aysnc (!) frame runner.. blabla
+    logger.debug("Starting Camera")
+    
+    if fg.is_use_vimba:
+        if start is True:  # and (fg.popup_last_im is False):
+            self.Camera = vbc.VimbaCameraThread()
+            self.Camera.start()
+            logger.debug("Preview started!")
+        else:
+            self.Camera.stop()
+            logger.debug("Preview stopped!")
+        
 
 def camera_preview_change_status(self, instance):
     if check_active(instance):
-        camera_preview(self, False)
         refresh_text_entry(instance, "Start preview")
+        camera_preview(self, False)
         #self.ids["btn_autofocus"].disabled = True
     else:
-        camera_preview(self, True)
         refresh_text_entry(instance, "Stop preview")
+        camera_preview(self, True)
+        
         #self.ids["btn_autofocus"].disabled = False
 
 
@@ -2052,3 +2075,78 @@ def get_slope(x, y):
 # === INIT TOOLS ===#
 #                    #
 ######################
+
+
+
+
+def get_camera() -> Camera:
+    with Vimba.get_instance() as vimba:
+        cams = vimba.get_all_cameras()
+        return cams[0]
+
+def setup_camera(cam: Camera):
+    with cam:
+        # Enable auto exposure time setting if camera supports it
+        try:
+            cam.ExposureAuto.set('Continuous')
+
+        except (AttributeError, VimbaFeatureError):
+            pass
+
+        # Enable white balancing if camera supports it
+        try:
+            cam.BalanceWhiteAuto.set('Continuous')
+
+        except (AttributeError, VimbaFeatureError):
+            pass
+
+        # Try to adjust GeV packet size. This Feature is only available for GigE - Cameras.
+        try:
+            cam.GVSPAdjustPacketSize.run()
+
+            while not cam.GVSPAdjustPacketSize.is_done():
+                pass
+
+        except (AttributeError, VimbaFeatureError):
+            pass
+
+        # Query available, open_cv compatible pixel formats
+        # prefer color formats over monochrome formats
+        cv_fmts = intersect_pixel_formats(cam.get_pixel_formats(), OPENCV_PIXEL_FORMATS)
+        color_fmts = intersect_pixel_formats(cv_fmts, COLOR_PIXEL_FORMATS)
+
+        if color_fmts:
+            cam.set_pixel_format(color_fmts[0])
+
+        else:
+            mono_fmts = intersect_pixel_formats(cv_fmts, MONO_PIXEL_FORMATS)
+
+            if mono_fmts:
+                cam.set_pixel_format(mono_fmts[0])
+
+            else:
+                print('Camera does not support a OpenCV compatible format natively. Abort.')
+                sys.exit(return_code)
+
+
+'''
+VIMBA CAMERA stuff 
+'''
+
+def get_camera() -> Camera:
+    with Vimba.get_instance() as vimba:
+        cams = vimba.get_all_cameras()
+        return cams[0]
+
+def setup_camera(cam: Camera):
+    with cam:
+        # Try to adjust GeV packet size. This Feature is only available for GigE - Cameras.
+        try:
+            cam.GVSPAdjustPacketSize.run()
+
+            while not cam.GVSPAdjustPacketSize.is_done():
+                pass
+
+        except (AttributeError, VimbaFeatureError):
+            pass
+

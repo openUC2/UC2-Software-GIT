@@ -10,6 +10,8 @@ global APP
 
 global my_dev_flag
 global started_first_exp
+global is_use_picamera
+global is_use_vimba
 
 global config
 global camera
@@ -37,8 +39,10 @@ if os.name == 'nt':
 else:
     my_dev_flag = False
 started_first_exp = False
+is_use_picamera = False
+is_use_vimba = True
 
-i2c = False
+i2c = True
 #setup_number = "004"
 VERSION = '0.4'
 config = []

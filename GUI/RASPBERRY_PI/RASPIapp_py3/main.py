@@ -42,7 +42,7 @@ if True:
 if fg.i2c:
     from I2CDevice import I2CDevice
 
-if not fg.my_dev_flag:
+if fg.is_use_picamera:
     import picamera
 
 # Initialization
