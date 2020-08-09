@@ -2,8 +2,9 @@
 if (1):
     import os
     # os.environ['KIVY_TEXT'] = 'egl_rpi'
-    os.environ['KIVY_WINDOW'] = 'sdl2'  # 'egl_rpi'  # 'sdl2'
+    # os.environ['KIVY_WINDOW'] = 'sdl2'  # 'egl_rpi'  # 'sdl2'
     # os.environ['KIVY_GL_BACKEND'] = 'gl'
+    # os.environ['KIVY_GL_BACKEND'] = 'egl'
     # time.sleep(1)
     pass
     # Fluidiscope
@@ -315,4 +316,9 @@ class FluidiscopeApp(App):
 
 # ---------- START APP ----------
 if __name__ == '__main__':
+
+    # make sure app is in full-screen
+    from kivy.config import Config
+    Config.write()
+
     FluidiscopeApp().run()

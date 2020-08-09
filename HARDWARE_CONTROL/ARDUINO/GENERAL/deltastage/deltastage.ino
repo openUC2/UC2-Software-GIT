@@ -8,6 +8,7 @@
 #define CLOCK_FREQUENCY 100000 //choose according to frequency of I2C-Master
 #define HEARTBEAT_INTERVAL 300000
 #define LED 13
+#define BF_PIN 0
 #define FLUO_PIN 1
 #define LEDARR_PIN 13
 #define MAX_MSG_LEN 32
@@ -34,9 +35,9 @@ int FLUO_STATUS = 0;
 //Device Identifier
 const char *DEVICE_ID = "MOTORS";
 
-const int nCommands = 4;
-const char *COMMANDSET[nCommands] = {"DRVX", "DRVY", "DRVZ", "FLUO"};
-const char *INSTRUCTS[nCommands] = {"1", "1", "1", "1"};
+const int nCommands = 5;
+const char *COMMANDSET[nCommands] = {"DRVX", "DRVY", "DRVZ", "FLUO", "BF"};
+const char *INSTRUCTS[nCommands] = {"1", "1", "1", "1", "1"};
 
 const int nComCMDs = 4;
 const char *COM_CMDS[nComCMDs] = {"STATUS", "LOGOFF", "NAME", "ANNOUNCE"};
@@ -120,6 +121,11 @@ void executeCommand(int nINST)
     digitalWrite(FLUO_PIN, boolean(INST[0]));
     //strlcat(outBuffer, "Fluo activated.", outBufLen);
   }
+  else if (strcmp(CMD, COMMANDSET[4]) == 0)
+  {
+    digitalWrite(BF_PIN, boolean(INST[0]));
+    //strlcat(outBuffer, "BF activated.", outBufLen);
+  }
   else
   {
     strlcat(outBuffer, "Command not found.", outBufLen);
@@ -129,10 +135,19 @@ void executeCommand(int nINST)
 void setup()
 {
   pinMode(LED, OUTPUT);
+
+  // Turn on Fluo
   pinMode(FLUO_PIN, OUTPUT);  
   digitalWrite(FLUO_PIN,1);
   delay(500);
   digitalWrite(FLUO_PIN,0);  
+
+  // Turn On BF
+  pinMode(BF_PIN, OUTPUT);  
+  digitalWrite(BF_PIN,1);
+  delay(500);
+  digitalWrite(BF_PIN,0);  
+
   
   //Wire-library callbacks
   Wire.begin(SLAVE_ADDRESS);

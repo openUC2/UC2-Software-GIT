@@ -7,10 +7,20 @@ import numpy
 from typing import Optional
 from vimba import *
 
+import fluidiscopeGlobVar as fg
 
 FRAME_QUEUE_SIZE = 10
-FRAME_HEIGHT = 480
-FRAME_WIDTH = 480
+FRAME_HEIGHT = 1088
+FRAME_WIDTH = 1456
+
+
+WINDOW_START_FROM_LEFT = 80 #fg.config['imaging']['window'][0]
+WINDOW_START_FROM_TOP = 80 # fg.config['imaging']['window'][1]
+WINDOW_HEIGHT = 430 # fg.config['imaging']['window'][2]
+WINDOW_WIDTH = 280 #  fg.config['imaging']['window'][3]
+IMAGE_CAPTION = 'UC2 Incubator Microscope'
+
+
 
 
 
@@ -157,7 +167,6 @@ class FrameConsumer(threading.Thread):
         self.frame_queue = frame_queue
 
     def run(self):
-        IMAGE_CAPTION = 'Multithreading Example: Press <Enter> to exit'
         KEY_CODE_ENTER = 13
 
         frames = {}
@@ -165,6 +174,7 @@ class FrameConsumer(threading.Thread):
 
         self.log.info('Thread \'FrameConsumer\' started.')
 
+        
         while alive:
             # Update current state by dequeuing all currently available frames.
             frames_left = self.frame_queue.qsize()
@@ -187,11 +197,18 @@ class FrameConsumer(threading.Thread):
             # Construct image by stitching frames together.
             if frames:
                 cv_images = [resize_if_required(frames[cam_id]) for cam_id in sorted(frames.keys())]
-                cv2.imshow(IMAGE_CAPTION, numpy.concatenate(cv_images, axis=1))
+                np_images = numpy.concatenate(cv_images, axis=1)
+                np_images = cv2.resize(np_images, (WINDOW_HEIGHT, WINDOW_WIDTH), interpolation=cv2.INTER_NEAREST)
+                #cv2.setWindowProperty(WindowName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+                #cv2.setWindowProperty(WindowName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_NORMAL)
+                cv2.imshow(IMAGE_CAPTION, np_images)
+                cv2.moveWindow(IMAGE_CAPTION,WINDOW_START_FROM_LEFT,WINDOW_START_FROM_TOP)
+
 
             # If there are no frames available, show dummy image instead
             else:
                 cv2.imshow(IMAGE_CAPTION, create_dummy_frame())
+                cv2.moveWindow(IMAGE_CAPTION,WINDOW_START_FROM_LEFT,WINDOW_START_FROM_TOP)
 
             # Check for shutdown condition
             if self.is_stop or KEY_CODE_ENTER == cv2.waitKey(10):
@@ -208,6 +225,7 @@ class VimbaCameraThread(threading.Thread):
         self.frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
         self.producers = {}
         self.producers_lock = threading.Lock()
+        self.is_active = False
         
 
     def __call__(self, cam: Camera, event: CameraEvent):
@@ -240,7 +258,9 @@ class VimbaCameraThread(threading.Thread):
 
             # Start FrameProducer threads
             with self.producers_lock:
+                self.is_active = True
                 self.producer.start()
+            
 
             # Start and wait for consumer to terminate
             vimba.register_camera_change_handler(self)
@@ -255,7 +275,8 @@ class VimbaCameraThread(threading.Thread):
 
                 # Wait for shutdown to complete
                 self.producer.join()
-
+        
+        self.is_active = False
         log.info('Thread \'VimbaCameraThread\' terminated.')
 
     def stop(self):

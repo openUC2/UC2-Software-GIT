@@ -12,6 +12,7 @@ global my_dev_flag
 global started_first_exp
 global is_use_picamera
 global is_use_vimba
+global vimba_preview
 
 global config
 global camera

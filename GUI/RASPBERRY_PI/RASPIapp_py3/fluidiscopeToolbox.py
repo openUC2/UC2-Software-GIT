@@ -6,6 +6,8 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.image import Image
+from kivy.config import Config
+
 from math import floor
 from functools import partial
 from kivy.clock import Clock
@@ -39,10 +41,15 @@ import unipath as uni
 from distutils.dir_util import copy_tree
 import shutil
 import tifffile as tif
+
 if fg.is_use_picamera:
     #from PIL import Image
     import picamera
     from picamraw import PiRawBayer, PiCameraVersion
+
+if fg.is_use_vimba:
+    # get camera thread instance
+    fg.camera = vbc.VimbaCameraThread()
 
 
 if fg.is_use_picamera:
@@ -74,8 +81,9 @@ logger = logger_createChild('toolbox','UC2')
 #                        #
 ##########################
 
-# Switch Screen behaviour
 
+# Switch Screen behaviour
+            
 
 def scr_switch(self, instance):
     # switch to Screen_Imaging
@@ -811,11 +819,16 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
         logger.debug("Image taken -- DEV-MODE --.")
     if fg.is_use_vimba:
         logger.debug("Taking image VIMBA")
-        with Vimba.get_instance() as vimba:
-            with get_camera() as cam:
-                frame = cam.get_frame()
-                myframe = frame.as_opencv_image()
-                cv2.imwrite(filename, np.squeeze(myframe))
+        if fg.camera.is_active:
+            print('Turning down the camera thread first ')
+            fg.camera.stop()
+            logger.debug("Preview stopped!")
+        else:
+            with Vimba.get_instance() as vimba:
+                with get_camera() as cam:
+                    frame = cam.get_frame()
+                    myframe = frame.as_opencv_image()
+                    cv2.imwrite(filename, np.squeeze(myframe))
     else:
         # select for imaging cause ->
         if imaging_cause == 'AF':
@@ -938,6 +951,7 @@ def take_image(self, imname_append=None, *args):
             # make sure preview is off
             set_active_again = False
             if check_active(self.ids['btn_preview']):
+                # TODO: NEED TO ADD THE DEACTIVATE PREVIEW HERE TOO
                 camera_preview(self, False)
                 set_active_again = True
             for x in ['btn_light_full', 'btn_light_preset_pattern', 'btn_light_custom_pattern', 'btn_light_fluo']:
@@ -956,76 +970,90 @@ def take_image(self, imname_append=None, *args):
                         self, fg.config['experiment']['imaging_cause'], file_name_write_fluo)
                     fg.fluo.send("FLUO", 0)
                     time.sleep(fg.config['experiment']['i2c_send_delay'])
+                elif active_method == 'Bright':
+                    # swith to customized LED field
+                    fg.fluo.send("BF", 1)
+                    tin_returnval, file_name_write = take_image_now(
+                        self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
+                    time.sleep(fg.config['experiment']['i2c_send_delay'])
+                    # time.sleep(fg.config['imaging']['speed'])
+                    tin_returnval, file_name_write = take_image_now(
+                        self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
+                    fg.fluo.send("BF", 0)
+                    time.sleep(fg.config['experiment']['i2c_send_delay'])
                 else:
-                    fg.ledarr.send("CLEAR")
-                    # 2) Decide what images to take
-                    col = int(fg.config['light']['intensity_expt'])
-                    #logger.debug("Color: " + str(col))
-                    if active_method in ["BG", "FG"]:
-                        # imaging
-                        if active_method == "BG":
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write)
-                        else:
-                            fg.ledarr.send("NA+2")
-                            fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write)
-                    else:
-                        if active_method == 'Bright':
-                            fg.ledarr.send("NA+3")
-                            fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
-                        elif active_method == "qDPC":
-                            pattern_list = prepare_illu_pattern_list()
-                            # Clock.schedule_once(partial(
-                            tin_returnval = pattern_disp_func(
-                                self, pattern_list, True, file_name_write, fg.config['imaging']['speed'])
-                        elif active_method == "Custom":
-                            # swith to customized LED field
-                            time.sleep(0.1)
-                            fluidiscopeIO.update_matrix(
-                                self, ignore_NA=True, sync_only=False)
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='CUS')
-                            fg.ledarr.send("CLEAR")
-                        elif active_method == "FPM":
-                            # 1 image per LED
-                            fnwh_raw = file_name_write + \
-                                datetime.strftime(datetime.now(), "%H%M%S")
-                            logger.debug("Starting FPM.")
-                            for myc in range(64):
-                                fnwh = fnwh_raw + "-" + str(myc).zfill(2)
-                                time.sleep(0.04)  # fastened
-                                fg.ledarr.send("PXL", myc, col, col, col)
-                                # time.sleep(fg.config['imaging']['speed'])
-                                time.sleep(1.0)  # fastened
+                    try:
+                        fg.ledarr.send("CLEAR")
+                        # 2) Decide what images to take
+                        col = int(fg.config['light']['intensity_expt'])
+                        #logger.debug("Color: " + str(col))
+                        if active_method in ["BG", "FG"]:
+                            # imaging
+                            if active_method == "BG":
                                 tin_returnval, file_name_write = take_image_now(
-                                    self, fg.config['experiment']['imaging_cause'], fnwh,method='FPM')
-                                logger.debug(
-                                    "Storing LED={} to {}.".format(myc, fnwh))
-                                fg.ledarr.send("CLEAR")
-                                time.sleep(0.04)
-                        elif active_method == "RECT":
-                            # set now with small NA image
-                            str(uni.Path(
-                                fg.expt_path, image_name))
-                            
-                            fg.ledarr.send("RECT+3+3+2+2+1", col, col, col)
-                            time.sleep(fg.config['imaging']['speed'])
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='RECT')
-                            fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
-                        elif active_method == "Ext":
-                            tin_returnval, file_name_write = take_image_now(
-                                self, fg.config['experiment']['imaging_cause'], file_name_write,method='Ext')
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write)
+                            else:
+                                fg.ledarr.send("NA+2")
+                                fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
+                                time.sleep(fg.config['imaging']['speed'])
+                                tin_returnval, file_name_write = take_image_now(
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write)
                         else:
-                            #
-                            pass
+                            if active_method == 'Bright':
+                                fg.ledarr.send("NA+3")
+                                fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
+                                time.sleep(fg.config['imaging']['speed'])
+                                tin_returnval, file_name_write = take_image_now(
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
+                            elif active_method == "qDPC":
+                                pattern_list = prepare_illu_pattern_list()
+                                # Clock.schedule_once(partial(
+                                tin_returnval = pattern_disp_func(
+                                    self, pattern_list, True, file_name_write, fg.config['imaging']['speed'])
+                            elif active_method == "Custom":
+                                # swith to customized LED field
+                                time.sleep(0.1)
+                                fluidiscopeIO.update_matrix(
+                                    self, ignore_NA=True, sync_only=False)
+                                time.sleep(fg.config['imaging']['speed'])
+                                tin_returnval, file_name_write = take_image_now(
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write,method='CUS')
+                                fg.ledarr.send("CLEAR")
+                            elif active_method == "FPM":
+                                # 1 image per LED
+                                fnwh_raw = file_name_write + \
+                                    datetime.strftime(datetime.now(), "%H%M%S")
+                                logger.debug("Starting FPM.")
+                                for myc in range(64):
+                                    fnwh = fnwh_raw + "-" + str(myc).zfill(2)
+                                    time.sleep(0.04)  # fastened
+                                    fg.ledarr.send("PXL", myc, col, col, col)
+                                    # time.sleep(fg.config['imaging']['speed'])
+                                    time.sleep(1.0)  # fastened
+                                    tin_returnval, file_name_write = take_image_now(
+                                        self, fg.config['experiment']['imaging_cause'], fnwh,method='FPM')
+                                    logger.debug(
+                                        "Storing LED={} to {}.".format(myc, fnwh))
+                                    fg.ledarr.send("CLEAR")
+                                    time.sleep(0.04)
+                            elif active_method == "RECT":
+                                # set now with small NA image
+                                str(uni.Path(
+                                    fg.expt_path, image_name))
+                                
+                                fg.ledarr.send("RECT+3+3+2+2+1", col, col, col)
+                                time.sleep(fg.config['imaging']['speed'])
+                                tin_returnval, file_name_write = take_image_now(
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write,method='RECT')
+                                fg.ledarr.send("RECT+3+3+2+2+1+0+0+0")
+                            elif active_method == "Ext":
+                                tin_returnval, file_name_write = take_image_now(
+                                    self, fg.config['experiment']['imaging_cause'], file_name_write,method='Ext')
+                            else:
+                                #
+                                pass
+                    except:
+                        logger.debug("ERROR: Probably no device attached?")
             finally:
                 pass
         if not fg.config['experiment']['imaging_cause'] == 'SNAP':
@@ -1332,31 +1360,40 @@ def light_change_status(self, instance):
                 self.ids['slider_light_intensity'].value)
             # memes ON-setting
             fg.fluo.send("FLUO", fg.config['light']['intensity'])
-    else:
-        col = int(fg.config['light']['intensity_expt'])
-        pattern = 'CUS'
+    elif instance.text == 'FULL':
         if check_active(instance):
             chk_experiment_created(self, instance, instance.text)
-            fg.ledarr.send("CLEAR")
+            fg.fluo.send("BF", 0)
         else:
-            if instance.text == 'FULL':
-                fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
-            elif instance.uid == self.ids['btn_light_preset_pattern'].uid or instance.uid == self.ids['btn_light_custom_pattern'].uid:
-                if instance.uid == self.ids['btn_light_preset_pattern'].uid:
-                    for idx in range(1, 5):
-                        if fg.config['light_patterns']['active_p' + str(idx)] == 1:
-                            pattern = 'p' + str(idx)
-                            break
-                fluidiscopeIO.update_matrix(
-                    self, ignore_NA=True, sync_only=False, pattern=pattern)
-                self.ids["sm"].current = 'scr_light_set_2'
-                self.ids["btn_scr_name"].text = 'LI\nGHT\nOPT\n2'
-                # if instance.uid == self.ids['btn_light_preset_pattern'].uid:
-                # select_method(self,instance)
-                fluidiscopeIO.settings_save_restore(self, instance, True)
+            # memes ON-setting
+            fg.fluo.send("BF", 1)            
+    else:
+        try:
+            col = int(fg.config['light']['intensity_expt'])
+            pattern = 'CUS'
+            if check_active(instance):
+                chk_experiment_created(self, instance, instance.text)
+                fg.ledarr.send("CLEAR")
             else:
-                pass
-
+                if instance.text == 'FULL':
+                    fg.ledarr.send("RECT+0+0+8+8+1", col, col, col)
+                elif instance.uid == self.ids['btn_light_preset_pattern'].uid or instance.uid == self.ids['btn_light_custom_pattern'].uid:
+                    if instance.uid == self.ids['btn_light_preset_pattern'].uid:
+                        for idx in range(1, 5):
+                            if fg.config['light_patterns']['active_p' + str(idx)] == 1:
+                                pattern = 'p' + str(idx)
+                                break
+                    fluidiscopeIO.update_matrix(
+                        self, ignore_NA=True, sync_only=False, pattern=pattern)
+                    self.ids["sm"].current = 'scr_light_set_2'
+                    self.ids["btn_scr_name"].text = 'LI\nGHT\nOPT\n2'
+                    # if instance.uid == self.ids['btn_light_preset_pattern'].uid:
+                    # select_method(self,instance)
+                    fluidiscopeIO.settings_save_restore(self, instance, True)
+                else:
+                    pass
+        except:
+            logger.debug("Error: Probably no ADditional Components attached?")
 
 def setNA(userNA):
     if 1 <= userNA <= 4:
@@ -2024,12 +2061,12 @@ def camera_preview(self, start):
     logger.debug("Starting Camera")
     
     if fg.is_use_vimba:
-        if start is True:  # and (fg.popup_last_im is False):
-            self.Camera = vbc.VimbaCameraThread()
-            self.Camera.start()
+        if start is True and not fg.camera.is_active:  # and (fg.popup_last_im is False):
+            fg.camera = vbc.VimbaCameraThread() # I guess we should delete it somehow?!
+            fg.camera.start()
             logger.debug("Preview started!")
         else:
-            self.Camera.stop()
+            fg.camera.stop()
             logger.debug("Preview stopped!")
         
 
