@@ -274,6 +274,12 @@ sudo apt-get install -y \
     xsel
 ```
 
+This makes sure, that the livestream window in the GUI is "always on top" (HACKY!)
+```
+sudo apt-get install wmctrl 
+```
+
+
 ```
 export USE_X11=1
 ```
@@ -317,17 +323,33 @@ should show somehting like
 [INFO   ] [Python      ] Interpreter at "/usr/bin/python3.7"
 ```
 
+#### Device permissions
+
+When you app starts, Kivy uses Mtdev to scan for available multi-touch devices to use for input. Access to these devices is typically restricted to users or group with the appropriate permissions.
+We need to add the user to the ‘input’ group. Type:
+
+```
+$ sudo adduser $USER input
+```
+
+Note that you need to log out then back in again for these permissions to be applied.
+
 
 * **Setup the device** Once Kivy is finished, configure the touch-screen of RasPi (if installed) as valid input-method. Hence, in the terminal run
+
+
     ```
     $ nano ~/.kivy/config.ini
     ```
+    
     and search (Ctrl+W) for `[input]` and add a line 
+    
     ```
     $ mtdev_%(name)s = probesysfs,provider=mtdev
     $ hid_%(name)s = probesysfs,provider=hidinput
 
     ```
+    
     <p align="center">
     <img src="./IMAGES/script08.png" width="400" alt="">
     </p> 

@@ -177,8 +177,8 @@ def on_disconnect(client, userdata, rc):
 
 
 def GUI_define_sizes():
-    Config.set('graphics', 'width', '800')
-    Config.set('graphics', 'height', '480')
+    #Config.set('graphics', 'width', '800')
+    #Config.set('graphics', 'height', '280')
     Config.set('graphics', 'borderless', 'True')
     Config.write()
     pass

@@ -50,6 +50,7 @@ if fg.is_use_picamera:
 if fg.is_use_vimba:
     # get camera thread instance
     fg.camera = vbc.VimbaCameraThread()
+    fg.vimba_is_record_preview = False 
 
 
 if fg.is_use_picamera:
@@ -152,6 +153,7 @@ def scr_switch(self, instance):
             self.ids["btn_scr_name"].text = 'AUT\nOFO\nCUS'
             fluidiscopeIO.settings_save_restore(self, instance, True)
     elif self.ids["btn_tomography_settings"].uid == instance.uid:
+        # TODO: We replace this for the BURST-mode temporaly 
         if check_active(instance):
             chk_experiment_created(self, instance, instance.text)
             fluidiscopeIO.settings_save_restore(self, instance, False)
@@ -160,6 +162,7 @@ def scr_switch(self, instance):
             self.ids["btn_scr_name"].text = 'TO\nMO'
         change_activation_status(instance)
         fluidiscopeIO.settings_save_restore(self, instance, True)
+        
     # special buttons
     ##
     ###
@@ -312,6 +315,11 @@ def end_fluidiscope(app):
             fg.ledarr.send("CLEAR")
         if fg.is_use_picamera:
             fg.camera.close()
+        if fg.is_use_vimba:
+            if fg.camera.is_active:
+                print('Turning down the camera thread first ')
+                fg.camera.stop()
+                logger.debug("Preview stopped!")
     finally:
         logger.info("Closed camera")
 
@@ -2028,26 +2036,21 @@ def textinput_convert(text_input):
 #                    #
 ######################
 
+
+
+
 # do Preview
 def preview_switch(self, instance):
     #print("Preview switch.")
-
     if instance.uid == self.ids['btn_preview_big'].uid:
-        preview_size_switch(self, instance)
+        if not self.ids['btn_preview_big'].fl_active:
+            fg.vimba_is_record_preview = True
+        else:
+            fg.vimba_is_record_preview = False
+        logger.debug("Setting record to: "+str(fg.vimba_is_record_preview))
     else:
         preview_activation(self, instance)
     change_activation_status(instance)
-
-
-def preview_size_switch(self, instance):
-    # status of button will be changed in SUPER-routine
-    fg.config['imaging']['window_big_active'] = not(instance.fl_active)
-    fg.config['imaging']['window'] = [m for m in fg.config['imaging']['window_small']] if instance.fl_active else [
-        m for m in fg.config['imaging']['window_big']]  
-        
-    if self.ids['btn_preview'].fl_active:
-        camera_preview(self, True)
-
 
 def preview_activation(self, instance):
     if not instance.fl_active:
@@ -2062,10 +2065,21 @@ def camera_preview(self, start):
     
     if fg.is_use_vimba:
         if start is True and not fg.camera.is_active:  # and (fg.popup_last_im is False):
-            fg.camera = vbc.VimbaCameraThread() # I guess we should delete it somehow?!
+            if fg.vimba_is_record_preview:
+                filename = './DATA/' + time.strftime("%Y%m%d-%H%M%S")
+                os.makedirs(filename)
+                fg.fluo.send("FLUO", int(1))
+                logger.debug('Fluo active, sent FLUO+{}.'.format(int(1)))
+                fg.camera = vbc.VimbaCameraThread(is_record=fg.vimba_is_record_preview, filename=filename) 
+            else:
+                fg.camera = vbc.VimbaCameraThread() 
             fg.camera.start()
             logger.debug("Preview started!")
         else:
+            if fg.vimba_is_record_preview:
+                fg.fluo.send("FLUO", int(0))
+                logger.debug('Fluo active, sent FLUO+{}.'.format(int(0)))
+
             fg.camera.stop()
             logger.debug("Preview stopped!")
         

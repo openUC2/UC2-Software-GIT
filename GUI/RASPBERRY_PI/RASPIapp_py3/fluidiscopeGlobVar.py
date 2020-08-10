@@ -13,6 +13,7 @@ global started_first_exp
 global is_use_picamera
 global is_use_vimba
 global vimba_preview
+global vimba_is_record_preview
 
 global config
 global camera

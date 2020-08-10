@@ -2,7 +2,9 @@ import copy
 import cv2
 import threading
 import queue
-import numpy
+import numpy as np
+import os
+import time 
 
 from typing import Optional
 from vimba import *
@@ -18,8 +20,13 @@ WINDOW_START_FROM_LEFT = 80 #fg.config['imaging']['window'][0]
 WINDOW_START_FROM_TOP = 80 # fg.config['imaging']['window'][1]
 WINDOW_HEIGHT = 430 # fg.config['imaging']['window'][2]
 WINDOW_WIDTH = 280 #  fg.config['imaging']['window'][3]
-IMAGE_CAPTION = 'UC2 Incubator Microscope'
+IMAGE_CAPTION = 'UC2-Livestream'
 
+
+# Camera Settings
+CAM_GAIN = 10 # dB
+
+T_PERIODE = 0.5 # [s] - time between acquired frames
 
 
 
@@ -33,7 +40,7 @@ def add_camera_id(frame: Frame, cam_id: str) -> Frame:
     return frame
 
 
-def resize_if_required(frame: Frame) -> numpy.ndarray:
+def resize_if_required(frame: Frame) -> np.ndarray:
     # Helper function resizing the given frame, if it has not the required dimensions.
     # On resizing, the image data is copied and resized, the image inside the frame object
     # is untouched.
@@ -41,13 +48,13 @@ def resize_if_required(frame: Frame) -> numpy.ndarray:
 
     if (frame.get_height() != FRAME_HEIGHT) or (frame.get_width() != FRAME_WIDTH):
         cv_frame = cv2.resize(cv_frame, (FRAME_WIDTH, FRAME_HEIGHT), interpolation=cv2.INTER_AREA)
-        cv_frame = cv_frame[..., numpy.newaxis]
+        cv_frame = cv_frame[..., np.newaxis]
 
     return cv_frame
 
 
-def create_dummy_frame() -> numpy.ndarray:
-    cv_frame = numpy.zeros((50, 640, 1), numpy.uint8)
+def create_dummy_frame() -> np.ndarray:
+    cv_frame = np.zeros((50, 640, 1), np.uint8)
     cv_frame[:] = 0
 
     cv2.putText(cv_frame, 'No Stream available. Please connect a Camera.', org=(30, 30),
@@ -159,12 +166,22 @@ class FrameProducer(threading.Thread):
 
 
 class FrameConsumer(threading.Thread):
-    def __init__(self, frame_queue: queue.Queue):
+    def __init__(self, frame_queue: queue.Queue, is_record=False, filename=''):
         threading.Thread.__init__(self)
 
+        self.is_window_on_top = False
         self.is_stop = False
+        self.is_record = is_record
+        self.filename = filename
         self.log = Log.get_instance()
         self.frame_queue = frame_queue
+        self.iframe = 0
+        
+        # timing for frame acquisition
+        self.t_min = T_PERIODE  # s
+        self.t_last = 0
+        self.t_now = 0
+        
 
     def run(self):
         KEY_CODE_ENTER = 13
@@ -175,9 +192,14 @@ class FrameConsumer(threading.Thread):
         self.log.info('Thread \'FrameConsumer\' started.')
 
         
+
         while alive:
             # Update current state by dequeuing all currently available frames.
             frames_left = self.frame_queue.qsize()
+
+            # get time for frame acquisition
+            self.t_now = time.time()
+
             while frames_left:
                 try:
                     cam_id, frame = self.frame_queue.get_nowait()
@@ -197,13 +219,28 @@ class FrameConsumer(threading.Thread):
             # Construct image by stitching frames together.
             if frames:
                 cv_images = [resize_if_required(frames[cam_id]) for cam_id in sorted(frames.keys())]
-                np_images = numpy.concatenate(cv_images, axis=1)
+                np_images = np.concatenate(cv_images, axis=1)
+
+                # save frames as they come
+                if self.is_record and (np.abs(time.time()-self.t_last)>self.t_min): # make sure we pick frames after T_period
+                    filename = self.filename+'/BURST_t-'+str(T_PERIODE)+'_'+str(self.iframe)+'.jpg'
+                    self.log.info('Saving images at: '+filename)
+                    self.t_last = time.time()
+                    print(np_images.shape)
+                    cv2.imwrite(filename, np_images)
+                    self.iframe += 1
+
+                # resize to fit in the window
                 np_images = cv2.resize(np_images, (WINDOW_HEIGHT, WINDOW_WIDTH), interpolation=cv2.INTER_NEAREST)
-                #cv2.setWindowProperty(WindowName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
-                #cv2.setWindowProperty(WindowName,cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_NORMAL)
                 cv2.imshow(IMAGE_CAPTION, np_images)
                 cv2.moveWindow(IMAGE_CAPTION,WINDOW_START_FROM_LEFT,WINDOW_START_FROM_TOP)
 
+                if not self.is_window_on_top:
+                    # set window upfront
+                    self.log.info('Setting window "always on top"')
+                    # https://askubuntu.com/questions/394998/why-wmctrl-doesnt-work-for-certain-windows
+                    os.system('wmctrl -r "UC2-Livestream" -b add,above')
+                    self.is_window_on_top = True
 
             # If there are no frames available, show dummy image instead
             else:
@@ -214,17 +251,20 @@ class FrameConsumer(threading.Thread):
             if self.is_stop or KEY_CODE_ENTER == cv2.waitKey(10):
                 cv2.destroyAllWindows()
                 alive = False
+                self.is_window_on_top = False
 
         self.log.info('Thread \'FrameConsumer\' terminated.')
 
 
 class VimbaCameraThread(threading.Thread):
-    def __init__(self):
+    def __init__(self, is_record=False, filename=''):
         threading.Thread.__init__(self)
 
         self.frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
         self.producers = {}
         self.producers_lock = threading.Lock()
+        self.is_record = is_record
+        self.filename = filename
         self.is_active = False
         
 
@@ -243,7 +283,7 @@ class VimbaCameraThread(threading.Thread):
 
     def run(self):
         log = Log.get_instance()
-        self.consumer = FrameConsumer(self.frame_queue)
+        self.consumer = FrameConsumer(self.frame_queue, self.is_record, self.filename)
 
         vimba = Vimba.get_instance()
         vimba.enable_log(LOG_CONFIG_INFO_CONSOLE_ONLY)
