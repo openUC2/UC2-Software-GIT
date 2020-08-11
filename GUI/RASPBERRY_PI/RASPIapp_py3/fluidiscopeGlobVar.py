@@ -32,6 +32,7 @@ global copy_path
 global expt_num
 global today
 global i2c
+global active_imaging_method 
 #global setup_number
 
 # datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") -> important for saving the expimernts
@@ -53,3 +54,5 @@ APP = []
 motors = []
 ledarr = []
 fluo = []
+
+active_imaging_method = 'FULL' # For vimba intensity weighting

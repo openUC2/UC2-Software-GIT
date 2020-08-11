@@ -18,13 +18,14 @@ FRAME_WIDTH = 1456
 
 WINDOW_START_FROM_LEFT = 80 #fg.config['imaging']['window'][0]
 WINDOW_START_FROM_TOP = 80 # fg.config['imaging']['window'][1]
-WINDOW_HEIGHT = 430 # fg.config['imaging']['window'][2]
-WINDOW_WIDTH = 280 #  fg.config['imaging']['window'][3]
+WINDOW_HEIGHT = 480 # fg.config['imaging']['window'][2]
+WINDOW_WIDTH = 320 #  fg.config['imaging']['window'][3]
 IMAGE_CAPTION = 'UC2-Livestream'
 
 
 # Camera Settings
-CAM_GAIN = 10 # dB
+#CAM_GAIN = 20 # dB
+T_EXPOSURE_MAX = 1e6 # µs => 1s
 
 T_PERIODE = 0.5 # [s] - time between acquired frames
 
@@ -54,7 +55,7 @@ def resize_if_required(frame: Frame) -> np.ndarray:
 
 
 def create_dummy_frame() -> np.ndarray:
-    cv_frame = np.zeros((50, 640, 1), np.uint8)
+    cv_frame = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT, 1), np.uint8)
     cv_frame[:] = 0
 
     cv2.putText(cv_frame, 'No Stream available. Please connect a Camera.', org=(30, 30),
@@ -111,6 +112,8 @@ class FrameProducer(threading.Thread):
         self.cam = cam
         self.frame_queue = frame_queue
         self.killswitch = threading.Event()
+        self.IntensityControllerTarget = 50 # percent
+        self.Gain = 1
 
     def __call__(self, cam: Camera, frame: Frame):
         # This method is executed within VimbaC context. All incoming frames
@@ -128,19 +131,77 @@ class FrameProducer(threading.Thread):
     def stop(self):
         self.killswitch.set()
 
+    def setIntensityCorrection(self, IntensityControllerTarget):
+        self.IntensityControllerTarget = IntensityControllerTarget
+
+    def setGain(self, Gain):
+        self.Gain = Gain
+
+
     def setup_camera(self):
-        set_nearest_value(self.cam, 'Height', FRAME_HEIGHT)
-        set_nearest_value(self.cam, 'Width', FRAME_WIDTH)
+        #set_nearest_value(self.cam, 'Height', FRAME_HEIGHT)
+        #set_nearest_value(self.cam, 'Width', FRAME_WIDTH)
+
+
+        # try to set IntensityControllerTarget
+        try:
+            self.cam.ExposureAutoMax.set(T_EXPOSURE_MAX)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'ExposureAutoMax\'.'.format(
+                        self.cam.get_id()))
+
+        # try to set IntensityControllerTarget
+        try:
+            self.cam.IntensityControllerTarget.set(self.IntensityControllerTarget)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'IntensityControllerTarget\'.'.format(
+                        self.cam.get_id()))
+
+        # Try to set exposure time to something reasonable 
+        try:
+            self.cam.ExposureTime.set(50e3)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'ExposureTime\'.'.format(
+                          self.cam.get_id()))
+
+
+        # Try to set GAIN automatic
+        try:
+            self.cam.Gain.set(self.Gain)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'Gain\'.'.format(
+                          self.cam.get_id()))
+
 
         # Try to enable automatic exposure time setting
         try:
-            self.cam.ExposureAuto.set('Once')
+            self.cam.ExposureAuto.set('Continous')
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'ExposureAuto\'.'.format(
                           self.cam.get_id()))
 
+
+        '''
+        # Try to set GAIN automatic
+        try:
+            self.cam.GainAuto.set('Once')
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'GainAuto\'.'.format(
+                          self.cam.get_id()))
+        '''
+
+
         self.cam.set_pixel_format(PixelFormat.Mono8)
+
+
+
+
 
     def run(self):
         self.log.info('Thread \'FrameProducer({})\' started.'.format(self.cam.get_id()))
@@ -266,6 +327,8 @@ class VimbaCameraThread(threading.Thread):
         self.is_record = is_record
         self.filename = filename
         self.is_active = False
+        self.IntensityCorrection = 50
+        self.Gain = 1
         
 
     def __call__(self, cam: Camera, event: CameraEvent):
@@ -295,6 +358,8 @@ class VimbaCameraThread(threading.Thread):
             cams = vimba.get_all_cameras()
             cam = cams[0]
             self.producer = FrameProducer(cam, self.frame_queue)
+            self.producer.setIntensityCorrection(self.IntensityCorrection)
+            self.producer.setGain(self.Gain)
 
             # Start FrameProducer threads
             with self.producers_lock:
@@ -323,6 +388,12 @@ class VimbaCameraThread(threading.Thread):
         # Stop all FrameProducer threads
         print("Stopping main thread ")
         self.consumer.is_stop = True
+
+    def setIntensityCorrection(self, IntensityCorrection=50):
+        self.IntensityCorrection = IntensityCorrection
+
+    def setGain(self, Gain=1):
+        self.Gain = Gain
 
 
 if __name__ == '__main__':

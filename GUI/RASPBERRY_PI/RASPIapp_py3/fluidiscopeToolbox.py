@@ -451,6 +451,8 @@ def select_method(self, instance, aimed_component_group):
     logger.debug('Selected methods: {}.'.format(
         fg.config['experiment']['active_methods']))
     logger.debug('this time selected method: {}.'.format(active_method))
+    fg.active_imaging_method = active_method
+    print(fg.active_imaging_method)
     return active_method
 
 
@@ -2068,11 +2070,26 @@ def camera_preview(self, start):
             if fg.vimba_is_record_preview:
                 filename = './DATA/' + time.strftime("%Y%m%d-%H%M%S")
                 os.makedirs(filename)
-                fg.fluo.send("FLUO", int(1))
-                logger.debug('Fluo active, sent FLUO+{}.'.format(int(1)))
+                fg.fluo.send("FLUO", fg.config['light']['intensity'])
+                logger.debug('Fluo active, sent FLUO+{}.'.format(int(fg.config['light']['intensity'])))
                 fg.camera = vbc.VimbaCameraThread(is_record=fg.vimba_is_record_preview, filename=filename) 
+                fg.camera.setIntensityCorrection(10)
+                fg.camera.setGain(Gain=23)
             else:
                 fg.camera = vbc.VimbaCameraThread() 
+                print(fg.active_imaging_method)
+                if(fg.active_imaging_method=='btn_light_full'):
+                    print("Setting to bfmode")
+                    fg.camera.setIntensityCorrection(50)
+                    fg.camera.setGain(Gain=23)
+                elif(fg.active_imaging_method=='btn_light_fluo'):
+                    print("Setting to fluomode")
+                    fg.camera.setIntensityCorrection(20)
+                    fg.camera.setGain(Gain=23)
+                else:
+                    print("Setting to othermode")
+                    fg.camera.setIntensityCorrection(50)
+                    fg.camera.setGain(Gain=23)
             fg.camera.start()
             logger.debug("Preview started!")
         else:

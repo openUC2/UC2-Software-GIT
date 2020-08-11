@@ -12,20 +12,20 @@
 
 <FluidSlide1@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
         text: str(int(root.value)) + "m"
 <FluidSlide2@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
         text: str(int(root.value)) + "h"
 
 <FluidSlide3@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
         text: str(int(root.value/255*100)) + "%"
