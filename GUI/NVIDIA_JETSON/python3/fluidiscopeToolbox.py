@@ -20,13 +20,12 @@ import fluidiscopeAutofocus as af
 import fluidiscopeTomography as tomo
 from fluidiscopeLogging import logger_createChild
 
-import vimba_camera as vbc
+
 # python packages
 import threading
 import sys
 import cv2
 from typing import Optional
-from vimba import *
 
 import warnings
 from datetime import datetime
@@ -48,9 +47,13 @@ if fg.is_use_picamera:
     from picamraw import PiRawBayer, PiCameraVersion
 
 if fg.is_use_vimba:
+    import vimba_camera as vbc
+    from vimba import *
     # get camera thread instance
     fg.camera = vbc.VimbaCameraThread()
     fg.vimba_is_record_preview = False 
+else:
+    Camera = None # make code happy
 
 
 if fg.is_use_picamera:
@@ -334,6 +337,22 @@ def select_method(self, instance, aimed_component_group):
                           "btn_light_custom_pattern", "btn_light_fluo"]
         [active_method, inactive_methods] = select_method_switches(
             instance, method_dictionary, switch_entries)
+        logger.debug('this time selected method: {}.'.format(active_method))
+        fg.active_imaging_method = active_method
+        if fg.active_imaging_method=='btn_light_full':
+            try:
+                # only set camera register if mode is "on"
+                fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
+            except:
+                print("Error setting exposure time BF - camera already running?")
+        if fg.active_imaging_method=='btn_light_fluo': 
+            try:
+                # only set camera register if mode is "on"
+                fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
+            except:
+                print("Error setting exposure time FLUO - camera already running?")
+
+
         if instance.uid == self.ids['btn_light_preset_pattern'].uid:
             counter_active_methods = ['btn_light_set_2_clear', 'btn_light_set_2_fill', 'slider_light_set_2_NA', 'btn_light_set_2_pattern_run',
                                       'btn_light_set_2_pattern_1', 'btn_light_set_2_pattern_2', 'btn_light_set_2_pattern_3', 'btn_light_set_2_pattern_4']
@@ -450,9 +469,6 @@ def select_method(self, instance, aimed_component_group):
         warn_dev_mode(self)
     logger.debug('Selected methods: {}.'.format(
         fg.config['experiment']['active_methods']))
-    logger.debug('this time selected method: {}.'.format(active_method))
-    fg.active_imaging_method = active_method
-    print(fg.active_imaging_method)
     return active_method
 
 
@@ -586,6 +602,29 @@ def slider_change(self, instance):
         fg.fluo.send("FLUO", int(instance.value))
         logger.debug('Fluo active, sent FLUO+{}.'.format(int(instance.value)))
     fg.config['light']['intensity'] = int(instance.value)
+
+def slider_setExposure_BF(self, instance):
+    logger.debug('%s value has changed to %s' %
+                 (instance.name, str(instance.value)))
+    fg.config['light']['exposure_time_BF'] = int(instance.value)
+    if fg.active_imaging_method=='btn_light_full':
+        try:
+            # only set camera register if mode is "on"
+            fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
+        except:
+            print("Error setting exposure time BF - camera already running?")
+
+def slider_setExposure_FLUO(self, instance):
+    logger.debug('%s value has changed to %s' %
+                 (instance.name, str(instance.value)))
+    fg.config['light']['exposure_time_FLUO'] = int(instance.value)
+    if fg.active_imaging_method=='btn_light_fluo': 
+        try:
+            # only set camera register if mode is "on"
+            fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
+        except:
+            print("Error setting exposure time FLUO - camera already running?")
+
 
 
 def buttons_light(self, instance):
@@ -836,6 +875,12 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
         else:
             with Vimba.get_instance() as vimba:
                 with get_camera() as cam:
+                    if fg.active_imaging_method=='btn_light_full':
+                        # only set camera register if mode is "on"
+                        fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
+                    if fg.active_imaging_method=='btn_light_fluo': 
+                        # only set camera register if mode is "on"
+                        fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
                     frame = cam.get_frame()
                     myframe = frame.as_opencv_image()
                     cv2.imwrite(filename, np.squeeze(myframe))
@@ -903,11 +948,12 @@ def take_image_callback(self, *args):
 def take_image_wrapper(self, *args):
     '''
     Mean hack introduced to post-add tomo-mode into how images are taken.
-    '''
+    
     if fg.config['experiment']['tomo_active']:
         tomo.tomography_callback(self)
     else:
-        take_image(self)
+    '''
+    take_image(self)
 
 
 def take_image(self, imname_append=None, *args):
@@ -980,6 +1026,7 @@ def take_image(self, imname_append=None, *args):
                         self, fg.config['experiment']['imaging_cause'], file_name_write_fluo)
                     fg.fluo.send("FLUO", 0)
                     time.sleep(fg.config['experiment']['i2c_send_delay'])
+                    fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
                 elif active_method == 'Bright':
                     # swith to customized LED field
                     fg.fluo.send("BF", 1)
@@ -991,6 +1038,7 @@ def take_image(self, imname_append=None, *args):
                         self, fg.config['experiment']['imaging_cause'], file_name_write,method='Bright')
                     fg.fluo.send("BF", 0)
                     time.sleep(fg.config['experiment']['i2c_send_delay'])
+                    fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
                 else:
                     try:
                         fg.ledarr.send("CLEAR")
@@ -1107,8 +1155,10 @@ def set_image_name(im_cause=None, method=None, mytime=None):
         image_name += "{}-".format(method)
     if not mytime == None:
         image_name += "{}-".format(now)
+    '''
     if fg.config['experiment']['tomo_active']:
         image_name += "tomo_{}-".format(fg.config['tomo']['step_number'])
+    '''
     return image_name
 
 
@@ -2073,23 +2123,29 @@ def camera_preview(self, start):
                 fg.fluo.send("FLUO", fg.config['light']['intensity'])
                 logger.debug('Fluo active, sent FLUO+{}.'.format(int(fg.config['light']['intensity'])))
                 fg.camera = vbc.VimbaCameraThread(is_record=fg.vimba_is_record_preview, filename=filename) 
-                fg.camera.setIntensityCorrection(10)
+                #fg.camera.setIntensityCorrection(10)
                 fg.camera.setGain(Gain=23)
+                fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
             else:
                 fg.camera = vbc.VimbaCameraThread() 
-                print(fg.active_imaging_method)
-                if(fg.active_imaging_method=='btn_light_full'):
+                print(fg.active_imaging_method) 
+                if(fg.config['experiment']['active_methods']=='btn_light_full'):
+                    # Brightfield imaging requires lower Gain?!
                     print("Setting to bfmode")
-                    fg.camera.setIntensityCorrection(50)
+                    #fg.camera.setIntensityCorrection(50)
                     fg.camera.setGain(Gain=23)
-                elif(fg.active_imaging_method=='btn_light_fluo'):
+                    fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
+                elif(fg.config['experiment']['active_methods']=='btn_light_fluo'):
+                    # Fluomode imaging requires higher Gain?!
                     print("Setting to fluomode")
-                    fg.camera.setIntensityCorrection(20)
+                    # fg.camera.setIntensityCorrection(20)
                     fg.camera.setGain(Gain=23)
+                    fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
                 else:
                     print("Setting to othermode")
                     fg.camera.setIntensityCorrection(50)
                     fg.camera.setGain(Gain=23)
+                    fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
             fg.camera.start()
             logger.debug("Preview started!")
         else:
@@ -2143,8 +2199,6 @@ def get_slope(x, y):
 # === INIT TOOLS ===#
 #                    #
 ######################
-
-
 
 
 def get_camera() -> Camera:

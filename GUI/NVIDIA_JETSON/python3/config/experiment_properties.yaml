@@ -1,7 +1,7 @@
 active: 0
 active_camProp: null
-active_methods:
-- Ext
+active_method: null
+active_methods: []
 autofocus_busy: false
 autofocus_new: true
 autofocus_now: false
@@ -38,4 +38,4 @@ success: false
 take_raw: 1
 time_left: 115
 time_passed: 5
-tomo_active: true
+tomo_active: false

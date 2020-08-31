@@ -10,6 +10,7 @@ camProp_use_global: false
 digital_gain: 1.0
 exposure_compensation: 0
 exposure_mode: off
+exposure_time: 0
 framerate: 30.0
 image_denoise: false
 iso: 100

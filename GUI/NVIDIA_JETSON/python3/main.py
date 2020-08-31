@@ -157,9 +157,14 @@ class Fluidiscope(BoxLayout):
         toolbox.motor_calibrate_activate(self, instance)
 
     # light functions
-
     def slider_change(self, instance):
         toolbox.slider_change(self, instance)
+
+    def slider_setExposure_BF(self, instance):
+        toolbox.slider_setExposure_BF(self, instance)
+
+    def slider_setExposure_FLUO(self, instance):
+        toolbox.slider_setExposure_FLUO(self, instance)
 
     def buttons_light(self, instance):
         toolbox.buttons_light(self, instance)

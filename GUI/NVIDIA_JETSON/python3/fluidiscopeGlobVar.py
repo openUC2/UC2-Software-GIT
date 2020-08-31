@@ -3,6 +3,7 @@ import socket
 import datetime
 import unipath as uni
 import os
+import platform
 
 global VERSION
 global EVENT
@@ -37,15 +38,23 @@ global active_imaging_method
 
 # datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") -> important for saving the expimernts
 today = datetime.datetime.now().strftime("%Y%m%d")
-if os.name == 'nt':
+my_dev_flag = False
+if platform.system() == 'Darwin':
     my_dev_flag = True
-else:
-    my_dev_flag = False
+    print('Operating in DEVMODE!')
+
 started_first_exp = False
 is_use_picamera = False
 is_use_vimba = True
-
 i2c = True
+
+if my_dev_flag:
+    print('Switching off all external hardware..')
+    i2c = False
+    is_use_picamera = False
+    is_use_vimba = False
+
+    
 #setup_number = "004"
 VERSION = '0.4'
 config = []

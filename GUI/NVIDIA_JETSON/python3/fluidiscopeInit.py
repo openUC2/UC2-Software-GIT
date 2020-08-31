@@ -15,7 +15,7 @@ from fluidiscopeLogging import logger_createChild
 
 import unipath as uni
 
-if fg.i2c:
+if fg.i2c   :
     from I2CDevice import I2CDevice
     from I2CBus import I2CBus
 else:
@@ -53,11 +53,29 @@ def camera_init():
 
 def arduino_init():
     # address = I2CBus.scanBus()
-    fg.ledarr = I2CDevice(0x07)  # normally 0x07
-    fg.motors = I2CDevice(0x08)  # normally 0x08
+    # connect to LEDarray    
+    try:
+        fg.ledarr = I2CDevice(0x07)  # normally 0x07
+    except:
+        fg.ledarr = False
+        logger.debug("LEDARray is not connected!")
+
+    # connect to Motors        
+    try:
+        fg.motors = I2CDevice(0x08)  # normally 0x08
+    except:
+        fg.motors = False
+        logger.debug("Motors are not connected!")
+     
+    # connect to Fluo
+    try:
+        fg.fluo = I2CDevice(0x08)
+    except:
+        fg.fluo = False
+        logger.debug("Fluo module isnot connected!")
+        
     # time.sleep(1.0) #because accessing same device
     # sits on the same Arduino as motors for now
-    fg.fluo = I2CDevice(0x08)
     # fg.ledarr.announce()
     # fg.motors.announce()
     #fluidiscopeIO.send(fg.ledarr, "CLEAR")

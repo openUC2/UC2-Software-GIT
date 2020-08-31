@@ -26,11 +26,9 @@ IMAGE_CAPTION = 'UC2-Livestream'
 # Camera Settings
 #CAM_GAIN = 20 # dB
 T_EXPOSURE_MAX = 1e6 # µs => 1s
+ExposureTime = 50e3
 
 T_PERIODE = 0.5 # [s] - time between acquired frames
-
-
-
 
 
 def add_camera_id(frame: Frame, cam_id: str) -> Frame:
@@ -53,7 +51,6 @@ def resize_if_required(frame: Frame) -> np.ndarray:
 
     return cv_frame
 
-
 def create_dummy_frame() -> np.ndarray:
     cv_frame = np.zeros((WINDOW_WIDTH, WINDOW_HEIGHT, 1), np.uint8)
     cv_frame[:] = 0
@@ -63,14 +60,12 @@ def create_dummy_frame() -> np.ndarray:
 
     return cv_frame
 
-
 def try_put_frame(q: queue.Queue, cam: Camera, frame: Optional[Frame]):
     try:
         q.put_nowait((cam.get_id(), frame))
 
     except queue.Full:
         pass
-
 
 def set_nearest_value(cam: Camera, feat_name: str, feat_value: int):
     # Helper function that tries to set a given value. If setting of the initial value failed
@@ -134,34 +129,43 @@ class FrameProducer(threading.Thread):
     def setIntensityCorrection(self, IntensityControllerTarget):
         self.IntensityControllerTarget = IntensityControllerTarget
 
+    def setExposureTime(self, ExposureTime):
+        self.ExposureTime = ExposureTime
+        try:
+            self.cam.ExposureTime.set(self.ExposureTime)
+        except:
+            print("Error setting ExposureTime1 - frame producer already running?")
+
     def setGain(self, Gain):
         self.Gain = Gain
-
 
     def setup_camera(self):
         #set_nearest_value(self.cam, 'Height', FRAME_HEIGHT)
         #set_nearest_value(self.cam, 'Width', FRAME_WIDTH)
 
-
         # try to set IntensityControllerTarget
+        '''
         try:
             self.cam.ExposureAutoMax.set(T_EXPOSURE_MAX)
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'ExposureAutoMax\'.'.format(
                         self.cam.get_id()))
+        '''
 
         # try to set IntensityControllerTarget
+        '''
         try:
             self.cam.IntensityControllerTarget.set(self.IntensityControllerTarget)
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'IntensityControllerTarget\'.'.format(
                         self.cam.get_id()))
+        '''
 
         # Try to set exposure time to something reasonable 
         try:
-            self.cam.ExposureTime.set(50e3)
+            self.cam.ExposureTime.set(self.ExposureTime)
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'ExposureTime\'.'.format(
@@ -178,13 +182,13 @@ class FrameProducer(threading.Thread):
 
 
         # Try to enable automatic exposure time setting
+        
         try:
-            self.cam.ExposureAuto.set('Continous')
+            self.cam.ExposureAuto.set('Off')
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'ExposureAuto\'.'.format(
                           self.cam.get_id()))
-
 
         '''
         # Try to set GAIN automatic
@@ -329,7 +333,7 @@ class VimbaCameraThread(threading.Thread):
         self.is_active = False
         self.IntensityCorrection = 50
         self.Gain = 1
-        
+        self.ExposureTime = ExposureTime
 
     def __call__(self, cam: Camera, event: CameraEvent):
         # New camera was detected. Create FrameProducer, add it to active FrameProducers
@@ -358,15 +362,15 @@ class VimbaCameraThread(threading.Thread):
             cams = vimba.get_all_cameras()
             cam = cams[0]
             self.producer = FrameProducer(cam, self.frame_queue)
-            self.producer.setIntensityCorrection(self.IntensityCorrection)
+            #self.producer.setIntensityCorrection(self.IntensityCorrection)
             self.producer.setGain(self.Gain)
-
+            self.producer.setExposureTime(self.ExposureTime)
+            
             # Start FrameProducer threads
             with self.producers_lock:
                 self.is_active = True
                 self.producer.start()
             
-
             # Start and wait for consumer to terminate
             vimba.register_camera_change_handler(self)
             self.consumer.start()
@@ -394,6 +398,18 @@ class VimbaCameraThread(threading.Thread):
 
     def setGain(self, Gain=1):
         self.Gain = Gain
+        try:
+            self.producer.setGain(self.Gain)
+        except:
+            print("Error setting gain - frame producer already running?")
+
+
+    def setExposureTime(self, ExposureTime):
+        self.ExposureTime = ExposureTime
+        try:
+            self.producer.setExposureTime(self.ExposureTime)
+        except:
+            print("Error setting exposure time - frame producer already running?")
 
 
 if __name__ == '__main__':

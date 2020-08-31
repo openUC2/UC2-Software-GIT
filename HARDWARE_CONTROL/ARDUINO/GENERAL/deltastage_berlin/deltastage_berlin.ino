@@ -9,7 +9,7 @@
 #define HEARTBEAT_INTERVAL 300000
 #define LED 13
 #define BF_PIN 0
-#define FLUO_PIN 3
+#define FLUO_PIN 1
 #define LEDARR_PIN 13
 #define MAX_MSG_LEN 32
 #define MAX_INST 10
@@ -67,8 +67,8 @@ volatile bool busy = false;
 int step_360 = 2058;// 360 number of steps per/rev
 const int nsteps = 1000;
 // initialize the stepper library on pins 2-5 n 8-11
-Stepper stepperX(step_360, 2, 4, 1, 5);
-Stepper stepperY(step_360, 8, 6, 7, 9);
+Stepper stepperX(step_360, 2, 4, 3, 5);
+Stepper stepperY(step_360, 6, 8, 7, 9);
 Stepper stepperZ(step_360, 10, 12, 11, 13);
 
 
@@ -118,7 +118,7 @@ void executeCommand(int nINST)
   }
   else if (strcmp(CMD, COMMANDSET[3]) == 0)
   {
-    analogWrite(FLUO_PIN, int(double(INST[0])/100*255));
+    digitalWrite(FLUO_PIN, boolean(INST[0]));
     //strlcat(outBuffer, "Fluo activated.", outBufLen);
   }
   else if (strcmp(CMD, COMMANDSET[4]) == 0)
@@ -173,16 +173,12 @@ void setup()
 
   // Test Stepper
   stepperX.step(200);
-  stepperX.step(-200);
   delay(500);
   stepperY.step(200);
-  stepperY.step(-200);
   delay(500);  
   stepperZ.step(200);
-  stepperZ.step(-200);
   delay(500);  
 }
-
 
 void loop()
 {

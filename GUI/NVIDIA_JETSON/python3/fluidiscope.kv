@@ -6,26 +6,25 @@
 
 # CUSTOM LABEL
 #<FluidLabel@Label>
-    
+
 # Custom SLIDER
 # Solution froM: https://stackoverflow.com/questions/28302476/how-to-customize-a-slider-in-kivy
 
-<FluidSlide1@Slider>:
+<ExposureSlide1@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
-        text: str(int(root.value)) + "m"
-<FluidSlide2@Slider>:
+        text: "t-exp BF: " + str(int(root.value/1000)) + "[ms]"
+<ExposureSlide2@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
-        text: str(int(root.value)) + "h"
-
+        text: "t-exp FLUO: " + str(int(root.value/1000)) + "[ms]"
 <FluidSlide3@Slider>:
     Label:
-        pos: (root.value_pos[0] - sp(16), root.center_y - sp(100)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
         size_hint: None, None
         size: sp(32), sp(32)
         text: str(int(root.value/255*100)) + "%"
@@ -132,7 +131,7 @@
 
     FluidiCheckBox:
         id: fluidi_checkbox_btn
-        group: root.group 
+        group: root.group
 
 <FluidiBox@BoxLayout>:
     border_width: 1
@@ -142,7 +141,7 @@
             rgba: self.border_color
         Line:
             width: 1 #self.border_width
-            rectangle: self.x, self.y, self.width, self.height 
+            rectangle: self.x, self.y, self.width, self.height
 # CUSTOM SCREENS
 #<FluidPopupCopy@Popup>:
 #    popup_list_view: popup_list_view
@@ -185,7 +184,7 @@
                 id: btn_preview
                 text: "Show Preview"
                 on_press: root.btn_function_preview(self)
-                fl_active: False 
+                fl_active: False
             FluidButton:
                 size_hint_x: 0.1
                 id: btn_preview_big
@@ -220,7 +219,7 @@
         #Widget:
         #    size_hint_y: 0.01
         BoxLayout:
-            size_hint_y: 0.1
+            size_hint_y: 0.12
             padding: [0,2,0,2]
             orientation: 'horizontal'
             BoxLayout:
@@ -229,55 +228,96 @@
                 padding: (2,0,2,0)
                 GridLayout:
                     size_hint_y: 0.8
-                    cols: 3
-                    row: 1
-                    spacing: 2
-                    #Autofocus part
-                    FluidButton:
-                        id: btn_autofocus
-                        text: "FocAct"
-                        on_press: root.btn_function_autofocus(self)
-                    FluidButton:
-                        id: btn_autofocus_now
-                        text: "FocNow"
-                        on_press: root.btn_function_autofocus(self)
-                    FluidButton:
-                        id: btn_autofocus_opt
-                        text: "FocOpt"
-                        on_press: root.scr_switch(self)
-                BoxLayout:
-                    size_hint_y: 0.2
-                    ProgressBar:
-                        id: pb_autofocus
-                        max: 100
-                        value: 0
-            BoxLayout:
-                size_hint_x: 0.01
-                FluidLineVert:
-                    #test
-            BoxLayout:
-                size_hint_x: 0.39
-                padding: (2,0,2,0)
-                canvas.before:
-                    Color:
-                        rgba: 0.0,0.2,0.2,1
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                GridLayout:
                     cols: 2
-                    row: 1
+                    row: 2
                     spacing: 2
-                    #Autofocus part
-                    FluidButton:
-                        id: btn_camera_live_settings
-                        text: "camSET"
-                        on_press: root.btn_camera_live_settings(self)
-                    FluidButton:
-                        id: btn_tomography_settings
-                        text: "tomoSET"
-                        fl_active: False
-                        on_press: root.scr_switch(self)                
+                    # exposure time part      
+                    Widget:
+                        size_hint_x:None
+                        width: 100
+                        Label:
+                            id: ExposureSlide1_text
+                            text: 'Exp-T. BF'   
+                            color: 1,0,1,1                    
+                    ExposureSlide1:
+                        id: slider_exposure_time_bf
+                        valign: 'middle'
+                        name: 'slider_exposure_time_bf'
+                        min: 1000
+                        max: 100000
+                        value: 50000
+                        step: 10000
+                        on_value: root.slider_setExposure_BF(self)
+                    # exposure time part       
+                    Widget:
+                        size_hint_x:None
+                        width: 100
+                        id: ExposureSlide2_text
+                        text: 'Exp-T. FLUO'
+                    ExposureSlide2:
+                        id: slider_exposure_time_fluo
+                        valign: 'middle'
+                        name: 'slider_exposure_time_fluo'
+                        min: 1000
+                        max: 500000
+                        value: 50000
+                        step: 10000
+                        on_value: root.slider_setExposure_FLUO(self)                        
+#            BoxLayout:
+#                size_hint_x: 0.6
+#                orientation: 'vertical'
+#                padding: (2,0,2,0)
+#                GridLayout:
+#                    size_hint_y: 0.8
+#                    cols: 3
+#                    row: 1
+#                    spacing: 0
+#                    #Autofocus part
+#                    FluidButton:
+#                        id: btn_autofocus
+#                        text: "FocAct"
+#                        on_press: root.btn_function_autofocus(self)
+#                    FluidButton:
+#                        id: btn_autofocus_now
+#                        text: "FocNow"
+#                        on_press: root.btn_function_autofocus(self)
+#                    FluidButton:
+#                        id: btn_autofocus_opt
+#                        text: "FocOpt"
+#                        on_press: root.scr_switch(self)
+#                BoxLayout:
+#                    size_hint_y: 0.2
+#                    ProgressBar:
+#                        id: pb_autofocus
+#                        max: 100
+#                        value: 0
+#            BoxLayout:
+#                size_hint_x: 0.01
+#                FluidLineVert:
+#                    #test
+#            BoxLayout:
+#                size_hint_x: 0.39
+#                padding: (2,0,2,0)
+#                canvas.before:
+#                    Color:
+#                        rgba: 0.0,0.2,0.2,1
+#                    Rectangle:
+#                        pos: self.pos
+#                        size: self.size
+#                GridLayout:
+#                    cols: 1
+#                    row: 1
+#                    spacing: 2
+#                    #Autofocus part
+#                    FluidButton:
+#                        id: btn_camera_live_settings
+#                        text: "Exposure time"
+#                        on_press: root.btn_camera_live_settings(self)
+#                    FluidButton:
+#                        id: btn_tomography_settings
+#                        text: "tomoSET"
+#                        fl_active: False
+#                        on_press: root.scr_switch(self)
         Widget:
             size_hint_y: 0.001
         BoxLayout:
@@ -509,7 +549,7 @@
                             FluidButton:
                                 id: btn_imaging_technique_4
                                 text: "FPM"
-                                on_press: root.select_imaging_method(self)                            
+                                on_press: root.select_imaging_method(self)
                             FluidButton:
                                 id: btn_imaging_technique_5
                                 text: "Fluor"
@@ -521,7 +561,7 @@
                         BoxLayout:
                             padding: (2,0,2,0)
                             size_hint_x: 0.05
-                            FluidLineVert:                   
+                            FluidLineVert:
                             # inserts a pre-defined line
                         BoxLayout:
                             size_hint_x: 0.15
@@ -530,7 +570,7 @@
                                 id: btn_imaging_technique_tomography
                                 fl_active: False
                                 text: "Tomo"
-                                on_press: root.tomography_btn_logic(self) 
+                                on_press: root.tomography_btn_logic(self)
                     BoxLayout:
                         size_hint_y: 0.2
                         orientation: 'vertical'
@@ -688,7 +728,7 @@
                                 disabled: True
                     BoxLayout:
                         size_hint_y: 0.1
-                        Label: 
+                        Label:
                             id: user_notify_expt
                             font_size: '18sp'
 
@@ -1219,7 +1259,7 @@
                     BoxLayout:
                         size_hint_y: 0.033
                         padding: (2,0,2,0)
-                        FluidLineHor:  
+                        FluidLineHor:
                     BoxLayout:
                         size_hint_y: 0.1
                         Label:
@@ -1227,8 +1267,8 @@
                     BoxLayout:
                         size_hint_y: 0.033
                         padding: (2,0,2,0)
-                        FluidLineHor:                   
-                        # inserts a pre-defined line                  
+                        FluidLineHor:
+                        # inserts a pre-defined line
                     BoxLayout:
                         id: tomography_group_set
                         size_hint_y: 0.4
@@ -1251,7 +1291,7 @@
                                     text: 'X'
                                     group: "tomo_motor_dir"
                                     allow_no_selection: False
-                                    #on_press: root.current_active = 0 
+                                    #on_press: root.current_active = 0
                                     on_release: root.tomography_btn_logic(self)
                                 ToggleButton:
                                     id: tomo_btn_mot_sel_1
@@ -1279,11 +1319,11 @@
                                 cols: 3
                                 size_hint_x: 0.4
                                 padding: 2,2,2,0
-                                FluidButton: 
+                                FluidButton:
                                     id: tomography_btn_set_pos_start
                                     text: 'Set\nStart'
                                     on_press: root.tomography_btn_logic(self)
-                                FluidButton: 
+                                FluidButton:
                                     id: tomography_btn_set_pos_end
                                     text: 'Set\nEnd'
                                     on_press: root.tomography_btn_logic(self)
@@ -1336,7 +1376,7 @@
                                     id: tomo_btn_set_3
                                     text: '--'
                                     value: -10
-                                    on_press: root.tomography_btn_logic(self)         
+                                    on_press: root.tomography_btn_logic(self)
                     BoxLayout:
                         # labels for selection display
                         size_hint_y: 0.25
@@ -1344,50 +1384,50 @@
                         GridLayout:
                             cols: 6
                             #1.1
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'Motor'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_motor
                                 size_hint_x: 0.1
                                 text: '2'
                             #1.2
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'startPOS'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_posSTART
                                 size_hint_x: 0.1
                                 text: ''
                             #1.3
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'endPOS'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_posEND
                                 size_hint_x: 0.1
                                 text: ''
                             #2.1
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'Steps'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_steps
                                 size_hint_x: 0.1
-                                text: ''   
+                                text: ''
                             #2.2
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'stepSize'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_stepsize
                                 size_hint_x: 0.1
                                 text: ''
                             #2.3
-                            Label: 
+                            Label:
                                 size_hint_x: 0.2
                                 text: 'stepTime\n[s]'
-                            Label: 
+                            Label:
                                 id: tomography_lbl_steptime
                                 size_hint_x: 0.1
                                 text: ''
@@ -1728,7 +1768,7 @@
                         TextInput:
                             id: scr_motor_set_grid_lbl_value_calibration_z_pos
                             text: ''
-                        
+
                     # Buttons for save, restore
                     BoxLayout:
                         size_hint_y: 0.2
