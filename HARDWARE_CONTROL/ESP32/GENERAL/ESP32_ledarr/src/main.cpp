@@ -31,7 +31,7 @@
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S007";
+std::string SETUP = "S001";
 std::string COMPONENT = "LAR01";
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -39,12 +39,12 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "WIFI_SSID_HERE";
-const char *password = "WIFI_Pass_HERE";
+const char *ssid = "WIFI_SSID";
+const char *password = "WIFI_PASS";
 WiFiClient espClient;
 PubSubClient client(espClient);
 // ~~~~  MQTT  ~~~~
-//const char *MQTT_SERVER = "MQTT_SERVER_IP";
+const char *MQTT_SERVER = "MQTT_SERVER_IP";
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -387,14 +387,14 @@ void callback(char *topic, byte *message, unsigned int length)
             light_pattern_color[xpos][ypos][activePattern][2] = INSTS[nINST - 1];
             //}
         }
-        else if (strcmp(CMD, COMMANDSET[4]) == 0)
+        else if (strcmp(CMD, COMMANDSET[3]) == 0)
         {
             //updateColor(INSTS[nINST - 4], INSTS[nINST - 3], INSTS[nINST - 2]);
             updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             bool fill = !(INSTS[nINST - 1] == 1);
             drawRect(INSTS[0], INSTS[1], INSTS[2], INSTS[3], fill);
         }
-        else if (strcmp(CMD, COMMANDSET[5]) == 0)
+        else if (strcmp(CMD, COMMANDSET[4]) == 0)
         {
             updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             drawRect(INSTS[0], INSTS[1], INSTS[2], INSTS[3], true);

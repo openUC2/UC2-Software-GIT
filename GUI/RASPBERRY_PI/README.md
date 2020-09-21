@@ -248,6 +248,28 @@ The service will automatically start and is running. Nice!
     <img src="./IMAGES/script10.png" width="400" alt="">
     </p>   
 
+## Easy Startup for the GUI
+For further ease, let's create a simple startup-script that we can directly run from the Desktop. Open a terminal, go to your Desktop, create a new file as follows: 
+```
+$ cd ~/Desktop/
+$ touch UC2_startGUI.sh
+$ nano UC2_startGUI.sh
+```
+Then insert the necsesary code and replace "your-uc2name" with your chosen username. Make sure that the path (here: ~/UC2/UC2-GUI) is the same as where you stored your GUI-files.
+```
+#!/bin/bash
+export PATH="/home/your-uc2name/berryconda3/bin:$PATH"
+source activate UC2env
+cd ~/UC2/UC2-GUI/
+python main.py 
+```
+exit and save. Finally,  make the file executeable:
+```
+chmod +x ./UC2_startGUI.sh
+```
+
+Voila. Now: double klick on the file.
+
 ## Connecting the Microcontrollers
 We reached the final preparation step. Depending on whether you chose to use ESP32 + MQTT or Arduino + I2C - connection your path from here on splits. 
 * [The ESP32 + MQTT PATH](../../HARDWARE_CONTROL/ESP32/README.md)

@@ -96,9 +96,9 @@ def tomography_btn_logic(self, instance):
         logger.debug('Tomo_mode active? {}.'.format(fg.config['experiment']['tomo_active']))
         toolbox.change_activation_status(instance)
     
-
+    # update labels
     tomography_update_labels(self)
-    # done?
+    
 
 def tomography_update_labels(self):
     '''
@@ -111,6 +111,5 @@ def tomography_update_labels(self):
     for m in update_dict:
         self.ids[update_base + m].text = str(config_base[m])
 
-    #done?
     
 

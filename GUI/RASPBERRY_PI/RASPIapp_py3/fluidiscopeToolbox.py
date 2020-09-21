@@ -37,7 +37,7 @@ if os.name == 'nt':
 else:
     #from PIL import Image
     import picamera
-    from picamraw import PiRawBayer, PiCameraVersion
+    #from picamraw import PiRawBayer, PiCameraVersion
 
 
 if not (fg.my_dev_flag):
