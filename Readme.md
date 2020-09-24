@@ -7,6 +7,8 @@
 ---
 [<img src="./IMAGES/UC2_Logo.png" height=40>](https://www.useetoo.org) [<img src="./IMAGES/icon_git.png" width=40>](https://github.com/bionanoimaging/UC2-GIT) [<img src="./IMAGES/icon_UC2Software.png" height=40>](https://github.com/bionanoimaging/UC2-Software-GIT) [<img src="./IMAGES/icon_tw.png" width=40>](https://twitter.com/openuc2)  [<img src="./IMAGES/icon_yt.png" width=40>](https://www.youtube.com/channel/UCcHFzXTdC1Ro0OMnHS_54UA) [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
+Cite this repository: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4041343.svg)](https://doi.org/10.5281/zenodo.4041343)
+
 ---
 
 This is the online repository of the Software of the open-source hardware project ''UC2'' [YouSeeToo].
