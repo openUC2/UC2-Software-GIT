@@ -209,11 +209,13 @@ For downloading the files, first create two new directories:
 $ cd ~/UC2/SCRIPTS
 $ ./02-UC2_CreateEnvironment.sh
 ```
+
 	This should give you:
     <p align="center">
         <img src="./IMAGES/script03.png" width="400">
         <img src="./IMAGES/script04.png" width="400">
     </p>     
+    
 * Check whether the installation was successful via
     ```
     $ which conda
