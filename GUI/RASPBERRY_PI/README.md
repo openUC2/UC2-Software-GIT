@@ -215,7 +215,7 @@ $ ./02-UC2_CreateEnvironment.sh
         <img src="./IMAGES/script03.png" width="400">
         <img src="./IMAGES/script04.png" width="400">
     </p>     
-    
+
 * Check whether the installation was successful via
     ```
     $ which conda
@@ -327,11 +327,12 @@ The service will automatically start and is running. Nice!
     $ cd UC2-GUI
     $ nano config/communication.yaml
     ```
-    Search for the (`Ctr+W`) `mqtt setup` and change it to e.g. `S001`. Then (`Ctrl+X` `y` Enter) and save the changes.
+    Search for the (`Ctr+W`) `mqtt setup` and change it to e.g. `S001`. Then (`Ctrl+X` `y` Enter) and save the changes.  
+    **This is very important!** All the hardware parts will recognize the RasPi by its setup number. Make sure to use the same number for the microcontrollers you'll be connecting to this RasPi. 
     <p align="center">
     <img src="./IMAGES/script11.png" width="400" alt="">
     </p>
-* **Run the GUI**s, by running:
+* **Run the GUI**, by running:
     ```
     $ python main.py
     ```
