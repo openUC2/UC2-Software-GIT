@@ -64,6 +64,7 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
  * The RasPi doesn't have a power switch - it will turn on when you plug it to the electrical socket.
  * You should see a red LED light up on the Raspberry Pi, which indicates that Raspberry Pi is connected to power. As it starts up (this is also called booting), you will see raspberries appear in the top left-hand corner of your screen.
  * Your display might be turned upside down. This will be handled soon. The desktop appears.
+ * The desktop might not look exactly like this, it depends on the operation OS of the RasPi
  <p align="center">
  <img src="./IMAGES/pi-desktop.png" width="300" alt="">
  </p>
@@ -225,7 +226,7 @@ $ ./02-UC2_CreateEnvironment.sh
     $ python
     $ exit()
     ```
-    which will should give you this as a result:
+    which should give you this as a result:
     <p align="center">
     <img src="./IMAGES/script05.png" width="400" alt="">
     </p>
@@ -328,7 +329,7 @@ The service will automatically start and is running. Nice!
     $ nano config/communication.yaml
     ```
     Search for the (`Ctr+W`) `mqtt setup` and change it to e.g. `S001`. Then (`Ctrl+X` `y` Enter) and save the changes.  
-    **This is very important!** All the hardware parts will recognize the RasPi by its setup number. Make sure to use the same number for the microcontrollers you'll be connecting to this RasPi. 
+    **This is very important!** All the hardware parts will recognize the RasPi by its setup number. Make sure to use the same number for the microcontrollers you'll be connecting to this RasPi.
     <p align="center">
     <img src="./IMAGES/script11.png" width="400" alt="">
     </p>
