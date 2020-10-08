@@ -13,8 +13,20 @@
     * Acknowledgements
 
 <p align="center">
+<<<<<<< Updated upstream
 <img src="../../IMAGES/UC2_Raspi_Gui_1.png" width="600" alt="">
 </p> 
+=======
+<img src="../../IMAGES/UC2_Raspi_Gui_1.jpg" width="600" alt="">
+</p>
+
+## Raspberry Pi Step-by-step Tutorial :feet:
+If you are skilled with Raspberry Pi, Python, MQTT and other things used during the installation of the GUI, this tutorial might seem too detailed for you. You can simply follow the main steps (skipping the steps marked with :feet:) and you will get your result.
+
+However, if the things mentioned in the previous paragraph are new to you and all this seems like a lot to do, don't worry. Follow this tutorial carefully line by line and you'll get there. You can do it!
+
+**All the necessary steps are provided in this tutorial.** There are some links to external pages, where external software is used, but only to provide the source and context. During the installation of the UC2 GUI, you won't need to install anything from other sources - just follow our tutorial.
+>>>>>>> Stashed changes
 
 ## Preparing your Raspberry Pi (RasPi)
 This guide for setting up our GUI will assume that you have the following prepared: 
@@ -27,6 +39,7 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
 1. **Download** ["Raspbian <NBR> with desktop"](https://downloads.raspberrypi.org/raspbian_latest), but without recommended software 
 2. Flash raspian onto SD card by using e.g. [Win32DiskImager](http://sourceforge.net/projects/win32diskimager/files/latest/download) or [Etcher](https://www.balena.io/etcher/) (or follow [the official Raspian-guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md))
     <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/writeISO2SD.png" width="300" alt="">
     </p> 
 3. **Insert SD-card** into RasPi and start the device. Your display might be turned upside down. This will be handled soon. First:
@@ -34,6 +47,55 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
     * Changing the account password is optional, as we will anyways provide a routine for changing the username and password as well as locking the root-access below. 
     * Fix the Screen-scaling if necessary and connect to a local WiFi (which has internet-connection) and allow your RasPi to check for the newest updates. 
     * If updates are impossible due to: "Could not sync time - unable to check fo updates" error, you can fix date and time manually. You now have two options: You can either download our fix_date script from the [SCRIPTS section](./SCRIPTS/README.md) for ease of input (especially if you will have to fix the time more often...) and enter the date as suggested from commandline **OR** fix the entry directly by opening a terminal and enter your actual time like e.g.:
+=======
+    <img src="./IMAGES/writeISO2SD.jpg" width="300" alt="">
+    </p>
+
+	* Alternatively, follow [the official Raspian-guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) or if you bought the Raspberry SD card directly just skip this step.
+
+3. **Insert SD-card** into RasPi and **start the device**.
+ * You can put the Raspi+display into the case now or any time later.
+ * The RasPi doesn't have a power switch - it will turn on when you plug it to the electrical socket.
+ * You should see a red LED light up on the Raspberry Pi, which indicates that Raspberry Pi is connected to power. As it starts up (this is also called booting), you will see raspberries appear in the top left-hand corner of your screen.
+ * Your display might be turned upside down. This will be handled soon. The desktop appears.
+ <p align="center">
+ <img src="./IMAGES/pi-desktop.jpg" width="300" alt="">
+ </p>
+
+ Firstly, Welcome to Raspberry Pi application will pop up and guide you through the initial setup:
+    * Setup country info (e.g. Germany->German->Berlin or according to where you are) and select "Use English language". Make sure, that your keyboard-input works as intended - the default setting might be US keyboard. Please find further information on how to setup RasPi on the [Official Homepage](https://www.raspberrypi.org/documentation/).
+		<p align="center">
+	  <img src="./IMAGES/piwiz2.jpg" width="300" alt="">
+	  </p>
+    * Skip changing the account password by clicking 'Next' We will anyways provide a routine for changing the username and password as well as locking the root-access.
+    * Fix the screen scaling if necessary and connect to a local WiFi (which has internet connection) and allow your RasPi to check for the newest updates. If it doesn't update, don't worry, it will be taken care of.
+
+4. :feet: Your way to communicate with the RasPi will be the terminal, where you insert commands (and press Enter to execute them).
+	* Open the terminal from the task bar (Left to right: Raspberry (Start) - Browser - File Explorer - Terminal)
+	* Open this GitHub page in the browser on the RasPi - you will need to copy the commands from here into the terminal
+	* Attention! Raspberry Pi's operation system is similar to Linux in many aspects and if you're a Windows user you should remember this:
+	 * `Ctrl+C` in terminal will end the process that is currently running
+	 * To transfer the command from the browser into the terminal use `Ctrl+C` in the browser to copy the code. To paste it onto the terminal use `Shift+Crtl+C` or `Shift+Insert` (see what works for you)
+	 * To transfer something from the terminal into the browser (for example when searching for an error message) use `Shift+Crtl+C` or `Shift+Del` in the terminal to copy the message. To paste it into the browser, use the standard Ctrl+V
+	 * The '$' symbol  in all the following codes marks a line and is not meant to be copied ;-)
+
+5. **Back to updates** - If updates are impossible due to: *Could not sync time - unable to check for updates* error, you can fix the date and time manually. You now have two options:
+	 * Recommended: You can either download our fix_date script from the [SCRIPTS section](./SCRIPTS) for ease of input (especially if you will have to fix the time more often...) and enter the date as suggested from commandline
+    * Your RasPi should be now connected to the internet and therefore you should be able to get the fix_date script by using the following commands
+    ```
+    $ cd ~/Downloads
+    $ wget https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/GUI/RASPBERRY_PI/SCRIPTS/FIX_date/date_manfix.py
+    $ python3 Downloads/date_manfix.py
+    ```
+    Then follow the instructions in the terminal
+	  * :feet: In case the previous steps don't work, on a computer go to the [raw code date_manfix.py](https://raw.githubusercontent.com/bionanoimaging/UC2-Software-GIT/master/GUI/RASPBERRY_PI/SCRIPTS/FIX_date/date_manfix.py) and save it as a .py, then transfer it to the Downloads directory of the RasPi
+	* Open a terminal and type:
+        ```
+        $ python3 Downloads/date_manfix.py
+        ```
+        and follow the instructions in the terminal.
+	 * **OR** fix the entry directly by opening a terminal and enter your actual time like e.g.:
+>>>>>>> Stashed changes
         ```
         $ sudo date -s "Mon Mar 16 18:00:00 CET 2020"
         ```
@@ -119,19 +181,32 @@ For downloading the files, first create two new directories:
     ```
     The first Command installs Berryconda
     <p align="center">
+<<<<<<< Updated upstream
         <img src="./IMAGES/script01.png" width="400">
+=======
+        <img src="./IMAGES/script01.jpg" width="400">
+				<img src="./IMAGES/script02.jpg" width="400">
+>>>>>>> Stashed changes
     </p>
     <p align="center">
         <img src="./IMAGES/script02.png" width="400">
     </p>    
     Reboot and run the second command which should give you: 
     <p align="center">
+<<<<<<< Updated upstream
         <img src="./IMAGES/script03.png" width="400">
     </p>
     <p align="center">
         <img src="./IMAGES/script04.png" width="400">
     </p>     
 * Check whether installation was successful via
+=======
+        <img src="./IMAGES/script03.jpg" width="400">
+        <img src="./IMAGES/script04.jpg" width="400">
+    </p>     
+
+* Check whether the installation was successful via
+>>>>>>> Stashed changes
     ```
     $ which conda 
     $ which python
@@ -142,11 +217,20 @@ For downloading the files, first create two new directories:
     ```
     which will should look something like this: 
     <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/script05.png" width="400" alt="">
     </p> 
     to make sure that the environment and proper python version (here: 3.6.1) is installed.
 ## Installing Kivy 
 * **Activate** the conda *UC2env* environment 
+=======
+    <img src="./IMAGES/script05.jpg" width="400" alt="">
+    </p>
+    By this you make sure that the environment and proper python version (here: 3.6.1) are installed.
+
+## Installing Kivy
+* **Activate** the conda *UC2env* environment
+>>>>>>> Stashed changes
     ```
     $ source activate UC2env
     ``` 
@@ -163,15 +247,29 @@ For downloading the files, first create two new directories:
     python -m pip install --upgrade Cython==0.29.10 pillow   
     ```
      <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/script06.png" width="400" alt="">
     </p>    
     The Python-package Cython will be freshly compiled on your system and might need a while (~5min). If you have a Raspi3 (or older), make sure that you [enhance your RAM before](https://raspberrypi.stackexchange.com/questions/8308/how-to-install-latest-scipy-version-on-raspberry-pi) (the same is true for e.g. Numpy, Scipy etc on RasPi). 
+=======
+    <img src="./IMAGES/script06.jpg" width="400" alt="">
+    </p>
+
+	When installing something, the RasPi tells you how much disk space will be used and asks for confirmation to proceed. Type `Y` and Enter.  
+    The Python-package Cython will be freshly compiled on your system and might need a while (~5min). If you have a Raspi3 (or older), make sure that you [enhance your RAM before](https://raspberrypi.stackexchange.com/questions/8308/how-to-install-latest-scipy-version-on-raspberry-pi) (the same is true for e.g. Numpy, Scipy etc on RasPi).
+>>>>>>> Stashed changes
 
 * Note: If you get the warning: *The scripts cygdb, cython and cyhonie are installed in '/home/YOURUC2NAME/.local/bin' which is not on PATH*
     <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/script07.png" width="400" alt="">
     </p> 
     then try the following: 
+=======
+    <img src="./IMAGES/script07.jpg" width="400" alt="">
+    </p>
+    then try the following:
+>>>>>>> Stashed changes
 
     ```
     $ echo -e '#Adding Cython binary path to PATH' >> ~/.bashrc
@@ -198,9 +296,16 @@ For downloading the files, first create two new directories:
 
     ```
     <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/script08.png" width="400" alt="">
     </p> 
     Then (Ctrl+X) and save the changes.
+=======
+    <img src="./IMAGES/script08.jpg" width="400" alt="">
+    </p>
+
+    Then (`Ctrl+X` `y` Enter) to save the changes.
+>>>>>>> Stashed changes
 
 * Hint: for any further issues configuring kivy with RasPi-screen, check [this description](https://github.com/mrichardson23/rpi-kivy-screen).
 
@@ -237,15 +342,21 @@ The service will automatically start and is running. Nice!
     ```
     Search for the (Ctr+W) `setup_number` and change it to e.g. `001`.
     <p align="center">
+<<<<<<< Updated upstream
     <img src="./IMAGES/script09.png" width="400" alt="">
     </p> 
 * Run the GUI, by running: 
+=======
+    <img src="./IMAGES/script11.jpg" width="400" alt="">
+    </p>
+* **Run the GUI**s, by running:
+>>>>>>> Stashed changes
     ```
     $ python main.py
     ```
     It should start without any errors, but maybe it is overscaled on the first start. Just restart it and it should work. Press "CUS" on the left to get the LED-array-manipulation window and press "Start Preview" on the top to start your camera-stream. 
     <p align="center">
-    <img src="./IMAGES/script10.png" width="400" alt="">
+    <img src="./IMAGES/script10.jpg" width="400" alt="">
     </p>   
 
 ## Easy Startup for the GUI

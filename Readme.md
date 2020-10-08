@@ -40,7 +40,7 @@ All useful links will be provided after the general shape of the repository is s
 # Getting Started using the Raspberry Pi GUI
 
 <p align="center">
-<img src="./IMAGES/UC2_Raspi_Gui_1.png" width="400" alt="">
+<img src="./IMAGES/UC2_Raspi_Gui_1.jpg" width="400" alt="">
 </p>
 
 Find a detailed description [here](./GUI/RASPBERRY_PI/README.md)
