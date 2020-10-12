@@ -1,4 +1,4 @@
-# Setting up Raspberry PI
+# Setting up Raspberry PI 
 
 ## Outline
 * Install and prepare Raspbian
