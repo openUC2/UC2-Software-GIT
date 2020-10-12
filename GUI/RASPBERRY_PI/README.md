@@ -13,7 +13,7 @@
 * Acknowledgements
 
 <p align="center">
-<img src="../../IMAGES/UC2_Raspi_Gui_1.png" width="600" alt="">
+<img src="../../IMAGES/UC2_Raspi_Gui_1.jpg" width="600" alt="">
 </p>
 
 ## Raspberry Pi Step-by-step Tutorial :feet:
@@ -54,7 +54,7 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
 1. **Download** ["Raspbian <NBR> with desktop"](https://downloads.raspberrypi.org/raspbian_latest), but without recommended software
 2. **Flash** Raspbian onto SD card by using e.g. [Win32DiskImager](http://sourceforge.net/projects/win32diskimager/files/latest/download) or [Etcher](https://www.balena.io/etcher/)
     <p align="center">
-    <img src="./IMAGES/writeISO2SD.png" width="300" alt="">
+    <img src="./IMAGES/writeISO2SD.jpg" width="300" alt="">
     </p>
 
 	* Alternatively, follow [the official Raspian-guide](https://www.raspberrypi.org/documentation/installation/installing-images/README.md) or if you bought the Raspberry SD card directly just skip this step.
@@ -66,13 +66,13 @@ Setting up the RasPi can be done via SSH remotely as well, but finally our our c
  * Your display might be turned upside down. This will be handled soon. The desktop appears.
  * The desktop might not look exactly like this, it depends on the operation OS of the RasPi
  <p align="center">
- <img src="./IMAGES/pi-desktop.png" width="300" alt="">
+ <img src="./IMAGES/pi-desktop.jpg" width="300" alt="">
  </p>
 
  Firstly, Welcome to Raspberry Pi application will pop up and guide you through the initial setup:
     * Setup country info (e.g. Germany->German->Berlin or according to where you are) and select "Use English language". Make sure, that your keyboard-input works as intended - the default setting might be US keyboard. Please find further information on how to setup RasPi on the [Official Homepage](https://www.raspberrypi.org/documentation/).
 		<p align="center">
-	  <img src="./IMAGES/piwiz2.PNG" width="300" alt="">
+	  <img src="./IMAGES/piwiz2.jpg" width="300" alt="">
 	  </p>
     * Skip changing the account password by clicking 'Next' We will anyways provide a routine for changing the username and password as well as locking the root-access.
     * Fix the screen scaling if necessary and connect to a local WiFi (which has internet connection) and allow your RasPi to check for the newest updates. If it doesn't update, don't worry, it will be taken care of.
@@ -200,8 +200,8 @@ For downloading the files, first create two new directories:
     ```
     This command installs Berryconda and it should give you this:
     <p align="center">
-        <img src="./IMAGES/script01.png" width="400">
-				<img src="./IMAGES/script02.png" width="400">
+        <img src="./IMAGES/script01.jpg" width="400">
+				<img src="./IMAGES/script02.jpg" width="400">
     </p>
 
     Reboot (`sudo reboot now`) as requested.
@@ -210,11 +210,10 @@ For downloading the files, first create two new directories:
 $ cd ~/UC2/SCRIPTS
 $ ./02-UC2_CreateEnvironment.sh
 ```
-
 	This should give you:
     <p align="center">
-        <img src="./IMAGES/script03.png" width="400">
-        <img src="./IMAGES/script04.png" width="400">
+        <img src="./IMAGES/script03.jpg" width="400">
+        <img src="./IMAGES/script04.jpg" width="400">
     </p>     
 
 * Check whether the installation was successful via
@@ -227,8 +226,7 @@ $ ./02-UC2_CreateEnvironment.sh
     $ exit()
     ```
     which should give you this as a result:
-    <p align="center">
-    <img src="./IMAGES/script05.png" width="400" alt="">
+    <img src="./IMAGES/script05.jpg" width="400" alt="">
     </p>
     By this you make sure that the environment and proper python version (here: 3.6.1) are installed.
 
@@ -252,7 +250,7 @@ We've put all the necessary steps here, so there's no need for you to jump to th
     $ python -m pip install --upgrade Cython==0.29.10 pillow   
     ```
      <p align="center">
-    <img src="./IMAGES/script06.png" width="400" alt="">
+    <img src="./IMAGES/script06.jpg" width="400" alt="">
     </p>
 
 	When installing something, the RasPi tells you how much disk space will be used and asks for confirmation to proceed. Type `Y` and Enter.  
@@ -260,7 +258,7 @@ We've put all the necessary steps here, so there's no need for you to jump to th
 
 * Note: If you get the warning: *The scripts cygdb, cython and cyhonie are installed in '/home/yourUC2name/.local/bin' which is not on PATH*
     <p align="center">
-    <img src="./IMAGES/script07.png" width="400" alt="">
+    <img src="./IMAGES/script07.jpg" width="400" alt="">
     </p>
     then try the following:
 
@@ -286,10 +284,9 @@ We've put all the necessary steps here, so there's no need for you to jump to th
     ```
     $ mtdev_%(name)s = probesysfs,provider=mtdev
     $ hid_%(name)s = probesysfs,provider=hidinput
-
     ```
     <p align="center">
-    <img src="./IMAGES/script08.png" width="400" alt="">
+    <img src="./IMAGES/script08.jpg" width="400" alt="">
     </p>
 
     Then (`Ctrl+X` `y` Enter) to save the changes.
@@ -331,7 +328,7 @@ The service will automatically start and is running. Nice!
     Search for the (`Ctr+W`) `mqtt setup` and change it to e.g. `S001`. Then (`Ctrl+X` `y` Enter) and save the changes.  
     **This is very important!** All the hardware parts will recognize the RasPi by its setup number. Make sure to use the same number for the microcontrollers you'll be connecting to this RasPi.
     <p align="center">
-    <img src="./IMAGES/script11.png" width="400" alt="">
+    <img src="./IMAGES/script11.jpg" width="400" alt="">
     </p>
 * **Run the GUI**, by running:
     ```
@@ -340,7 +337,7 @@ The service will automatically start and is running. Nice!
     It should start without any errors, but maybe it is overscaled on the first start. Just restart it and it should work.
 * Quick test: Press "Start Preview" (using the touchscreen or the mousepad) on the top to start your camera stream. Press "CUS" on the left to get the LED-array-manipulation window and by pressing the blocks that represent the LEDs, create a smiley face.
     <p align="center">
-    <img src="./IMAGES/script10.png" width="400" alt="">
+    <img src="./IMAGES/script10.jpg" width="400" alt="">
     </p>   
 * **Congratulations! You made it! Your RasPi is now smiling at you :-)**
 
@@ -395,6 +392,28 @@ cd ~/UC2/SCRIPTS/
 python date_manfix.py
 ```
 Now you have both shortcuts on the Desktop. You simply open them by double-click and 'Execute in Terminal'.
+
+## Easy Startup for the GUI
+For further ease, let's create a simple startup-script that we can directly run from the Desktop. Open a terminal, go to your Desktop, create a new file as follows:
+```
+$ cd ~/Desktop/
+$ touch UC2_startGUI.sh
+$ nano UC2_startGUI.sh
+```
+Then insert the necsesary code and replace "your-uc2name" with your chosen username. Make sure that the path (here: ~/UC2/UC2-GUI) is the same as where you stored your GUI-files.
+```
+#!/bin/bash
+export PATH="/home/your-uc2name/berryconda3/bin:$PATH"
+source activate UC2env
+cd ~/UC2/UC2-GUI/
+python main.py
+```
+exit and save. Finally,  make the file executeable:
+```
+chmod +x ./UC2_startGUI.sh
+```
+
+Voila. Now: double klick on the file.
 
 ## Connecting the Microcontrollers
 We reached the final preparation step. Depending on whether you chose to use ESP32 + MQTT or Arduino + I2C - connection your path from here on splits.

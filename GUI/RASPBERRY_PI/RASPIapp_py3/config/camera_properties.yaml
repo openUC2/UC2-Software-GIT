@@ -2,14 +2,14 @@ analog_gain: 1.1015625
 awb_gains:
 - 1.515625
 - 1.85546875
-awb_mode: off
+awb_mode: false
 bayer: false
 camProp_defined: false
 camProp_fix_properties: true
 camProp_use_global: false
 digital_gain: 1.0
 exposure_compensation: 0
-exposure_mode: off
+exposure_mode: false
 framerate: 30.0
 image_denoise: false
 iso: 100
