@@ -14,25 +14,25 @@ There you also find our
 
  [HERE](./GUI) you find our graphical user interface for both
  * [Raspberry Pi](./GUI/RASPBERRY_PI)
-  * [RASPIapp_py3](./GUI/RASPBERRY_PI/RASPIapp_py3) - current version of the GUI
-  * [RASPIapp_py27](./GUI/RASPBERRY_PI/RASPIapp_py27) - older version of the GUI
-  * [Scripts](./GUI/RASPBERRY_PI/SCRIPTS) - useful scripts like the [FIX_date](./GUI/RASPBERRY_PI/SCRIPTS/FIX_date) and some GUI installation prerequisites
+    * [RASPIapp_py3](./GUI/RASPBERRY_PI/RASPIapp_py3) - current version of the GUI
+    * [RASPIapp_py27](./GUI/RASPBERRY_PI/RASPIapp_py27) - older version of the GUI
+    * [Scripts](./GUI/RASPBERRY_PI/SCRIPTS) - useful scripts like the [FIX_date](./GUI/RASPBERRY_PI/SCRIPTS/FIX_date) and some GUI installation prerequisites
  * as an [Android App](./GUI/Android)
-  * [UC2-basic](./GUI/Android/UC2-basic) - older version
-  * [UC2-TheBox](./GUI/Android/UC2-TheBox) - up-to-date version
+    * [UC2-basic](./GUI/Android/UC2-basic) - older version
+    * [UC2-TheBox](./GUI/Android/UC2-TheBox) - up-to-date version
 
 
  ## [Hardware Controlling](./HARDWARE_CONTROL)
 
  [HERE](./HARDWARE_CONTROL) you find the code and other necessary information to control the motors and illumination using  
  * [Arduino (and alike) via I2C (Hardwired)](./HARDWARE_CONTROL/ARDUINO)
-  * [GENERAL folder](./HARDWARE_CONTROL/ARDUINO/GENERAL) where you find the code for LED array, Motors and Motor with Fluo-mode
-  * [Libraries](./HARDWARE_CONTROL/ARDUINO/libraries) that you will need
-  * [MINIMALS folder](./HARDWARE_CONTROL/ARDUINO/MINIMALS) with some example code, mostly for testing the hardware
+    * [GENERAL folder](./HARDWARE_CONTROL/ARDUINO/GENERAL) where you find the code for LED array, Motors and Motor with Fluo-mode
+    * [Libraries](./HARDWARE_CONTROL/ARDUINO/libraries) that you will need
+    * [MINIMALS folder](./HARDWARE_CONTROL/ARDUINO/MINIMALS) with some example code, mostly for testing the hardware
  * [ESP32 (and alike) via MQTT (WiFI)](./HARDWARE_CONTROL/ESP32)
-  * [GENERAL folder](./HARDWARE_CONTROL/ARDUINO/GENERAL) where you find the code for LED array, Motors and Motor with Fluo-mode
-  * [forANDROID folder](./HARDWARE_CONTROL/ARDUINO/forANDROID) where you find the code for LED array, Motors and Motor with Fluo-mode that works with the Android App
-  * [Libraries](./HARDWARE_CONTROL/ARDUINO/libraries) that you will need
+    * [GENERAL folder](./HARDWARE_CONTROL/ESP32/GENERAL) where you find the code for LED array, Motors and Motor with Fluo-mode
+    * [forANDROID folder](./HARDWARE_CONTROL/ESP32/forANDROID) where you find the code for LED array, Motors and Motor with Fluo-mode that works with the Android App
+    * [Libraries](./HARDWARE_CONTROL/ESP32/LIBRARIES) that you will need
 
 
  ## [Processing](./PROCESSING)
