@@ -381,7 +381,6 @@ nano ~/.bashrc
 export DBUS_FATAL_WARNINGS=0
 export KIVY_GL_BACKEND=gl
 touch ~/.bashrc 
-```
 
 git clone https://github.com/bionanoimaging/UC2-Software-GIT/tree/master/GUI/RASPBERRY_PI
 cd UC2-Software-GIT
@@ -390,6 +389,7 @@ python main.py
 
 
 ## Running the MQTT server
+
 If you decided to use your system with the I2C-protocoll in a wired state, you can skip this part. If you decided to use the MQTT (WiFi-based) service to connect to your Micro-Controller (ESP32 -> for hardware like LED, motor etc) then you need to install the mosquitto server. For now, we will only setup a non-secured connection as we assume, that your WiFi is anyways local and non-public as well as uses WPA2. In a terminal, run: 
 ```
 $   sudo apt-get install mosquitto mosquitto-clients
