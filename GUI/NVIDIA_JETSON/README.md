@@ -351,7 +351,7 @@ Note that you need to log out then back in again for these permissions to be app
     ```
     
     <p align="center">
-    <img src="./IMAGES/script08.png" width="400" alt="">
+    <img src="./IMAGES/script08.png" width="600" alt="">
     </p> 
     Then (Ctrl+X) and save the changes.
 
@@ -420,7 +420,7 @@ The service will automatically start and is running. Nice!
     ```
     Search for the (Ctr+W) `setup_number` and change it to e.g. `001`.
     <p align="center">
-    <img src="./IMAGES/script09.png" width="400" alt="">
+    <img src="./IMAGES/script09.png" width="600" alt="">
     </p> 
 * Run the GUI, by running: 
     ```
@@ -428,7 +428,7 @@ The service will automatically start and is running. Nice!
     ```
     It should start without any errors, but maybe it is overscaled on the first start. Just restart it and it should work. Press "CUS" on the left to get the LED-array-manipulation window and press "Start Preview" on the top to start your camera-stream. 
     <p align="center">
-    <img src="./IMAGES/script10.png" width="400" alt="">
+    <img src="./IMAGES/script10.png" width="600" alt="">
     </p>   
 
 ## Connecting the Microcontrollers
@@ -451,7 +451,7 @@ Prepare the Device by hooking it up to the power-source. Wait until the small co
 Click on the "Start"-button on the upper-left corner and enter "xterm". It will open the terminal. 
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_0.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_0.png" width="600" alt="">
 </p>   
 
 ### Step 2
@@ -468,7 +468,7 @@ If you are in this folder type:
 ```cd ./GUI/python3```
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_1.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_1.png" width="600" alt="">
 </p>  
 
 
@@ -482,20 +482,20 @@ Starting the guy will be done by calling the python script as:
 
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_2.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_2.png" width="600" alt="">
 </p>  
 
 First a bunch of MATRIX-like code will flow over the screen before a window will start popping up.
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_3.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_3.png" width="600" alt="">
 </p>   
 
 
 Get familiar with the GUI. On the left hand side, you will find buttons for hardware control. On the right hand side after clicking "start experiment", you will find all kinds of different settings for the acquisition process (e.g. time intervall, duration, mode)
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_4.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_4.png" width="600" alt="">
 </p>   
 
 
@@ -511,7 +511,7 @@ You should now be able to control the hardware such as the xyz-stage with the fo
 4. If you want to move the sample in Y/X, you need to deselect z first and reactivate the other direction
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_6.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_6.png" width="600" alt="">
 </p> 
 
 #### Turning on LED for brightfield
@@ -533,7 +533,7 @@ The button ```FULL``` will activate the LED for bright field imaging
 Setting up the camera can be down by actually starting the screen. Another window will open up with the camera live-stream after hitting "Show Preview". 
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_5.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_5.png" width="600" alt="">
 </p>   
 
 You can set the exposure time using the two different sliders:
@@ -551,7 +551,7 @@ Therefore hit the ```MEASITER```-button and vary the time with the ```-/+``` but
 The same can be done for the duration with the button ```TOTALDURATION```. 
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_8.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_8.png" width="600" alt="">
 </p>    
 
 
@@ -560,7 +560,7 @@ The same can be done for the duration with the button ```TOTALDURATION```.
 Now you can select the imaging modality(ies) by hitting the different buttons:
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_10.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_10.png" width="600" alt="">
 </p>   
 
 ### Step 7
@@ -568,7 +568,7 @@ Now you can select the imaging modality(ies) by hitting the different buttons:
 Starting the measurement is done by hitting the ```Start Measurement``` button
 
 <p align="center">
-<img src="./IMAGES/screenshots/Screenshot_11.png" width="400" alt="">
+<img src="./IMAGES/screenshots/Screenshot_11.png" width="600" alt="">
 </p>    
 
 Now, the countdown will start. Stopping the measurment can be done by hitting ```Stop Measurement```. 
