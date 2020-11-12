@@ -439,7 +439,162 @@ We reached the final preparation step. Depending on whether you chose to use ESP
 Once the devices are setup and powered (running), restart your GUI on the RASPI. To control e.g. the LED-array, on the left click "CUS" and click on the different fields on the right, thereby (de-) activating the different LED elements. 
 
 ## How to work with the GUI
-Will come soon. :)
+
+***IMPORTANT***: Install skimage for better display experience: ```sudo pip3 install scikit-image```
+
+In the following tutorial we will guide you through the process of starting a time-lapse series where you acquire a transmission brightfield (e.g. LED) and a fluorescent image (e.g. Laser) sequentially. 
+
+Prepare the Device by hooking it up to the power-source. Wait until the small computer boots up and you see the desktop showing up. 
+
+### Step 1
+
+Click on the "Start"-button on the upper-left corner and enter "xterm". It will open the terminal. 
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_0.png" width="400" alt="">
+</p>   
+
+### Step 2
+
+Navigate to the folder where the UC2 GUI installation is located. Some commands which will help you: 
+
+- ```ls``` => lists all files and folders in the current folder
+- ```cd``` => change directory to what you specify
+
+Type ```ls``` and hit enter to list the folders. Navigate to something which is called ```*NVIDIA*``` with the command ```cd NVIDIA```(the actual foldername may vary)
+
+If you are in this folder type:
+
+```cd ./GUI/python3```
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_1.png" width="400" alt="">
+</p>  
+
+
+ 
+
+### Step 3
+
+Starting the guy will be done by calling the python script as:
+
+```python3 main.py```
+
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_2.png" width="400" alt="">
+</p>  
+
+First a bunch of MATRIX-like code will flow over the screen before a window will start popping up.
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_3.png" width="400" alt="">
+</p>   
+
+
+Get familiar with the GUI. On the left hand side, you will find buttons for hardware control. On the right hand side after clicking "start experiment", you will find all kinds of different settings for the acquisition process (e.g. time intervall, duration, mode)
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_4.png" width="400" alt="">
+</p>   
+
+
+#### Moving XYZ stage 
+
+
+
+You should now be able to control the hardware such as the xyz-stage with the following steps:
+
+1. select the direction you would like to move the sample to (start with z!)
+2. With the buttons ```--/++``` and ```-/+``` repspectively, you will change the stepsize visible in the center of the GUI bar
+3. With the button ```<</>>```, you can actually move the motor
+4. If you want to move the sample in Y/X, you need to deselect z first and reactivate the other direction
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_6.png" width="400" alt="">
+</p> 
+
+#### Turning on LED for brightfield
+
+The button ```FULL``` will activate the LED for bright field imaging 
+
+#### Turning on the LASER for fluorescent imaging 
+
+*ATTENTION:* Lasersafety! Make sure, the laser does not hit your eye at any point! 
+
+1. Move the slide-bar (next to ```FLUO``` to some minimum value like ```0%```
+2. Hit the button ```FLUO``` to activate the laser
+3. While moving the slide-bar, you can vary the laser intensity. 
+
+*IMPORTANT:* The laser intensity you set with the slide-bar, is also the intensity you will use for the long-term experiments.
+
+### Step 4
+
+Setting up the camera can be down by actually starting the screen. Another window will open up with the camera live-stream after hitting "Show Preview". 
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_5.png" width="400" alt="">
+</p>   
+
+You can set the exposure time using the two different sliders:
+
+- Upper slider: This is the exposure time for the brightfield imaging and will only be used if you activate the LED with the Button ```FULL```
+- Lower slider: This is the exposure time for the fluorescence imaging and will only be used if you activate the LASER with the Button ```FLUO``` 
+
+Both values will be used in the long-term imaging acquisitions.
+
+### Step 5
+
+In order to start a long-term acqusition you need to **first** select the time interval (e.g. take an image every 2 minutes) plus the duration (e.g. do that for 2 days), then you can select the imaging modality (e.g. do Brightfield and Fluorescence). 
+
+Therefore hit the ```MEASITER```-button and vary the time with the ```-/+``` buttons, where ```d```stands for day, ```h``` for hour, ```m``` for minute and ```s``` for second. 
+The same can be done for the duration with the button ```TOTALDURATION```. 
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_8.png" width="400" alt="">
+</p>    
+
+
+### Step 6
+
+Now you can select the imaging modality(ies) by hitting the different buttons:
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_10.png" width="400" alt="">
+</p>   
+
+### Step 7
+
+Starting the measurement is done by hitting the ```Start Measurement``` button
+
+<p align="center">
+<img src="./IMAGES/Screenshots/Screenshot_11.png" width="400" alt="">
+</p>    
+
+Now, the countdown will start. Stopping the measurment can be done by hitting ```Stop Measurement```. 
+
+
+## Fast Fluorescent Imaging
+
+To get frames as fast as possible, there are two ways:
+
+1. You get a second laptop with a USB3 connection and install the [Allied Vision VIMBA Software](https://www.alliedvision.com/de/produkte/software.html?from=singlemessage) with a nice GUI and use the camera on your computer
+2. Use the Nvidia Jetson Nano to save frames on the disk as fast as possible
+
+Solution ```2``` can be carried out inside the UC2 GUI. Therefore do the following steps:
+
+1. Place the sample on the stage and turn on the Brightfield LED using ```FULL```.
+2. Focus the sample using the Z-buttons 
+3. Turn off the LED 
+4. Turn on the Laser using the ```Fluo```-button
+5. Turn on the Camera using ```Show Preview```
+6. Tune the laser intensity using the slide-bar next to ```FLUO```
+7. Tune the exposure time using the slide bar in the middle layer (above the laser slide-bar)
+8. Hitting ```BURST``` will write all images directly to the drive (inside the DATA folder) as fast as they will be transfered from the camera
+9. Hitting ```BURST``` again will stop the stream. 
+
+
+
 
 ## Viewing images or copying them from the device
 Finally, you took some images and want to process them. You now have multiple options. You can:
