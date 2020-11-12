@@ -7,7 +7,7 @@ color_picked:
 - 255
 - 255
 - 255
-color_picker_counter: 0
+color_picker_counter: 2
 default:
 - - - 0
     - 0
@@ -201,9 +201,9 @@ default:
   - - 0
     - 0
     - 0
-exposure_time_BF: 73
-exposure_time_FLUO: 11
-intensity: 43
+exposure_time_BF: 2000
+exposure_time_FLUO: 1000
+intensity: 25
 intensity_expt: 86
 matrixdim:
 - 8
@@ -213,7 +213,7 @@ picked:
 - 255
 - 255
 update_fluoled_active: false
-update_matrix_active: false
+update_matrix_active: true
 user:
 - - - 0
     - 0

@@ -11,7 +11,7 @@ from vimba import *
 
 import fluidiscopeGlobVar as fg
 
-FRAME_QUEUE_SIZE = 10
+FRAME_QUEUE_SIZE = 1
 FRAME_HEIGHT = 1088
 FRAME_WIDTH = 1456
 
@@ -165,6 +165,23 @@ class FrameProducer(threading.Thread):
 
         # Try to set exposure time to something reasonable 
         try:
+            self.cam.AcquisitionFrameRateEnable.set(True)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'AcquisitionFrameRateEnable\'.'.format(
+                          self.cam.get_id()))
+
+        # Try to set exposure time to something reasonable 
+        try:
+            self.cam.AcquisitionFrameRate.set(25)
+
+        except (AttributeError, VimbaFeatureError):
+            self.log.info('Camera {}: Failed to set Feature \'AcquisitionFrameRate\'.'.format(
+                          self.cam.get_id()))
+
+
+        # Try to set exposure time to something reasonable 
+        try:
             self.cam.ExposureTime.set(self.ExposureTime)
 
         except (AttributeError, VimbaFeatureError):
@@ -280,7 +297,7 @@ class FrameConsumer(threading.Thread):
                     frames.pop(cam_id, None)
 
                 frames_left -= 1
-
+            
             # Construct image by stitching frames together.
             if frames:
                 cv_images = [resize_if_required(frames[cam_id]) for cam_id in sorted(frames.keys())]
@@ -297,6 +314,26 @@ class FrameConsumer(threading.Thread):
 
                 # resize to fit in the window
                 np_images = cv2.resize(np_images, (WINDOW_HEIGHT, WINDOW_WIDTH), interpolation=cv2.INTER_NEAREST)
+                from scipy.ndimage import median_filter
+                np_images = median_filter(np_images, size=2, mode="mirror")
+                
+                from skimage import exposure
+                np_images = exposure.equalize_adapthist(np_images, clip_limit=0.03)
+                #https://scikit-image.org/docs/dev/auto_examples/color_exposure/plot_equalize.html
+                #np_images = np.float32(np_images)
+                #np_images = .25*np_images/np.mean(np_images) # increase brightness # TODO: Make it adaptive
+                #np_images = np.float32(cv2.equalizeHist(np_images))/255.
+                #np_images = np.float32(np_images)/255.
+                #print("pre: "+ str(np.min(np_images))+"/"+str(np.max(np_images))+"/"+str(np_images.shape))
+                #np_images = np_images**2
+                #np_images = np_images - np.min(np_images)
+                #np_images = 2*255*np_images / np.max(np_images)
+                #np_images[np_images>255]=255
+                #np_images = np.uint8(np_images) 
+                #print("pst: "+ str(np.min(np_images))+"/"+str(np.max(np_images)))
+                
+#                np_images = np.uint8( np_images * Ü cv2.normalize(np.p_images), 0., 255., cv2.NORM_MINMAX))#, cv2.CV_8UC1)
+                #print("post: "+ str(np.min(np_images))+"/"+str(np.max(np_images)))
                 cv2.imshow(IMAGE_CAPTION, np_images)
                 cv2.moveWindow(IMAGE_CAPTION,WINDOW_START_FROM_LEFT,WINDOW_START_FROM_TOP)
 

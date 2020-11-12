@@ -244,9 +244,9 @@
                         valign: 'middle'
                         name: 'slider_exposure_time_bf'
                         min: 1000
-                        max: 100000
+                        max: 300000
                         value: 50000
-                        step: 10000
+                        step: 500
                         on_value: root.slider_setExposure_BF(self)
                     # exposure time part       
                     Widget:
@@ -261,7 +261,7 @@
                         min: 1000
                         max: 500000
                         value: 50000
-                        step: 10000
+                        step: 500
                         on_value: root.slider_setExposure_FLUO(self)                        
 #            BoxLayout:
 #                size_hint_x: 0.6
