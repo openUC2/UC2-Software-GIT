@@ -160,6 +160,9 @@ class Fluidiscope(BoxLayout):
     def slider_change(self, instance):
         toolbox.slider_change(self, instance)
 
+    def slider_setGain(self, instance):
+        toolbox.slider_setGain(self, instance)
+
     def slider_setExposure_BF(self, instance):
         toolbox.slider_setExposure_BF(self, instance)
 

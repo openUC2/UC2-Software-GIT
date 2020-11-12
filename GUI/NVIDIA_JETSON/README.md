@@ -587,11 +587,12 @@ Solution ```2``` can be carried out inside the UC2 GUI. Therefore do the followi
 2. Focus the sample using the Z-buttons 
 3. Turn off the LED 
 4. Turn on the Laser using the ```Fluo```-button
-5. Turn on the Camera using ```Show Preview```
+5. Hitting ```BURST``` will *activate* writing all images directly to the drive (inside the DATA folder with a timestamp) as fast as they will be transfered from the camera
+6. Turn on the Camera using ```Show Preview``` - and also starts recording the images
 6. Tune the laser intensity using the slide-bar next to ```FLUO```
 7. Tune the exposure time using the slide bar in the middle layer (above the laser slide-bar)
-8. Hitting ```BURST``` will write all images directly to the drive (inside the DATA folder) as fast as they will be transfered from the camera
-9. Hitting ```BURST``` again will stop the stream. 
+8. Hitting ```Stop Preview``` will stop the stream. 
+9. Make sure to deactivate ```BURST``` again 
 
 
 

@@ -16,6 +16,12 @@
         size_hint: None, None
         size: sp(32), sp(32)
         text: "t-exp BF: " + str(int(root.value/1000)) + "[ms]"
+<GainSlide1@Slider>:
+    Label:
+        pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
+        size_hint: None, None
+        size: sp(32), sp(32)
+        text: "Gain: " + str(int(root.value))      
 <ExposureSlide2@Slider>:
     Label:
         pos: (root.value_pos[0] - sp(16), root.center_y - sp(40)) if root.orientation == 'horizontal' else (root.center_x - sp(27), root.value_pos[1] - sp(16))
@@ -227,41 +233,40 @@
                 orientation: 'vertical'
                 padding: (2,0,2,0)
                 GridLayout:
-                    size_hint_y: 0.8
-                    cols: 2
-                    row: 2
-                    spacing: 2
+                    size_hint_y: 2
+                    cols: 1
+                    row: 3
+                    spacing: 3
                     # exposure time part      
                     Widget:
-                        size_hint_x:None
-                        width: 100
-                        Label:
-                            id: ExposureSlide1_text
-                            text: 'Exp-T. BF'   
-                            color: 1,0,1,1                    
+                    GainSlide1:
+                        #size_hint_x:None
+                        id: slider_gain
+                        valign: 'middle'
+                        name: 'slider_gain'
+                        min: 1
+                        max: 23
+                        value: 10
+                        step: 1
+                        on_value: root.slider_setGain(self)               
                     ExposureSlide1:
                         id: slider_exposure_time_bf
                         valign: 'middle'
                         name: 'slider_exposure_time_bf'
-                        min: 1000
-                        max: 300000
+                        min: 100
+                        max: 1000000
                         value: 50000
-                        step: 500
+                        step: 100
                         on_value: root.slider_setExposure_BF(self)
                     # exposure time part       
-                    Widget:
-                        size_hint_x:None
-                        width: 100
-                        id: ExposureSlide2_text
-                        text: 'Exp-T. FLUO'
                     ExposureSlide2:
                         id: slider_exposure_time_fluo
                         valign: 'middle'
                         name: 'slider_exposure_time_fluo'
-                        min: 1000
-                        max: 500000
+                        min: 100
+                        max: 1000000
                         value: 50000
-                        step: 500
+                        step: 100
                         on_value: root.slider_setExposure_FLUO(self)                        
 #            BoxLayout:
 #                size_hint_x: 0.6

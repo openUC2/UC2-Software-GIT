@@ -614,6 +614,17 @@ def slider_setExposure_BF(self, instance):
         except:
             print("Error setting exposure time BF - camera already running?")
 
+def slider_setGain(self, instance):
+    logger.debug('%s value has changed to %s' %
+                 (instance.name, str(instance.value)))
+    fg.config['light']['gain'] = int(instance.value)
+    try:
+        # only set camera register if mode is "on"
+        fg.camera.setGain(fg.config['light']['gain'])
+    except:
+        print("Error setting exposure time BF - camera already running?")
+
+
 def slider_setExposure_FLUO(self, instance):
     logger.debug('%s value has changed to %s' %
                  (instance.name, str(instance.value)))
@@ -2124,7 +2135,7 @@ def camera_preview(self, start):
                 logger.debug('Fluo active, sent FLUO+{}.'.format(int(fg.config['light']['intensity'])))
                 fg.camera = vbc.VimbaCameraThread(is_record=fg.vimba_is_record_preview, filename=filename) 
                 #fg.camera.setIntensityCorrection(10)
-                fg.camera.setGain(Gain=23)
+                fg.camera.setGain(fg.config['light']['gain'])
                 fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
             else:
                 fg.camera = vbc.VimbaCameraThread() 
@@ -2133,18 +2144,18 @@ def camera_preview(self, start):
                     # Brightfield imaging requires lower Gain?!
                     print("Setting to bfmode")
                     #fg.camera.setIntensityCorrection(50)
-                    fg.camera.setGain(Gain=23)
+                    fg.camera.setGain(fg.config['light']['gain'])
                     fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
                 elif(fg.config['experiment']['active_methods']=='btn_light_fluo'):
                     # Fluomode imaging requires higher Gain?!
                     print("Setting to fluomode")
                     # fg.camera.setIntensityCorrection(20)
-                    fg.camera.setGain(Gain=23)
+                    fg.camera.setGain(fg.config['light']['gain'])
                     fg.camera.setExposureTime(fg.config['light']['exposure_time_FLUO'])
                 else:
                     print("Setting to othermode")
                     fg.camera.setIntensityCorrection(50)
-                    fg.camera.setGain(Gain=23)
+                    fg.camera.setGain(fg.config['light']['gain'])
                     fg.camera.setExposureTime(fg.config['light']['exposure_time_BF'])
             fg.camera.start()
             logger.debug("Preview started!")

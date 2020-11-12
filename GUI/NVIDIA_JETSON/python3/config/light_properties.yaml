@@ -7,7 +7,7 @@ color_picked:
 - 255
 - 255
 - 255
-color_picker_counter: 2
+color_picker_counter: 3
 default:
 - - - 0
     - 0
@@ -201,8 +201,9 @@ default:
   - - 0
     - 0
     - 0
-exposure_time_BF: 2000
-exposure_time_FLUO: 1000
+exposure_time_BF: 621900
+exposure_time_FLUO: 311500
+gain: 11
 intensity: 25
 intensity_expt: 86
 matrixdim:
