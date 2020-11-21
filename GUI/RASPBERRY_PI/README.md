@@ -256,7 +256,7 @@ We've put all the necessary steps here, so there's no need for you to jump to th
 	When installing something, the RasPi tells you how much disk space will be used and asks for confirmation to proceed. Type `Y` and Enter.  
     The Python-package Cython will be freshly compiled on your system and might need a while (~5min). If you have a Raspi3 (or older), make sure that you [enhance your RAM before](https://raspberrypi.stackexchange.com/questions/8308/how-to-install-latest-scipy-version-on-raspberry-pi) (the same is true for e.g. Numpy, Scipy etc on RasPi).
 
-* Note: If you get the warning: *The scripts cygdb, cython and cyhonie are installed in '/home/yourUC2name/.local/bin' which is not on PATH*
+* Note: If you get the warning: *The scripts cygdb, Cython and cyhonie are installed in '/home/yourUC2name/.local/bin' which is not on PATH*
     <p align="center">
     <img src="./IMAGES/script07.jpg" width="400" alt="">
     </p>
@@ -312,8 +312,8 @@ The service will automatically start and is running. Nice!
 * Now, let's prepare our UC2env by installing the necessary packages:
     ```
     $ source activate UC2env
-    $ conda install numpy matplotlib pyserial
-    $ python -m pip install unipath ruamel.yaml pyyaml imageio safe-cast picamera smbus paho.mqtt
+    $ conda install numpy matplotlib pyserial scipy
+    $ python -m pip install unipath ruamel.yaml pyyaml imageio safe-cast picamera smbus paho.mqtt tifffile
     $ cd ~/UC2/
     $ git clone https://github.com/bionanoimaging/UC2-Software-GIT.git
     $ mkdir UC2-GUI
@@ -437,6 +437,29 @@ We will briefly describe how to access your device using the sFTP-interface. In 
 
 
 # Optional Steps from now
+## BugFixing the "SNAP"-crash
+On some RasPi<-->Camera combinations you might run out of GPU-memory if you want to take a big image with the function "SNAP". To test this, you can add a handy command shortcut to your environment. Create a new-file gpumem with:
+    ```
+    mkdir ~/bin
+    nano ~/bin/gpumem
+    chmod +x ~/bin/gpumem
+    ```
+    and fill it with 
+    ```
+    #!/bin/bask
+    sudo /opt/vc/bin/vcdbg relo stats
+    ```
+Now you can call **gpumem** and compare to the displayed images
+
+|GPUmem under small image|overload|error-message|
+|---|---|---|
+|![](./IMAGES/fix01_gpumem-01.jpg)|![](./IMAGES/fix01_gpumem-02.jpg)|![](./IMAGES/fix01_gpumem-03.jpg)|
+
+To fix this, in the file run the command "sudo nano /boot/config.txt" and change (or add) 
+```
+gpu_mem = 256
+```
+Done. 
 ## Sharing the finished (prepared) Image
 For sharing your prepared SDcard (e.g. to save a lot of time setting up more than 1 RasPi) Shrinking the size of the main partition (/dev/root) to make swapping between SDcards of different size (even if they are claiming to be 16GB the final size might differ by 1-500mb) or online easier is recommended. For our main-partition this cannot be done in-place (=while Raspbian is running), because the partition to be resized has to be unmounted. Hence, we suppose to using a boot media (e.g. USB-drive) with GPARTED on it.
 1. download [TUXBOOT](https://tuxboot.org/download/)

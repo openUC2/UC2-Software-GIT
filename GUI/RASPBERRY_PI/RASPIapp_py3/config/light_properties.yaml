@@ -7,7 +7,7 @@ color_picked:
 - 255
 - 255
 - 255
-color_picker_counter: 4
+color_picker_counter: 0
 default:
 - - - 0
     - 0
