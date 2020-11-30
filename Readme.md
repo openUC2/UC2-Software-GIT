@@ -29,7 +29,7 @@ This is the online repository of the Software of the open-source hardware projec
 ---
 
 ## Making **open-science** great again!
-For a general introduction on UC2 please check our [main repository](https://github.com/bionanoimaging/UC2-GIT). Our basic belief centers around simple and clean modularity which - combined with creativity and curiosity - can lead to unbelievable achievements. Read more in the [UC2 Paper](https://www.biorxiv.org/content/10.1101/2020.03.02.973073v1) [![DOI:10.1101/2020.03.02.973073](http://img.shields.io/badge/DOI-10.1101/2020.03.02.973073-B31B1B.svg)](https://doi.org/10.1101/2020.03.02.973073).
+For a general introduction on UC2 please check our [main repository](https://github.com/bionanoimaging/UC2-GIT). Our basic belief centers around simple and clean modularity which - combined with creativity and curiosity - can lead to unbelievable achievements. Read more in the UC2 paper: [A versatile and customizable low-cost 3D-printed open standard for microscopic imaging](https://www.nature.com/articles/s41467-020-19447-9) [![DOI:10.1038/s41467-020-19447-9](http://img.shields.io/badge/DOI-10.1038/s41467_020_19447_9-000000.svg)](https://doi.org/10.1038/s41467-020-19447-9).
 
 # Getting Started
 Like with our toolbox we tried to keep our interfaces modular as well. Therefore, hardware (like Motors, LED, ...) can be adressed using
