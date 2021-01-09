@@ -40,13 +40,16 @@ global active_imaging_method
 today = datetime.datetime.now().strftime("%Y%m%d")
 my_dev_flag = False
 if platform.system() == 'Darwin':
-    my_dev_flag = True
+    #my_dev_flag = True
     print('Operating in DEVMODE!')
 
 started_first_exp = False
 is_use_picamera = False
 is_use_vimba = True
-i2c = True
+i2c = False
+is_serial = True
+serialadress = '/dev/ttyUSB0'
+serialdevice = None
 
 if my_dev_flag:
     print('Switching off all external hardware..')

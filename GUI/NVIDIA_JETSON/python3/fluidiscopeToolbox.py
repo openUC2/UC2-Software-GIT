@@ -64,6 +64,10 @@ if fg.is_use_picamera:
 if not (fg.my_dev_flag):
     if fg.i2c:
         from I2CDevice import I2CDevice
+    elif fg.is_serial:
+        # Quick hack to switch to USB
+        from SerialDevice import SerialDevice as I2CDevice
+
 
 # define color variables
 button_color_active = [0.0, 4.0, 0.0, 1.0]
@@ -623,6 +627,27 @@ def slider_setGain(self, instance):
         fg.camera.setGain(fg.config['light']['gain'])
     except:
         print("Error setting exposure time BF - camera already running?")
+
+
+def slider_setLens1X(self, instance):
+    logger.debug('%s value has changed to %s' %
+                 (instance.name, str(instance.value)))
+    #fg.config['light']['gain'] = int(instance.value)
+    try:
+        fg.fluo.send("LENS1X", int(instance.value))
+        logger.debug('LENS1X active, sent LENS1X+{}.'.format(int(instance.value)))
+    except:
+        print("Error setting lens Value X1")
+
+def slider_setLens2X(self, instance):
+    logger.debug('%s value has changed to %s' %
+                 (instance.name, str(instance.value)))
+    #fg.config['light']['gain'] = int(instance.value)
+    try:
+        fg.fluo.send("LENS1Z", int(instance.value))
+        logger.debug('LENS1Z active, sent LENS1Z+{}.'.format(int(instance.value)))
+    except:
+        print("Error setting lens Value X2")
 
 
 def slider_setExposure_FLUO(self, instance):
@@ -1728,6 +1753,8 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
 
         # send per I2C (wired) or MQTT (wifi)
         if fg.i2c:
+            fg.motors.send(cmd, stepsize)
+        if fg.is_serial:
             fg.motors.send(cmd, stepsize)
         else:
             fg.motors[motor_sel].send(cmd, stepsize)

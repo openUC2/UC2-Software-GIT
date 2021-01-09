@@ -40,8 +40,7 @@ if True:
     import fluidiscopeToolbox as toolbox
     import fluidiscopeIO
     import fluidiscopeLogging as fl
-if fg.i2c:
-    from I2CDevice import I2CDevice
+
 
 if fg.is_use_picamera:
     import picamera
@@ -168,6 +167,12 @@ class Fluidiscope(BoxLayout):
 
     def slider_setExposure_FLUO(self, instance):
         toolbox.slider_setExposure_FLUO(self, instance)
+
+    def slider_setLens1X(self, instance):
+        toolbox.slider_setLens1X(self, instance)
+
+    def slider_setLens2X(self, instance):
+        toolbox.slider_setLens2X(self, instance)
 
     def buttons_light(self, instance):
         toolbox.buttons_light(self, instance)

@@ -49,6 +49,10 @@ else:
 if not (fg.my_dev_flag):
     if fg.i2c:
         from I2CDevice import I2CDevice
+    elif fg.is_serial:
+        # Quick hack to switch to USB
+        from SerialDevice import SerialDevice as I2CDevice
+        
     from picamera.array import PiRGBArray
     from picamera.array import PiBayerArray
     from picamera import PiCamera

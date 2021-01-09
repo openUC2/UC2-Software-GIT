@@ -4,14 +4,12 @@ import time
 import errno
 import fluidiscopeGlobVar as fg
 import logging
+import serial 
 
-if not fg.my_dev_flag:
-    from I2CBus import I2CBus
-
-logger = logging.getLogger('UC2_I2CDEVICE')
+logger = logging.getLogger('UC2_SerialDevice')
 
 
-class I2CDevice(object):
+class SerialDevice(object):
     max_msg_len = 32
     delim_strt = "*"
     delim_stop = "#"
@@ -20,18 +18,12 @@ class I2CDevice(object):
 
     com_cmds = {"STATUS": "STATUS", "LOGOFF": "LOGOFF", "NAME": "NAME"}
 
-    def __init__(self, address):
-        if fg.my_dev_flag:
-            adress = 0
-        else:
-            try:
-                address = int(address)
-            except ValueError:
-                raise fluidException("Invalid address format.")
-
-        self.address = address
+    def __init__(self, serialdevice):
+        
         self.name = "unknown"
         self.outBuffer = ""
+        self.myserialdevice = serialdevice
+
 
     def isEmpty(self, byte_list):
         if (byte_list):
@@ -42,8 +34,9 @@ class I2CDevice(object):
 
     def requestEvent(self):
         try:
-            byte_msg = I2CBus.defaultBus.read_i2c_block_data(
-                self.address, 0, I2CDevice.max_msg_len)
+            print("Nothing happens here..")
+            #byte_msg = I2CBus.defaultBus.read_i2c_block_data(
+            #    self.address, 0, SerialDevice.max_msg_len)
         except Exception as e:
             print("Unknown error {0} occured on request on address {1}".format(
                 e, hex(self.address)))
@@ -74,9 +67,7 @@ class I2CDevice(object):
             self.outBuffer = self.delim_strt + str(value) + self.delim_stop
             print("Printing Buffe:"+self.outBuffer)
             self.outBuffer = [ord(x) for x in self.outBuffer]
-            
-            I2CBus.defaultBus.write_i2c_block_data(
-                self.address, 1, self.outBuffer)
+            self.myserialdevice.write(self.outBuffer)
             self.outBuffer = ""
         except Exception as e:
             print("Unknown error {0} occured on send to address {1}".format(
@@ -85,7 +76,7 @@ class I2CDevice(object):
 
     def extractCommand(self, args):
         cmd = ""
-        delim = I2CDevice.delim_inst
+        delim = SerialDevice.delim_inst
         for i, arg in enumerate(args):
             if type(arg) == list:
                 sep = [str(x) for x in arg]
@@ -98,13 +89,14 @@ class I2CDevice(object):
 
     def send(self, *args):
         cmd = self.extractCommand(args)
-        if fg.my_dev_flag:
-            print(
-                "Debugging mode. Generated Command=[{}] has not been sent.".format(cmd))
-        else:
+        try:
             print("Sending:   {0}".format(cmd))
             logger.info("Sending:   {0}".format(cmd))
             self.sendEvent(cmd)
+        except:
+            print(
+                "Debugging mode. Generated Command=[{}] has not been sent.".format(cmd))
+
 
     def request(self):
         ans = self.requestEvent()

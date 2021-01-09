@@ -10,11 +10,11 @@ calibration_y_pos: -91
 calibration_z_lastupdate: 19.12.2018
 calibration_z_max: 5000
 calibration_z_min: -5000
-calibration_z_pos: -7534
+calibration_z_pos: -32938
 change_amount: 1
-change_amount_big: 10
-conversion_factor_x: 0.82
-conversion_factor_y: 0.82
+change_amount_big: 20
+conversion_factor_x: 1
+conversion_factor_y: 1
 conversion_factor_z: 1
 motor_dict:
   0: DRVX
@@ -27,9 +27,9 @@ motor_names:
 standard_move_dist_x: 80
 standard_move_dist_y: 80
 standard_move_dist_z: 80
-standard_move_time_x: 1.0
-standard_move_time_y: 1.0
-standard_move_time_z: 1.2
+standard_move_time_x: 0.1
+standard_move_time_y: 0.1
+standard_move_time_z: 0.1
 stepsize_x: 25
 stepsize_y: 15
-stepsize_z: 104
+stepsize_z: 804

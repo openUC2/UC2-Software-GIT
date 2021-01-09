@@ -89,6 +89,7 @@ The Allied vision cameras come as CSI and USB3 versions. The latter can work wit
 We managed to get it run on the Nvidia Jetson. Though it's not straight forward, since Vimba requires Python 3.7 and OpenCV. Therefore we need to build it from source. Nevertheless, the effort is worth it!
 
 ### 1. Install Python 3.7
+See [here](https://www.g7smy.co.uk/2020/10/jetson-nano-install-notes/) for further infos..
 If you haven't already done so execute:
 
 ```
@@ -97,7 +98,11 @@ sudo apt install python3.7-dev
 and make it the default python version on the Jetson:
 
 ```
-update-alternatives  --install /usr/bin/python python /usr/bin/python3.7 1
+sudo apt install python3-pip
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
+sudo update-alternatives --install /usr/bin/pip pip /usr/bin/pip3.7 1
+sudo update-alternatives --set python /usr/bin/python3.7
+sudo update-alternatives --set pip /usr/bin/pip3.7
 ```
 
 ### 2. Install Allied Vision SDK
@@ -175,7 +180,7 @@ unzip opencv-4.2.0.zip
 unzip opencv_contrib-4.2.0.zip
 mkdir opencv-4.2.0/build
 cd opencv-4.2.0/build
-Configure the build
+# Configure the build
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
       -D WITH_CUDA=ON \
       -D CUDA_ARCH_PTX="" \

@@ -139,6 +139,13 @@ class FrameProducer(threading.Thread):
     def setGain(self, Gain):
         self.Gain = Gain
 
+        try:
+            print("setting Gain: "+str(self.Gain))
+            self.cam.Gain.set(self.Gain)
+        except:
+            print("Error setting Gain - frame producer already running?")
+
+
     def setup_camera(self):
         #set_nearest_value(self.cam, 'Height', FRAME_HEIGHT)
         #set_nearest_value(self.cam, 'Width', FRAME_WIDTH)
@@ -165,7 +172,7 @@ class FrameProducer(threading.Thread):
 
         # Try to set exposure time to something reasonable 
         try:
-            self.cam.AcquisitionFrameRateEnable.set(True)
+            self.cam.AcquisitionFrameRateEnable.set(False)
 
         except (AttributeError, VimbaFeatureError):
             self.log.info('Camera {}: Failed to set Feature \'AcquisitionFrameRateEnable\'.'.format(
@@ -293,22 +300,20 @@ class FrameConsumer(threading.Thread):
                 cv_images = [resize_if_required(frames[cam_id]) for cam_id in sorted(frames.keys())]
                 np_images = np.concatenate(cv_images, axis=1)
 
-
-                # resize to fit in the window
-                print(np_images.shape)
+               # resize to fit in the window
                 np_images = cv2.resize(np_images, (WINDOW_HEIGHT, WINDOW_WIDTH), interpolation=cv2.INTER_NEAREST)
 #                from scipy.ndimage import median_filter
 #                np_images = median_filter(np_images, size=2, mode="mirror")
 #                print("pre: "+ str(np.min(np_images))+"/"+str(np.max(np_images))+"/"+str(np.mean(np_images))+"/"+str(np_images.shape))
                 
+                '''
                 try:
                     from skimage import exposure
                     np_images = exposure.equalize_adapthist(np_images, clip_limit=0.03)
                     np_images = np.uint8(np_images*255)
                 except:
                     print("probably no skimage installed?")
-
-
+                '''
                 cv2.imshow(IMAGE_CAPTION, np_images)
                 cv2.moveWindow(IMAGE_CAPTION,WINDOW_START_FROM_LEFT,WINDOW_START_FROM_TOP)
 

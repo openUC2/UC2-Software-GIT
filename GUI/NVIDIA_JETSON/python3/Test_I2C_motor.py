@@ -1,3 +1,14 @@
+
+import platform 
+if platform.system() == 'Darwin':
+    #my_dev_flag = True
+    print('Operating in DEVMODE!')
+    import sys
+    import fake_rpi
+    sys.modules['RPi'] = fake_rpi.RPi     # Fake RPi
+    sys.modules['RPi.GPIO'] = fake_rpi.RPi.GPIO # Fake GPIO
+    sys.modules['smbus'] = fake_rpi.smbus # Fake smbus (I2C)
+
 import I2CDevice
 import time
 
@@ -27,4 +38,4 @@ time.sleep(t1)
 ledarr.send("DRVZ", 1000)
 time.sleep(t1)
 ledarr.send("DRVZ", -1000)
-time.sleep(t1)f
+time.sleep(t1)
