@@ -230,6 +230,19 @@ sudo pip uninstall Pillow -y
 sudo pip install Pillow
 ```
 
+## Install Vimba USB driver 
+
+```
+Download TAR-GZ from here: 
+https://www.alliedvision.com/en/products/software.html?tx_avdownloads_downloads[file]=10619&tx_avdownloads_downloads[plugin]=5496&tx_avdownloads_downloads[download]=35&tx_avdownloads_downloads[action]=download&tx_avdownloads_downloads[controller]=List&cHash=73765b65eb1788d5fb24ac6f595900ae
+tar -zxvf *.tar.gz
+cd Vimba_4_2/VimbaUSBTL
+chmod 755  Install.sh
+sudo ./Install.sh
+sudo reboot
+```
+
+
 ## Install Vimba Python API
 
 ```
@@ -241,7 +254,7 @@ sudo ./Install.sh
 # pip install ./ -e
 -> Python 3.7
 -> With numpy
--> With OpenCV
+-> Without OpenCV !!!!! (we already installed it previously!)
 
 cd VimbaPython/examples
 python asynchronous_grab_opencv.py
