@@ -30,7 +30,7 @@
 // create Pseudo-random number with temporal dependent input
 
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S013";      //S006->Aurelie; S004->Barbora
+std::string SETUP = "S015";      //S006->Aurelie; S004->Barbora
 std::string COMPONENT = "MOT01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -38,12 +38,12 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "UC2_wifi004";
-const char *password = "_lachmannUC2";
+const char *ssid = "WIFI-SSID"
+const char *password = "WIFI-PASS";
 WiFiClient espClient;
 PubSubClient client(espClient);
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "21.3.2.152";
+const char *MQTT_SERVER = "192.168.178.162";
 const int MQTT_PORT = 1883;
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
@@ -61,9 +61,9 @@ const char *delim_inst = "+";
 const int delim_len = 1;
 
 // ~~~~ MOTOR ~~~~
-StepMotor stepperZ = StepMotor(25,26,27,14); //normally: 25, 26, 27, 14 // 12, 14, 27, 26
+StepMotor stepperZ = StepMotor(14,25,26,27); //normally: 25, 26, 27, 14 // 12, 14, 27, 26
 StepMotor stepperY = StepMotor(5, 17, 16, 4);
-StepMotor stepperX = StepMotor(33, 32, 27, 14); // 27, 25, 32, 4 never connected to same ESP32 as stepperZ -> hence: universally possible
+StepMotor stepperX = StepMotor(4, 32, 25, 27); // 27, 25, 32, 4 never connected to same ESP32 as stepperZ -> hence: universally possible
 
 // ~~~~ FLUO ~~~~
 int led_fluo_pwm_frequency = 12000;
