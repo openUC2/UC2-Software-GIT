@@ -19,12 +19,6 @@
 #include "Adafruit_NeoPixel.h"
 #include "SPI.h"
 #include <sstream>
-
-#include <WiFiUdp.h>
-#include <mDNSResolver.h>
-
-
-
 // ----------------------------------------------------------------------------------------------------------------
 //                          Global Defines
 #define MAX_CMD 3
@@ -32,44 +26,25 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 26
-#define LEDARR_PIN 22
-#define BUFLEN 16
+#define LEDARR_PIN 23 //22
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S015";      //S006->Aurelie; S004->Barbora
-std::string COMPONENT = "LAR01"; // LAR01 //LED01 // MOT02=x,y // MOT01=z
+std::string SETUP = "S007";
+std::string COMPONENT = "LAR01";
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
 std::string CLIENTNAME;
 std::string SETUP_INFO;
 
-
-
 // ~~~~  Wifi  ~~~~
-#define WIFI_AP         "Blynk"
-#define WIFI_PASS       "12345678"
-#define NAME_TO_RESOLVE "UC2Pal015.local"
-
-using namespace mDNSResolver;
-
-const char *ssid = "Blynk";//; //"Blynk"; //"UC2_wifi004";
-const char *password = "12345678";// "12345678"; //"_lachmannUC2";
+const char *ssid = "WIFI_SSID_HERE";
+const char *password = "WIFI_Pass_HERE";
 WiFiClient espClient;
 PubSubClient client(espClient);
-WiFiUDP udp;
-Resolver resolver(udp);
-
 // ~~~~  MQTT  ~~~~
-// what is the IP of the server?
-#define IS_MQTT_SERVER_EQUALS_ROUTER 0
-#if IS_MQTT_SERVER_EQUALS_ROUTER == 1
-  char MQTT_SERVER[BUFLEN];  
-  String gatewayIP;
-#else 
-  char *MQTT_SERVER = "192.168.43.51"; //"21.3.2.152";
-#endif
+//const char *MQTT_SERVER = "MQTT_SERVER_IP";
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";
@@ -158,7 +133,6 @@ void setup_wifi()
     Serial.println(WiFi.macAddress());
     Serial.print("Connecting to ");
     Serial.print(ssid);
-    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -169,22 +143,6 @@ void setup_wifi()
     Serial.println("");
     Serial.print("WiFi connected with IP:");
     Serial.println(WiFi.localIP());
-
-
-    // get IP for MQTT Broker from hostname 
-    resolver.setLocalIP(WiFi.localIP());
-  
-  IPAddress ip = resolver.search(NAME_TO_RESOLVE);
-  
-    client.setServer(ip, 1883);
-    client.setCallback(callback);
-  //MQTT_SERVER = ip; 
-  if(ip != INADDR_NONE) {
-    Serial.print("Resolved: ");
-    Serial.println(ip);
-  } else {
-    Serial.println("Not resolved");
-  }
 }
 
 int separateMessage(byte *message, unsigned int length)
@@ -547,11 +505,8 @@ void setup()
     Serial.print("VOID SETUP -> topicSTATUS=");
     Serial.println(stopicSTATUS.c_str());
     setup_wifi();
-    #if IS_MQTT_SERVER_EQUALS_ROUTER 
-    gatewayIP = WiFi.gatewayIP().toString();
-    gatewayIP.toCharArray(MQTT_SERVER, BUFLEN);
-    #endif
-
+    client.setServer(MQTT_SERVER, 1883);
+    client.setCallback(callback);
     pinMode(LED_BUILTIN, OUTPUT);
     time_now = millis();
     //testCPP();
@@ -573,8 +528,6 @@ void setup()
 //                          LOOP
 void loop()
 {
-    resolver.loop();
-      
     if (!client.connected())
     {
         reconnect();
