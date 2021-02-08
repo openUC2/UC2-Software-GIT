@@ -5,7 +5,7 @@ t1 = 0.2
 t2 = 1
 t3 = 3
 
-ledarr = I2CDevice.I2CDevice(0x07)
+ledarr = I2CDevice.I2CDevice(0x08)
 ledarr.send("CLEAR")
 time.sleep(2)
 
