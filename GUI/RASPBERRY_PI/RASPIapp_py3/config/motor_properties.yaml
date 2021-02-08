@@ -2,7 +2,7 @@ active_motor: 0
 calibration_x_lastupdate: 19.12.2018
 calibration_x_max: 5000
 calibration_x_min: -5000
-calibration_x_pos: 483
+calibration_x_pos: 10362
 calibration_y_lastupdate: 19.12.2018
 calibration_y_max: 5000
 calibration_y_min: -5000
@@ -10,7 +10,7 @@ calibration_y_pos: -44
 calibration_z_lastupdate: 19.12.2018
 calibration_z_max: 5000
 calibration_z_min: -5000
-calibration_z_pos: -124
+calibration_z_pos: 0
 change_amount: 1
 change_amount_big: 10
 conversion_factor_x: 0.82

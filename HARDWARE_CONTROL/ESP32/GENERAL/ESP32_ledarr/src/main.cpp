@@ -387,14 +387,14 @@ void callback(char *topic, byte *message, unsigned int length)
             light_pattern_color[xpos][ypos][activePattern][2] = INSTS[nINST - 1];
             //}
         }
-        else if (strcmp(CMD, COMMANDSET[4]) == 0)
+        else if (strcmp(CMD, COMMANDSET[3]) == 0)
         {
             //updateColor(INSTS[nINST - 4], INSTS[nINST - 3], INSTS[nINST - 2]);
             updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             bool fill = !(INSTS[nINST - 1] == 1);
             drawRect(INSTS[0], INSTS[1], INSTS[2], INSTS[3], fill);
         }
-        else if (strcmp(CMD, COMMANDSET[5]) == 0)
+        else if (strcmp(CMD, COMMANDSET[4]) == 0)
         {
             updateColor(INSTS[nINST - 3], INSTS[nINST - 2], INSTS[nINST - 1]);
             drawRect(INSTS[0], INSTS[1], INSTS[2], INSTS[3], true);

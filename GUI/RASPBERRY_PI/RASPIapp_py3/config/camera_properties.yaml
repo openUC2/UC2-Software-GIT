@@ -1,15 +1,15 @@
-analog_gain: 1.0
+analog_gain: 1.1015625
 awb_gains:
-- 1.89453125
-- 1.55078125
-awb_mode: off
+- 1.515625
+- 1.85546875
+awb_mode: false
 bayer: false
 camProp_defined: false
 camProp_fix_properties: true
 camProp_use_global: false
 digital_gain: 1.0
 exposure_compensation: 0
-exposure_mode: off
+exposure_mode: false
 framerate: 30.0
 image_denoise: false
 iso: 100
@@ -35,7 +35,7 @@ sensor_mode_size:
   - 720
 - - 640
   - 480
-shutter_speed: 4395
+shutter_speed: 33318
 use_video_port: false
 video_denoise: false
 video_stabilization: false

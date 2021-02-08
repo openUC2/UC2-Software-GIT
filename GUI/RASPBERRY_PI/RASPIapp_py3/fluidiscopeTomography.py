@@ -93,11 +93,12 @@ def tomography_btn_logic(self, instance):
     # (de-)activate TOMO-measurement (as individual option to each measurement)
     elif instance.uid == self.ids['btn_imaging_technique_tomography'].uid:
         fg.config['experiment']['tomo_active'] = False if instance.fl_active else True
+        logger.debug('Tomo_mode active? {}.'.format(fg.config['experiment']['tomo_active']))
         toolbox.change_activation_status(instance)
     
-
+    # update labels
     tomography_update_labels(self)
-    # done?
+    
 
 def tomography_update_labels(self):
     '''
@@ -110,6 +111,5 @@ def tomography_update_labels(self):
     for m in update_dict:
         self.ids[update_base + m].text = str(config_base[m])
 
-    #done?
     
 

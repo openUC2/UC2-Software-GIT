@@ -37,7 +37,7 @@ if os.name == 'nt':
 else:
     #from PIL import Image
     import picamera
-    from picamraw import PiRawBayer, PiCameraVersion
+    #from picamraw import PiRawBayer, PiCameraVersion
 
 
 if not (fg.my_dev_flag):
@@ -609,6 +609,8 @@ def run_measurement(self, instance):
         # rewrite button-text if necessary
         if instance.text == "Start Measurement":
             instance.text = "Stop Measurement"
+        else: 
+            instance.text = "Start Measurement"
 
         # put values into display
         update_measurement_status_display(self)
@@ -694,7 +696,13 @@ def update_measurement_status_display_timer(self, interval, *rargs):
 
 
 def abort_measurement(self, instance):
+    '''
+    Cleaning up after end/cancel of measurement.
+    '''
+    # disable button
     deactivate(instance)
+
+    # disable active method-buttons
     imaging_method_dic = fg.config['experiment']['imaging_method_dic']
     change_enable_status(instance, False)
     while not fg.config['experiment']['active_methods'] == []:
@@ -706,10 +714,12 @@ def abort_measurement(self, instance):
     activate_methods = ["btn_imaging_measiter", "btn_imaging_totaldurat", "btn_imaging_dplus", "btn_imaging_dminus", "btn_imaging_hplus", "btn_imaging_hminus",
                         "btn_imaging_mplus", "btn_imaging_mminus", "btn_imaging_splus", "btn_imaging_sminus", ]
     change_enable_status_chain(self, True, activate_methods)
+
+    # if Measurement (instead of SNAP) finished -> clean up open callbacks
     if not instance.uid == self.ids['btn_snap'].uid:
+        instance.text = 'Start Measurement'
         abort_measurement_delete_events(self=self,instance=instance)
-        fg.config['experiment']['last_expt_num'] = fg.expt_num
-        #show_notification_labels(self, instance)
+        #fg.config['experiment']['last_expt_num'] = fg.expt_num
 
     # deactivate activity-tracker
     fg.config['experiment']['active'] = 0
@@ -726,6 +736,7 @@ def abort_measurement_delete_events(self,instance):
     if 'autofocus_measure' in fg.EVENT:
         event_delete('autofocus_measure')
         af.autofocus_afterclean(self=self, instance=instance,camdict='cam_af')
+        set_autofocus(self, self.ids['btn_autofocus'])
 
 def event_delete(event_name):
     try:
@@ -755,15 +766,15 @@ def take_image_atom(filename=None,fileformat='jpeg',rawCapture=None,rawFormat='r
     Finally takes the image depending on conditions chosen (storage vs others).
     '''
     # security check because video_port seems to break when used with full resolution (independend of awb_mode, exposure_mode AND framerate)
-    if use_video_port == None:
-        use_video_port = False if fg.camera.resolution == fg.camera.MAX_RESOLUTION else fg.config[camdict]['use_video_port']
+    use_video_port = False if fg.camera.resolution == fg.camera.MAX_RESOLUTION else fg.config[camdict]['use_video_port']
+    if not use_video_port == fg.config[camdict]['use_video_port']:
+        logger.debug('CAUTION: Using video-port at full-resolution not stable for MMAL-interface. Set: use_video_port={}.'.format(use_video_port))
 
     # Bayer only works in non-video mode
     if use_bayer == None:
         use_bayer = False if ((fg.camera.sensor_mode not in [2,3]) or use_video_port) else fg.config[camdict]['bayer']
 
     
-
     if (filename is None) and rawCapture is None:
         rawCapture = PiBayerArray(fg.camera, fg.camera.resolution) if use_bayer else PiRGBArray(fg.camera, fg.camera.resolution)
         fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
@@ -834,7 +845,7 @@ def take_image_now(self, imaging_cause='MEAS', filename='', method='CUS'):
                     rawBayerCapture.truncate(0)
                 logger.debug("RAW: done.")
             else:
-                take_image_atom(filename=filename,fileformat="jpeg",camdict='cam')
+                take_image_atom(filename=filename,fileformat="jpeg",camdict='cam',use_video_port=fg.config['cam']['use_video_port'],use_bayer=fg.config['cam']['bayer'])
     return True, filename
 
 
@@ -1154,7 +1165,6 @@ def autofocus(self, instance):
     Intermediary between GUI and scheduled calls. 
     '''
     set_autofocus(self, instance)
-    change_activation_status(instance)
 
     # distinguish between now and scheduled during measurement
     key = 'autofocus_now' if (
@@ -1174,23 +1184,19 @@ def autofocus(self, instance):
 
 def set_autofocus(self, instance):
     '''
-    Button logic for autofocus.
-    :param self:
-    :param instance:
-    :return:
+    Activate/Deactivate Autofocus button and registry entry.
     '''
-    #logger.debug("Autofocus-00a2- DevFlag={}".format(fg.my_dev_flag))
-    # if not (fg.my_dev_flag):
     if check_active(instance):
         fg.config['experiment']['is_autofocus'] = False
         if instance.uid == self.ids['btn_autofocus'].uid:
-            refresh_text_entry(instance, "AF")
+            refresh_text_entry(instance, "AF off")
         logger.debug("Deactivated autofocus.")
     else:
         fg.config['experiment']['is_autofocus'] = True
         if instance.uid == self.ids['btn_autofocus'].uid:
-            refresh_text_entry(instance, "AF added")
+            refresh_text_entry(instance, "AF on")
         logger.debug("Autofocus activated.")
+    change_activation_status(instance)
 
 def autofocus_wait_condition(condition,waittime,*args,**kwargs):
     '''
@@ -1212,7 +1218,6 @@ def run_autofocus(self, instance, key):
                 partial(af.autofocus_callback, self, instance, key), 0.1)
         else:  # auto-deactivate autofocus
             set_autofocus(self, instance)
-            change_activation_status(instance)
     else:
         if 'autofocus_measure' in fg.EVENT:
             event_delete('autofocus_measure')
