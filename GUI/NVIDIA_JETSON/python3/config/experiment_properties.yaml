@@ -1,0 +1,41 @@
+active: 0
+active_camProp: null
+active_method: null
+active_methods: []
+autofocus_busy: false
+autofocus_new: true
+autofocus_now: false
+autofocus_num: 1
+autofocus_samples: 15
+autofocus_stepsize: 25
+copy_path: ''
+duration: 432180
+expt_last_image: /home/bene/NVIDIA_JETSON/python3/data/20180128/expt_016/20180128-MEAS-Bright--0.jpg-0.jpg
+fluo_bayer_explizit: true
+i2c_send_delay: 0.05
+image_set_num: 1
+images_left: 2401
+images_taken: 1
+images_total: 2402
+imaging_active: false
+imaging_cause: MEAS
+imaging_method: Fluor
+imaging_method_dic:
+  Bright: btn_imaging_technique_1
+  Custom: btn_imaging_technique_3
+  Ext: btn_imaging_technique_6
+  FPM: btn_imaging_technique_4
+  Fluor: btn_imaging_technique_5
+  qDPC: btn_imaging_technique_2
+imaging_num: 1
+interval: 180
+is_autofocus: false
+last_expt_date: '20180128'
+last_expt_num: 16
+path_last_expt: /home/bene/NVIDIA_JETSON/python3/data/20180128/expt_016
+snap_num: 2
+success: false
+take_raw: 1
+time_left: 432166
+time_passed: 14
+tomo_active: false
