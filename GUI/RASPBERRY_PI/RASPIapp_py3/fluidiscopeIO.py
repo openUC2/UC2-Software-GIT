@@ -27,6 +27,10 @@ else:
 
 if not fg.my_dev_flag and fg.i2c:
     from I2CDevice import I2CDevice
+elif not fg.my_dev_flag and fg.is_serial:
+    # Quick hack to switch to USB
+    from SerialDevice import SerialDevice as I2CDevice
+
 
 # %%  Code
 # activate logging

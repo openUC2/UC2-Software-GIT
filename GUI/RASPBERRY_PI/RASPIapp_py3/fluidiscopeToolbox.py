@@ -43,6 +43,10 @@ else:
 if not (fg.my_dev_flag):
     if fg.i2c:
         from I2CDevice import I2CDevice
+    elif fg.is_serial:
+            # Quick hack to switch to USB
+        from SerialDevice import SerialDevice as I2CDevice
+
     from picamera.array import PiRGBArray
     from picamera.array import PiBayerArray
     from picamera import PiCamera
@@ -1599,6 +1603,8 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
 
         # send per I2C (wired) or MQTT (wifi)
         if fg.i2c:
+            fg.motors.send(cmd, stepsize)
+        if fg.is_serial:
             fg.motors.send(cmd, stepsize)
         else:
             fg.motors[motor_sel].send(cmd, stepsize)
