@@ -88,7 +88,7 @@ def arduino_init():
 def serial_init():
     
     # Very hacky to have always the same Serial device..
-    fg.serialdevice = serial.Serial(fg. serialadress, 115200, timeout=.1)
+    fg.serialdevice = serial.Serial(fg.serialadress, 115200, timeout=.1)
     try:
         fg.ledarr = I2CDevice(fg.serialdevice)  # normally 0x07
     except Exception as e:

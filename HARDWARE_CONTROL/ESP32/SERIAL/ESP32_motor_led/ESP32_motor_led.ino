@@ -114,15 +114,15 @@ int LASER2_PIN_PLUS = 19;// 22;
 int LASER2_PIN_MINUS = 33;//23;
 
 // LENS
-int LENS_X_PIN = 26;
-int LENS_Z_PIN = 25;
+int LENS_X_PIN = 1;
+int LENS_Z_PIN = 1;
 
 // LED
 int LED_PIN = 2;
 
 // MOTOR
 const int stepsPerRevolution = 2048;
-Stepper motor_z = Stepper(stepsPerRevolution, 27,25,26,33);
+Stepper motor_z = Stepper(stepsPerRevolution,33,26,25,27);
 unsigned int motor_speed = 8;
 int STEPS = 200;
 

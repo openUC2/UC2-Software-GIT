@@ -23,7 +23,11 @@ import tifffile as tif
 # math
 import numpy as np
 from PIL import Image
-from scipy.ndimage import gaussian_filter
+try:
+    from scipy.ndimage import gaussian_filter
+except Exception as e:
+    print(str(e))
+
 
 
 if not fg.my_dev_flag:
@@ -234,13 +238,19 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             fg.config[camdict]['shutter_speed'] = camStats[-1]['exposure_speed']
 
             # overwrite camera parameters AND (therwith) FIX -> exposure_mode  must be last to be able to change shutter_speed properly
-            fg.camera.awb_mode = fg.config[camdict]['awb_mode']
+            if not fg.config[camdict]['awb_mode']:
+                fg.camera.awb_mode = 'off'
+            else:
+                fg.camera.awb_mode = fg.config[camdict]['awb_mode']
             fg.camera.awb_gains = fg.config[camdict]['awb_gains']
             fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
             fg.camera.framerate = fg.config[camdict]['framerate']
             fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
             sleep(1)
-            fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
+            if not fg.config[camdict]['exposure_mode']:
+                    fg.camera.exposure_mode = 'off'
+            else:
+                fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
             logger.debug('analog_gain={}, digital_gain={}, shutter_speed={}.'.format(fg.camera.analog_gain,fg.camera.digital_gain, fg.camera.shutter_speed))
             # wait for camera_gains to settle
             #sleep(1)
