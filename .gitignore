@@ -128,3 +128,10 @@ old_non_traced/
 
 # external contents
 external/
+*.db-wal
+*.db
+*.db
+*.db-shm
+*.db
+.DS_Store
+GUI/.sync_75cdc8a1dfb7.db

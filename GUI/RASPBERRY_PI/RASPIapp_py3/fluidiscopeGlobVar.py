@@ -39,7 +39,8 @@ else:
 started_first_exp = False
 
 # add serial devices
-is_serial = True
+is_serial = False
+is_gpio = True
 serialadress = '/dev/ttyUSB0'
 serialdevice = None
 

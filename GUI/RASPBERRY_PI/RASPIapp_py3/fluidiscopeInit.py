@@ -21,6 +21,9 @@ if fg.i2c:
 elif fg.is_serial:
     # Quick hack to switch to USB
     from SerialDevice import SerialDevice as I2CDevice
+elif fg.is_gpio:
+    # Quick hack to switch to GPIO
+    from GPIODevice import GPIODevice as I2CDevice    
 else:
     from MQTTDevice import MQTTDevice
     import paho.mqtt.client as mqtt
@@ -38,6 +41,8 @@ def controller_init():
         arduino_init()
     elif fg.is_serial:
         serial_init()
+    elif fg.is_gpio:        
+        gpio_init()
     else:  # case of e.g. ESP32
         mqtt_init()
     camera_init()
@@ -87,8 +92,9 @@ def arduino_init():
 
 def serial_init():
     
-    # Very hacky to have always the same Serial device..
+    # Very hacky to have always the same Serial device..    
     fg.serialdevice = serial.Serial(fg.serialadress, 115200, timeout=.1)
+
     try:
         fg.ledarr = I2CDevice(fg.serialdevice)  # normally 0x07
     except Exception as e:
@@ -109,7 +115,17 @@ def serial_init():
     except:
         fg.fluo = False
         logger.debug("Fluo module isnot connected!")
-        
+
+
+def gpio_init():
+    
+    # Very hacky to have always the same Serial device..
+    fg.serialdevice = I2CDevice()
+    fg.ledarr = I2CDevice()  # normally 0x07
+    fg.fluo = I2CDevice()
+    fg.motors = I2CDevice()  # normally 0x08
+    
+    
 
 # MQTT Functions ------------------------------------------------------------------------------
 

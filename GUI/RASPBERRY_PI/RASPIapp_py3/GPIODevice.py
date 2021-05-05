@@ -4,12 +4,13 @@ import time
 import errno
 import fluidiscopeGlobVar as fg
 import logging
-import serial 
+from gpiozero import LED
+import RPi.GPIO as GPIO
 
-logger = logging.getLogger('UC2_SerialDevice')
+logger = logging.getLogger('UC2_GPIODevice')
 
 
-class SerialDevice(object):
+class GPIODevice(object):
     max_msg_len = 32
     delim_strt = "*"
     delim_stop = "#"
@@ -18,13 +19,14 @@ class SerialDevice(object):
 
     com_cmds = {"STATUS": "STATUS", "LOGOFF": "LOGOFF", "NAME": "NAME"}
 
-    def __init__(self, serialdevice):
+    def __init__(self):
         
         self.name = "unknown"
         self.outBuffer = ""
-        self.myserialdevice = serialdevice
-        
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(14, GPIO.OUT)
 
+ 
 
     def isEmpty(self, byte_list):
         if (byte_list):
@@ -37,7 +39,7 @@ class SerialDevice(object):
         try:
             print("Nothing happens here..")
             #byte_msg = I2CBus.defaultBus.read_i2c_block_data(
-            #    self.address, 0, SerialDevice.max_msg_len)
+            #    self.address, 0, GPIODevice.max_msg_len)
         except Exception as e:
             print("Unknown error {0} occured on request on address {1}".format(
                 e, hex(self.address)))
@@ -68,7 +70,7 @@ class SerialDevice(object):
             self.outBuffer = self.delim_strt + str(value) + self.delim_stop
             print("Printing Buffe:"+self.outBuffer)
             self.outBuffer = [ord(x) for x in self.outBuffer]
-            self.myserialdevice.write(self.outBuffer)
+            self.myGPIOdevice.write(self.outBuffer)
             self.outBuffer = ""
         except Exception as e:
             print("Unknown error {0} occured on send to address {1}".format(
@@ -77,7 +79,7 @@ class SerialDevice(object):
 
     def extractCommand(self, args):
         cmd = ""
-        delim = SerialDevice.delim_inst
+        delim = GPIODevice.delim_inst
         for i, arg in enumerate(args):
             if type(arg) == list:
                 sep = [str(x) for x in arg]
@@ -90,22 +92,17 @@ class SerialDevice(object):
 
     def send(self, *args):
         cmd = self.extractCommand(args)
-        try:
-            print("Sending:   {0}".format(cmd))
-            logger.info("Sending:   {0}".format(cmd))
-            self.sendEvent(cmd)
-        except:
-            print(
-                "Debugging mode. Generated Command=[{}] has not been sent.".format(cmd))
+        print("Sending:   {0}".format(cmd))
+        logger.info("Sending:   {0}".format(cmd))
+        
+        # Hacky:
+        if cmd.find("FLUO")>=0:
+            val = int(cmd.split("+")[-1])
+            
+            if(val>0):
+                GPIO.setmode(GPIO.BCM)
+                GPIO.output(14, GPIO.HIGH)
+            else:
+                GPIO.output(14, GPIO.LOW)
+                
 
-
-    def request(self):
-        ans = self.requestEvent()
-        if ans and (ans != "BUSY"):
-            print("Receiving: {0}".format(ans))
-            return ans
-
-    def sendCommand(self, *args):
-        self.send(*args)
-        time.sleep(0.0025)
-        return self.request()
