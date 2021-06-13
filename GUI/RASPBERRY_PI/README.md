@@ -206,11 +206,11 @@ For downloading the files, first create two new directories:
 
     Reboot (`sudo reboot now`) as requested.
 * **Run** the second file	02-UC2_CreateEnvironment.sh by typing:
-```
-$ cd ~/UC2/SCRIPTS
-$ ./02-UC2_CreateEnvironment.sh
-```
-	This should give you:
+    ```
+    $ cd ~/UC2/SCRIPTS
+    $ ./02-UC2_CreateEnvironment.sh
+    ```
+    This should give you:
     <p align="center">
         <img src="./IMAGES/script03.jpg" width="400">
         <img src="./IMAGES/script04.jpg" width="400">
