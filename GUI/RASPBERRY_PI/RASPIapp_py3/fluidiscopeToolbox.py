@@ -43,6 +43,10 @@ else:
 if not (fg.my_dev_flag):
     if fg.i2c:
         from I2CDevice import I2CDevice
+    elif fg.is_serial:
+            # Quick hack to switch to USB
+        from SerialDevice import SerialDevice as I2CDevice
+
     from picamera.array import PiRGBArray
     from picamera.array import PiBayerArray
     from picamera import PiCamera
@@ -773,12 +777,12 @@ def take_image_atom(filename=None,fileformat='jpeg',rawCapture=None,rawFormat='r
     # Bayer only works in non-video mode
     if use_bayer == None:
         use_bayer = False if ((fg.camera.sensor_mode not in [2,3]) or use_video_port) else fg.config[camdict]['bayer']
-
-    
     if (filename is None) and rawCapture is None:
         rawCapture = PiBayerArray(fg.camera, fg.camera.resolution) if use_bayer else PiRGBArray(fg.camera, fg.camera.resolution)
         fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
     elif (filename is None) and rawCapture is not None: 
+        rawCapture.truncate()
+        rawCapture.seek(0)
         fg.camera.capture(rawCapture, format=rawFormat, use_video_port=use_video_port, bayer=use_bayer)
         logger.debug('Image captured into rawCapture with format {}.'.format(rawFormat))
     elif filename is not None and rawCapture is None:
@@ -1597,8 +1601,10 @@ def move_motor(self, instance, motor_sel, motor_stepsize=None):
     # manage progress-bar
     if not limit_reached:
 
-        # send per I2C (wired) or MQTT (wifi)
+        # send per I2C/serial (wired) or MQTT (wifi)
         if fg.i2c:
+            fg.motors.send(cmd, stepsize)
+        if fg.is_serial:
             fg.motors.send(cmd, stepsize)
         else:
             fg.motors[motor_sel].send(cmd, stepsize)

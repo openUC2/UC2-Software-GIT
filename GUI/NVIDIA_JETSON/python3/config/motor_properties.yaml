@@ -1,0 +1,35 @@
+active_motor: 2
+calibration_x_lastupdate: 19.12.2018
+calibration_x_max: 5000
+calibration_x_min: -5000
+calibration_x_pos: 633
+calibration_y_lastupdate: 19.12.2018
+calibration_y_max: 5000
+calibration_y_min: -5000
+calibration_y_pos: -91
+calibration_z_lastupdate: 19.12.2018
+calibration_z_max: 5000
+calibration_z_min: -5000
+calibration_z_pos: -32938
+change_amount: 1
+change_amount_big: 20
+conversion_factor_x: 1
+conversion_factor_y: 1
+conversion_factor_z: 1
+motor_dict:
+  0: DRVX
+  1: DRVY
+  2: DRVZ
+motor_names:
+  0: x
+  1: y
+  2: z
+standard_move_dist_x: 80
+standard_move_dist_y: 80
+standard_move_dist_z: 80
+standard_move_time_x: 0.1
+standard_move_time_y: 0.1
+standard_move_time_z: 0.1
+stepsize_x: 25
+stepsize_y: 15
+stepsize_z: 804

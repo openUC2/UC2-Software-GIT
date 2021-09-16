@@ -26,12 +26,12 @@
 #define NCOMMANDS 15
 #define MAX_MSG_LEN 40
 #define LED_BUILTIN 26
-#define LEDARR_PIN 23 //22
+#define LEDARR_PIN 12 //22
 
 // ----------------------------------------------------------------------------------------------------------------
 //                          Parameters
 // saved in strings, so that later (if implemented) e.g. easily changeable via Bluetooth -> to avoid connection errors
-std::string SETUP = "S001";
+std::string SETUP = "S013";
 std::string COMPONENT = "LAR01";
 std::string DEVICE = "ESP32";
 std::string DEVICENAME;
@@ -39,12 +39,12 @@ std::string CLIENTNAME;
 std::string SETUP_INFO;
 
 // ~~~~  Wifi  ~~~~
-const char *ssid = "WIFI_SSID";
-const char *password = "WIFI_PASS";
+const char *ssid = "Dr34ml3ss2.4";//"WIFI_SSID_HERE";
+const char *password = "K0nst4nt!n0p0l!s666";//"WIFI_Pass_HERE";
 WiFiClient espClient;
 PubSubClient client(espClient);
 // ~~~~  MQTT  ~~~~
-const char *MQTT_SERVER = "MQTT_SERVER_IP";
+const char *MQTT_SERVER = "192.168.178.53";//"MQTT_SERVER_IP";
 const char *MQTT_CLIENTID;
 const char *MQTT_USER;
 const char *MQTT_PASS = "23SPE";

@@ -23,7 +23,11 @@ import tifffile as tif
 # math
 import numpy as np
 from PIL import Image
-from scipy.ndimage import gaussian_filter
+try:
+    from scipy.ndimage import gaussian_filter
+except Exception as e:
+    print(str(e))
+
 
 
 if not fg.my_dev_flag:
@@ -82,11 +86,11 @@ def convert_Fraction_array(a):
         if isinstance(a,tuple):
             a = list(a)
             return_tuple = True
-        
+
         # convert entries to floats
         for m in range(len(a)):
             a[m] = convert_Fraction_atom(a[m])
-        
+
         # format back
         if return_tuple:
             a = tuple(a)
@@ -104,7 +108,7 @@ def convert_Fraction_atom(a):
     if isinstance(a,Fraction):
         a = a.numerator / a.denominator
         #logger.debug("Converted atom.")
-    
+
     # done?
     return a
 
@@ -127,7 +131,7 @@ def get_camstats(camera,printme=False):
     all_getter =  [s for s in dir(camera) if "_get_" in s]
     camProp = {}
     for m in all_getter:
-        try: 
+        try:
             camProp[m[5:]] = eval('camera.' + m + '()')
             camProp[m[5:]] = convert_Fraction_array(camProp[m[5:]])
         except:
@@ -145,15 +149,15 @@ def get_camstatsSorted(camStats, sel=None, just_subset=False, printme=False):
     Sorts resulting measurements so it can be used as a table.
     if just_subset==True, returns a list, else a dictionary.
 
-    Example: 
+    Example:
     sel=['awb_gains','iso','shutter_speed','analog_gain']
     get_camstatsSorted(camStats,sel)
 
     '''
     if just_subset and sel is not None:
         camStats_sorted = [[[s,a[s]] for s in a if s in sel] for a in camStats]
-    else: 
-    
+    else:
+
         # fill selection to all entries if not chosen
         sel = [m for m in camStats[0]] if sel is None else sel
         camStats_sorted = {}
@@ -161,7 +165,7 @@ def get_camstatsSorted(camStats, sel=None, just_subset=False, printme=False):
         # traverse time-points and collect datasets
         for m in sel:
             camStats_sorted[m] = [a[m] for a in camStats]
-    
+
         # print formatted
         if printme:
             for m in camStats_sorted:
@@ -177,8 +181,8 @@ def autofocus_afterclean(self, instance, camdict):
 
 def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
     '''
-        Prepares camera. 
-        Make sure that Autofocus-config entries are updated before running this. 
+        Prepares camera.
+        Make sure that Autofocus-config entries are updated before running this.
         Does not do anything if global camera-properties are already active OR if Autofocus already configured camera.
     '''
     # record existing configuration
@@ -194,35 +198,30 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
     # test conditions
     update_condition = not (fg.config[camdict]['camProp_defined'] or ([fg.camera.resolution[0],fg.camera.resolution[1]]==fg.config[camdict]['resolution'] and fg.camera.sensor_mode == fg.config[camdict]['sensor_mode']))
 
-    # if autofocus -> maybe measurement is running?
-    if camdict == 'cam_af' and fg.config['experiment']['active']: 
-        update_condition = False
+    # light a candle
+    fg.ledarr.send("NA+3")
+    fg.ledarr.send("RECT+0+0+8+8+1", 120,120,120)
+    sleep(fg.config['imaging']['speed'])
 
     # if parameters not globally fixed OR not yet fixed by Autofocus-routine
     if not fg.config[camdict]['camProp_use_global']:
         if update_condition:
-
-            # light a candle -> for now: no illumination if Ext is in methods
-            if not 'Ext' in fg.config['experiment']['active_methods']:
-                fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
-                sleep(fg.config['imaging']['speed'])
-
-            # set basic modes 
+            # set basic modes
             fg.camera.image_denoise = fg.config[camdict]['image_denoise']
             fg.camera.iso = fg.config[camdict]['iso']
-            fg.camera.meter_mode = fg.config[camdict]['meter_mode']   
+            fg.camera.meter_mode = fg.config[camdict]['meter_mode']
             fg.camera.sensor_mode = fg.config[camdict]['sensor_mode']
             fg.camera.resolution = fg.config[camdict]['resolution']
             fg.camera.video_denoise = fg.config[camdict]['video_denoise']
-            fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']     
+            fg.camera.video_stabilization = fg.config[camdict]['video_stabilization']
 
-            # Bayer-mode not possible with video-port => catch-error
+            # Bayer-mode not possible with video-port
             if fg.config[camdict]['use_video_port']:
                 fg.config[camdict]['bayer'] = False
 
             # wait for camera to settle on new setup
             sleep(0.5)
-            
+
             # prepare Buffer
             rawCapture = PiRGBArray(fg.camera, fg.camera.resolution)
 
@@ -237,35 +236,40 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
             fg.config[camdict]['digital_gain'] = camStats[-1]['digital_gain']
             fg.config[camdict]['framerate'] = camStats[-1]['framerate']
             fg.config[camdict]['shutter_speed'] = camStats[-1]['exposure_speed']
-            
+
             # overwrite camera parameters AND (therwith) FIX -> exposure_mode  must be last to be able to change shutter_speed properly
-            fg.camera.awb_mode = fg.config[camdict]['awb_mode']
+            if not fg.config[camdict]['awb_mode']:
+                fg.camera.awb_mode = 'off'
+            else:
+                fg.camera.awb_mode = fg.config[camdict]['awb_mode']
             fg.camera.awb_gains = fg.config[camdict]['awb_gains']
             fg.camera.exposure_compensation = fg.config[camdict]['exposure_compensation']
             fg.camera.framerate = fg.config[camdict]['framerate']
             fg.camera.shutter_speed = fg.config[camdict]['shutter_speed']
             sleep(1)
-            fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
+            if not fg.config[camdict]['exposure_mode']:
+                    fg.camera.exposure_mode = 'off'
+            else:
+                fg.camera.exposure_mode = fg.config[camdict]['exposure_mode']
             logger.debug('analog_gain={}, digital_gain={}, shutter_speed={}.'.format(fg.camera.analog_gain,fg.camera.digital_gain, fg.camera.shutter_speed))
+            # wait for camera_gains to settle
+            #sleep(1)
+            #import os
+            #fg.camera.capture(os.path.join(os.getcwd(),'data','test1'),format="jpeg", use_video_port=fg.config['cam']['use_video_port'], bayer=fg.config['cam']['bayer'])  # add 'rgb' to take raw images
 
-            # set True to use setting for future 
+            # set True to use setting for future
             fg.config[camdict]['camProp_defined'] = True
             fg.config['experiment']['active_camProp'] = camdict
             logger.debug("Camera preparation done for {}.".format(camdict))
-    
-            # turn the candle out
-            fg.ledarr.send("CLEAR")
-            fg.ledarr.send("CLEAR")
-
-        # not measure all parameters, but just set new sensor_mode and resolution
-        else:
-            fg.camera.sensor_mode = fg.config[camdict]['sensor_mode']
-            fg.camera.resolution = fg.config[camdict]['resolution']
 
     if rawCapture is None:
         logger.debug("Camprop_Use_Global=={} and update_condition=={}, but rawCapture didn't exist. Something odd is going on...".format(fg.config[camdict]['camProp_use_global'],update_condition))
         rawCapture = PiRGBArray(fg.camera, fg.config[camdict]['resolution'])
         logger.debug("Camera_Resolution=={}, rawCapture_resolution=={}, camera_sensor_mode=={}. Is this ok?".format(fg.camera.resolution,fg.config[camdict]['resolution'],fg.camera.sensor_mode))
+
+    # turn the candle out
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
 
     return camStats, rawCapture
 
@@ -280,14 +284,14 @@ def autofocus_setupCAM(camStats=None, camdict=None,rawCapture=None):
 
 def autofocus_routine(self, camStats=None):
     '''
-    Prepares parameters for scanning, sets everything up and calls scanning and calculation routines. 
+    Prepares parameters for scanning, sets everything up and calls scanning and calculation routines.
     Note:
         > scan_range: half of the total (symmetric) scanning distance
     '''
     # turn on light (so that Photon-flux can already be passively evaluated by Sensor)
-    fg.ledarr.send("RECT+3+3+2+2+1", 200,200,200)
+    fg.ledarr.send("RECT", [1, 1, 6, 6], 1, [120,120,120])
     #fio.update_matrix(self, ignore_NA=False, sync_only=False, pattern='CUS')
-    sleep(fg.config['experiment']['i2c_send_delay'])
+    sleep(0.2)
 
     # get parameters
     image_name_template, steps_coarse_dist, steps_coarse_nbr, scanrange_coarse, steps_fine_dist, steps_fine_nbr, scanrange_fine, pos_start, pos_max, pos_min, smethod, max_steps, imres, motor, save_im, NIterTotal, channel, use_scipy = autofocus_getParameters(self)
@@ -298,8 +302,6 @@ def autofocus_routine(self, camStats=None):
 
     # initialize camera-properties and create Image-Buffer
     camStats = [] if camStats is None else camStats
-    if fg.config['experiment']['active']:
-        camera_bak = [fg.camera.sensor_mode, fg.camera.resolution]
     camStats, rawCapture = autofocus_setupCAM(camStats,camdict='cam_af')
 
     # leave light on
@@ -318,7 +320,7 @@ def autofocus_routine(self, camStats=None):
 
     # move to new center with z motor
     wait_time, pos_now  = autofocus_move_motor(self,stepsize=step_2opt_coarse,motor=motor,pos_now=pos_coarse,wait_time=wait_time)
-    
+
     if not fg.config['autofocus']['use_coarse_only']:
 
         # fine scan around new position ->
@@ -332,14 +334,9 @@ def autofocus_routine(self, camStats=None):
 
         # move to new center with z motor AND clear LED-array
         wait_time, pos_now  = autofocus_move_motor(self,stepsize=step_2opt_fine,motor=motor,pos_now=pos_fine,wait_time=wait_time)
-    
-    fg.ledarr.send("CLEAR")
-    fg.ledarr.send("CLEAR")
 
-    # clear camera to former properties
-    if fg.config['experiment']['active']:
-        fg.camera.sensor_mode = camera_bak[0]
-        fg.camera.resolution = camera_bak[1]
+    fg.ledarr.send("CLEAR")
+    fg.ledarr.send("CLEAR")
 
     # done?
     return True
@@ -347,7 +344,7 @@ def autofocus_routine(self, camStats=None):
 
 def get_distvec(a, b):
     '''
-    Calculates signed distance two positions, where direction points from a to b. 
+    Calculates signed distance two positions, where direction points from a to b.
     '''
     return b - a
 
@@ -355,7 +352,7 @@ def get_distvec(a, b):
 
 def autofocus_getParameters(self):
     '''
-    Assignes variables to dict-entries for easier readability. 
+    Assignes variables to dict-entries for easier readability.
     '''
     # generate image name
     image_name_template = autofocus_imagename_gen(self)
@@ -365,14 +362,14 @@ def autofocus_getParameters(self):
 
     # set parameters
     steps_coarse_dist = fg.config['autofocus']['step_dist_coarse']
-    steps_coarse_nbr = fg.config['autofocus']['steps_coarse'] 
+    steps_coarse_nbr = fg.config['autofocus']['steps_coarse']
     steps_fine_dist = fg.config['autofocus']['step_dist_fine']
     steps_fine_nbr = fg.config['autofocus']['steps_fine']
     pos_start = fg.config['motor']['calibration_z_pos']
     pos_max = fg.config['motor']['calibration_z_max']
     pos_min = fg.config['motor']['calibration_z_min']
     smethod = fg.config['autofocus']['technique']
-    max_steps = fg.config['autofocus']['max_steps'] 
+    max_steps = fg.config['autofocus']['max_steps']
     fg.config['cam_af']['resolution'] = fg.config['cam']['sensor_mode_size'][fg.config['cam_af']['sensor_mode']]
     imres = fg.config['cam_af']['resolution']
     motor = fg.config['autofocus']['motor']
@@ -393,7 +390,7 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
 
     :scan_methods:      0=slow Filter-based (DEFAULT), 1=fast Filter-based, 2=fast stream-size reading, 3=simulation
 
-    TODO: 
+    TODO:
         1) provide iteration limit NIter
     '''
     logger.debug("Autofocus ---> {} - Scanning.".format(status))
@@ -420,7 +417,7 @@ def autofocus_scan(self, names, rawCapture, smethod, pos_start, pos_min, pos_max
         # the loop
         sharpness, tproc, tim, pos_now, poslist, wait_time, m,rawCapture  = autofocus_image(self=self,rawCapture=rawCapture,sharpness=sharpness,smethod=smethod,motor=motor,direction=direction,pos_now=pos_now,poslist=poslist,scan_range=scan_range,steps_dist=steps_dist,steps_nbr=steps_nbr,m=m,n=n,NIterTotal=NIterTotal,wait_time=wait_time,timstart=timstart,tim=tim,tproc=tproc,save_name=save_name,status=status,save_im=save_im,upd_val=upd_val)
 
-        # iterate the stack inversely 
+        # iterate the stack inversely
         m=1
         direction *= -1
     ttotal = time() - ttotal
@@ -476,7 +473,7 @@ def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_now,po
             logger.debug("Starting-image and measure taken for m==0 in first iteration.")
         elif m == steps_nbr:
             poslist.append(pos_now)
-        else: 
+        else:
             # move motor 1 step up
             wait_time, pos_now  = autofocus_move_motor(self,stepsize=direction*steps_dist,motor=motor,pos_now=pos_now,wait_time=wait_time)
             poslist.append(pos_now)
@@ -490,7 +487,7 @@ def autofocus_image(self,rawCapture,sharpness,smethod,motor,direction,pos_now,po
         m += 1
         if m > steps_nbr:
             break
-    
+
     return sharpness, tproc, tim, pos_now, poslist, wait_time, m, rawCapture
 
 
@@ -523,7 +520,7 @@ def autofocus_getMeasure(im, sharpness, tproc):
         # simulates sharpness stack and tests performance
         pass
     else:
-        sharpness.append(fc.diff_tenengrad(np.reshape(im, [im.shape[-1], im.shape[-2], im.shape[-3]])))    
+        sharpness.append(fc.diff_tenengrad(np.reshape(im, [im.shape[-1], im.shape[-2], im.shape[-3]])))
     tproc.append(time() - tprocstart)
 
     return sharpness, tproc
@@ -550,15 +547,15 @@ def autofocus_update_stacks(imqual_zpos, imqual_stack, imqualh):
 
 def autofocus_move_motor(self,stepsize,motor,pos_now,wait_time=None):
     '''
-    Moves motor accordingly. 
+    Moves motor accordingly.
     '''
-    
+
     # dict
     letter = ['x','y','z']
     name = ['DRVX','DRVY','DRVZ']
 
     # calculate proper waiting time
-    if wait_time is None: 
+    if wait_time is None:
         wait_time = fg.config['motor']['standard_move_time_'+letter[motor]] * \
             abs(stepsize) / fg.config['motor']['standard_move_dist_'+letter[motor]]
 
@@ -607,7 +604,7 @@ def autofocus_getRange(scanrange, pos_start, pos_min, pos_max):
         # select smaller distance
         scanrange = scan_limits[1] if (scan_limits[0] >
                                        scan_limits[1]) else scan_limits[0]
-        scanrange = np.array(scanrange, dtype=int) 
+        scanrange = np.array(scanrange, dtype=int)
     else:
         # check limits to not go over boundaries for motors
         if (pos_start + scanrange//2 > pos_max):
@@ -626,8 +623,8 @@ def autofocus_getSteps(scan_range, steps, step_method=0):
 
 def autofocus_plotOptSearch(x,y,yfit,xrss,yfit_rss,smethod,name_im,nbr_dir,nbr_iter,status):
     '''
-    Plots fit for optimum search. 
-    
+    Plots fit for optimum search.
+
     '''
     import matplotlib.pyplot as plt
     fig1 = plt.figure()
@@ -643,13 +640,13 @@ def autofocus_plotOptSearch(x,y,yfit,xrss,yfit_rss,smethod,name_im,nbr_dir,nbr_i
     logger.debug("Store Autofocus-Sharpness-Fit to {}".format(saven))
 
 
-def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_name, status='coarse', plotme=True, storeme=True, channel=1, use_scipy=False): 
+def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_name, status='coarse', plotme=True, storeme=True, channel=1, use_scipy=False):
     '''
     Calculates optimum position given input parameters.
-    Structure of s=Sharpness_list: 
+    Structure of s=Sharpness_list:
         s[0] = reference image
         s[1:steps] = 1st direction scan
-        s[steps:2*steps] = 2nd direction scan etc for amount of NIterTotal 
+        s[steps:2*steps] = 2nd direction scan etc for amount of NIterTotal
     poslist only provided for printme-option to actually evaluate positions.
     '''
     xlabel = 'motor-Pos'
@@ -694,7 +691,7 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
             res.append(coeff)
 
             # save out dictionary:
-            if storeme:    
+            if storeme:
                 autofocus_res = {'z_Pos': x,
                                 'sharpness': y,
                                 'iteration': m,
@@ -731,17 +728,17 @@ def autofocus_findOptimum(s, offset, smethod, NIterTotal, steps, poslist, save_n
                 if len(res[m]) == 3:
                     resh.append(res[m][1])
                 else:
-                    if not yrssl[m] == []: 
+                    if not yrssl[m] == []:
                         resh.append(xrssl[m][np.argmax(yrssl[m])])
-            
+
             # exclude values with too big difference
             try:
                 mymask = [(abs(m / resh[0] - 1) < 0.05) for m in resh]
                 pos_max = int(np.mean(resh[m]))
-            except Exception as e: 
+            except Exception as e:
                 logger.warn(e)
                 pos_max = int(resh[0])
-    else: 
+    else:
         try:
             pos_max = int(res[1,1])
         except:
@@ -782,7 +779,7 @@ def autofocus_curveFit(x, y, p0, use_scipy):
     if p0 is None:
         p0 = (1., np.mean(x), 3.) # A, mu, sigma
         print(p0)
-    
+
     # whether to use scipy
     if use_scipy:
         from scipy.optimize import curve_fit
@@ -854,7 +851,7 @@ def read_stack(file_names):
 
 def autofocus_imagename_gen(self):
     '''
-    Creates names for autofocus routine. 
+    Creates names for autofocus routine.
     '''
 
     # CLONE from main.py "start_experiment"
@@ -887,13 +884,13 @@ def simulate_data_stack():
 
 def notify_deprecation_decorator(func):
     def func_wrapper(*args,**kwargs):
-        logger.debug('<DEPRECATED> Function: {} called.'.format(func.__name__))    
+        logger.debug('<DEPRECATED> Function: {} called.'.format(func.__name__))
         return func(*args,**kwargs)
     return func_wrapper
 
 @notify_deprecation_decorator
 def find_focus(names, method, imqual_zpos, imqual_stack, myc=0, max_iter=2):
-    
+
     xunit = 'pix'
     method = 'Tenengrad'
     # test gaussian -> from: https://stackoverflow.com/a/11507723

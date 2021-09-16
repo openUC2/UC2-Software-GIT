@@ -1,4 +1,4 @@
-# Setting up Raspberry PI 
+# Setting up Raspberry PI
 
 ## Outline
 * Install and prepare Raspbian
@@ -206,11 +206,11 @@ For downloading the files, first create two new directories:
 
     Reboot (`sudo reboot now`) as requested.
 * **Run** the second file	02-UC2_CreateEnvironment.sh by typing:
-```
-$ cd ~/UC2/SCRIPTS
-$ ./02-UC2_CreateEnvironment.sh
-```
-	This should give you:
+    ```
+    $ cd ~/UC2/SCRIPTS
+    $ ./02-UC2_CreateEnvironment.sh
+    ```
+    This should give you:
     <p align="center">
         <img src="./IMAGES/script03.jpg" width="400">
         <img src="./IMAGES/script04.jpg" width="400">
@@ -444,7 +444,7 @@ On some RasPi<-->Camera combinations you might run out of GPU-memory if you want
     nano ~/bin/gpumem
     chmod +x ~/bin/gpumem
     ```
-    and fill it with 
+    and fill it with
     ```
     #!/bin/bask
     sudo /opt/vc/bin/vcdbg relo stats
@@ -455,11 +455,11 @@ Now you can call **gpumem** and compare to the displayed images
 |---|---|---|
 |![](./IMAGES/fix01_gpumem-01.jpg)|![](./IMAGES/fix01_gpumem-02.jpg)|![](./IMAGES/fix01_gpumem-03.jpg)|
 
-To fix this, in the file run the command "sudo nano /boot/config.txt" and change (or add) 
+To fix this, in the file run the command "sudo nano /boot/config.txt" and change (or add)
 ```
 gpu_mem = 256
 ```
-Done. 
+Done.
 ## Sharing the finished (prepared) Image
 For sharing your prepared SDcard (e.g. to save a lot of time setting up more than 1 RasPi) Shrinking the size of the main partition (/dev/root) to make swapping between SDcards of different size (even if they are claiming to be 16GB the final size might differ by 1-500mb) or online easier is recommended. For our main-partition this cannot be done in-place (=while Raspbian is running), because the partition to be resized has to be unmounted. Hence, we suppose to using a boot media (e.g. USB-drive) with GPARTED on it.
 1. download [TUXBOOT](https://tuxboot.org/download/)

@@ -29,9 +29,9 @@ imaging_method_dic:
 imaging_num: 1
 interval: 5
 is_autofocus: false
-last_expt_date: '20200716'
+last_expt_date: '20210208'
 last_expt_num: 6
-path_last_expt: /home/uc2/UC2/UC2-GUI/data/20200716/expt_006
+path_last_expt: /home/uc2/UC2/UC2-GUI-Serial/data/20210208/expt_001
 snap_num: 2
 success: false
 take_raw: 1

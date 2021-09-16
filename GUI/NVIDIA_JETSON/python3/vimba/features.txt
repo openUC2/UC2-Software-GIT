@@ -1,0 +1,977 @@
+///////////////////////////////////////
+/// Vimba API List Features Example ///
+///////////////////////////////////////
+
+///////////////////////////////////////
+/// Vimba API List Features Example ///
+///////////////////////////////////////
+
+Print all features of camera 'DEV_1AB22C000D1B':
+/// Feature name   : AcquisitionFrameCount
+/// Display name   : Acquisition Frame Count
+/// Tooltip        : Number of frames to acquire in MultiFrame Acquisition mode.
+/// Description    : Number of frames to acquire in MultiFrame Acquisition mode.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : AcquisitionFrameRate
+/// Display name   : Acquisition Frame Rate
+/// Tooltip        : Controls the acquisition rate (in Hertz) at which the frames are captured.
+/// Description    : Controls the acquisition rate (in Hertz) at which the frames are captured.
+/// SFNC Namespace : Standard
+/// Unit           : Hz
+/// Value          : 24.993913650512695
+
+/// Feature name   : AcquisitionFrameRateEnable
+/// Display name   : Acquisition Frame Rate Enable
+/// Tooltip        : Controls if the AcquisitionFrameRate feature is used to control the acquisition rate.
+/// Description    : Controls if the AcquisitionFrameRate feature is writable and used to control the acquisition rate. Otherwise, the acquisition rate is implicitly controlled by the combination of other features like ExposureTime, etc...
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : True
+
+/// Feature name   : AcquisitionFrameRateMode
+/// Display name   : Acquisition Frame Rate Mode
+/// Tooltip        : Defines the interconnection between the AcquisitionFrameRate affecting features.
+/// Description    : Defines the interconnection between the AcquisitionFrameRate affecting features.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Basic
+
+/// Feature name   : AcquisitionMode
+/// Display name   : Acquisition Mode
+/// Tooltip        : Sets the acquisition mode of the device.
+/// Description    : Sets the acquisition mode of the device. It defines mainly the number of frames to capture during an acquisition and the way the acquisition stops.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Continuous
+
+/// Feature name   : AcquisitionStart
+/// Display name   : Acquisition Start
+/// Tooltip        : Starts the Acquisition of the device.
+/// Description    : Starts the Acquisition of the device. The number of frames captured is specified by AcquisitionMode.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : AcquisitionStatus
+/// Display name   : Acquisition Status
+/// Tooltip        : Reads the state of the internal acquisition signal selected using AcquisitionStatusSelector.
+/// Description    : Reads the state of the internal acquisition signal selected using AcquisitionStatusSelector.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : False
+
+/// Feature name   : AcquisitionStatusSelector
+/// Display name   : Acquisition Status Selector
+/// Tooltip        : Selects the internal acquisition signal to read using AcquisitionStatus.
+/// Description    : Selects the internal acquisition signal to read using AcquisitionStatus.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : AcquisitionActive
+
+/// Feature name   : AcquisitionStop
+/// Display name   : Acquisition Stop
+/// Tooltip        : Stops the Acquisition of the device at the end of the current Frame.
+/// Description    : Stops the Acquisition of the device at the end of the current Frame. It is mainly used when AcquisitionMode is Continuous but can be used in any acquisition mode.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : AutoModeRegionHeight
+/// Display name   : Auto Mode Region Height
+/// Tooltip        : Defines the height of the window used to measure values for auto functions
+/// Description    : Defines the height of the window used to measure values for auto functions
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : AutoModeRegionOffsetX
+/// Display name   : Auto Mode Region OffsetX
+/// Tooltip        : Defines the horizontal position of the window used to measure the actual value for the auto function
+/// Description    : Defines the horizontal position of the window used to measure the actual value for the auto function
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : AutoModeRegionOffsetY
+/// Display name   : Auto Mode Region OffsetY
+/// Tooltip        : Defines the vertical position of the window used to measure the actual value for the auto function.
+/// Description    : Defines the vertical position of the window used to measure the actual value for the auto function.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : AutoModeRegionSelector
+/// Display name   : Auto Mode Region Selector
+/// Tooltip        : Selects the Auto Mode Region to configure.
+/// Description    : Selects the Auto Mode Region to configure.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : AutoModeRegion1
+
+/// Feature name   : AutoModeRegionWidth
+/// Display name   : Auto Mode Region Width
+/// Tooltip        : Defines the width of the window used to measure the actual value for the auto function
+/// Description    : Defines the width of the window used to measure the actual value for the auto function
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : BlackLevel
+/// Display name   : Black Level
+/// Tooltip        : Controls the analog black level as an absolute physical value.
+/// Description    : Controls the analog black level as an absolute physical value. This represents a DC offset applied to the video signal.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0.0
+
+/// Feature name   : BlackLevelSelector
+/// Display name   : Black Level Selector
+/// Tooltip        : Selects which Black Level is controlled by the various Black Level features.
+/// Description    : Selects which Black Level is controlled by the various Black Level features.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : All
+
+/// Feature name   : ContrastBrightLimit
+/// Display name   : Contrast Bright Limit
+/// Tooltip        : Contrast Bright Limit
+/// Description    : ContrastBrightLimit.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 4095
+
+/// Feature name   : ContrastConfigurationMode
+/// Display name   : Contrast Configuration Mode
+/// Tooltip        : Sets the mode used to set configuration mode for contrast enhancement.
+/// Description    : Sets the mode used to set configuration mode for contrast enhancement.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Expert
+
+/// Feature name   : ContrastDarkLimit
+/// Display name   : Contrast Dark Limit
+/// Tooltip        : Contrast Dark Limit
+/// Description    : ContrastDarkLimit.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : ContrastEnable
+/// Display name   : Contrast Enable
+/// Tooltip        : Enable Contrast Enhancement feature
+/// Description    : Enable Contrast Enhancement feature.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : False
+
+/// Feature name   : ContrastShape
+/// Display name   : Contrast Shape
+/// Tooltip        : Contrast Shape
+/// Description    : ContrastShape.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 4
+
+/// Feature name   : CorrectionDataSize
+/// Display name   : Correction Data Size
+/// Tooltip        : Defines the current size of the correction data that is stored inside the camera.
+/// Description    : Defines the current size of the correction data that is stored inside the camera.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 10368
+
+/// Feature name   : CorrectionEntryType
+/// Display name   : Correction Entry Type
+/// Tooltip        : Defines the Entry Type (Correction Type specific variant).
+/// Description    : Defines the Entry Type (Correction Type specific variant).
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 1
+
+/// Feature name   : CorrectionMode
+/// Display name   : Correction Mode
+/// Tooltip        : Controls if the selected type of Correction is active.
+/// Description    : Controls if the selected type of Correction is active.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : On
+
+/// Feature name   : CorrectionSelector
+/// Display name   : Correction Selector
+/// Tooltip        : Selects the type of Correction to configure.
+/// Description    : Selects the type of Correction to configure.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : DefectPixelCorrection
+
+/// Feature name   : CorrectionSet
+/// Display name   : Correction Set
+/// Tooltip        : Defines the Correction Set to be used currently.
+/// Description    : Defines the Correction Set to be used currently.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Preset
+
+/// Feature name   : CorrectionSetDefault
+/// Display name   : Correction Set Default
+/// Tooltip        : Defines the default Correction Set used when the device is reset.
+/// Description    : Defines the default Correction Set used when the device is reset.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Preset
+
+/// Feature name   : DeviceFamilyName
+/// Display name   : Device Family Name
+/// Tooltip        : Identifier of the product family of the device.
+/// Description    : Identifier of the product family of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : ALVIUM
+
+/// Feature name   : DeviceFirmwareID
+/// Display name   : Device Firmware ID
+/// Tooltip        : Device firmware ID.
+/// Description    : Device firmware ID.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 44-0010102C
+
+/// Feature name   : DeviceFirmwareIDSelector
+/// Display name   : Device Firmware ID Selector
+/// Tooltip        : Selects the DeviceFirmwareID to read.
+/// Description    : Selects the DeviceFirmwareID to read.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Current
+
+/// Feature name   : DeviceFirmwareVersion
+/// Display name   : Device Firmware Version
+/// Tooltip        : Version of the firmware in the device.
+/// Description    : Version of the firmware in the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1.3.28531
+
+/// Feature name   : DeviceFirmwareVersionSelector
+/// Display name   : Device Firmware Version Selector
+/// Tooltip        : Selects the DeviceFirmwareVersion to read.
+/// Description    : Selects the DeviceFirmwareVersion to read.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Current
+
+/// Feature name   : DeviceGenCPVersionMajor
+/// Display name   : Device Gen CP Version Major
+/// Tooltip        : Major version of the GenCP protocol supported by the device.
+/// Description    : Major version of the GenCP protocol supported by the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1
+
+/// Feature name   : DeviceGenCPVersionMinor
+/// Display name   : Device Gen CP Version Minor
+/// Tooltip        : Minor version of the GenCP protocol supported by the device.
+/// Description    : Minor version of the GenCP protocol supported by the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : DeviceIndicatorLuminance
+/// Display name   : Device Indicator Luminance
+/// Tooltip        : Controls the luminance of the indicators (such as LEDs) showing the status of the Device.
+/// Description    : Controls the luminance of the indicators (such as LEDs) showing the status of the Device.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 10
+
+/// Feature name   : DeviceIndicatorMode
+/// Display name   : Device Indicator Mode
+/// Tooltip        : Controls the behavior of the indicators (such as LEDs) showing the status of the Device.
+/// Description    : Controls the behavior of the indicators (such as LEDs) showing the status of the Device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Active
+
+/// Feature name   : DeviceLinkSpeed
+/// Display name   : Device Link Speed
+/// Tooltip        : Indicates the speed of transmission negotiated on the specified Link.
+/// Description    : Indicates the speed of transmission negotiated and represents the total speed of all the connections of the specified Link.
+/// SFNC Namespace : Standard
+/// Unit           : Bps
+/// Value          : 450000000
+
+/// Feature name   : DeviceLinkThroughputLimit
+/// Display name   : Device Link Throughput Limit
+/// Tooltip        : Limits the maximum bandwidth of the data that will be streamed out by the device on the selected Link.
+/// Description    : Limits the maximum bandwidth of the data that will be streamed out by the device on the selected Link. If necessary, delays will be uniformly inserted between transport layer packets in order to control the peak bandwidth.
+/// SFNC Namespace : Standard
+/// Unit           : Bps
+/// Value          : 200000000
+
+/// Feature name   : DeviceLinkThroughputLimitMode
+/// Display name   : Device Link Throughput Limit Mode
+/// Tooltip        : Controls if the DeviceLinkThroughputLimit is active.
+/// Description    : Controls if the DeviceLinkThroughputLimit is active. When disabled, lower level TL specific features are expected to control the throughput. When enabled, DeviceLinkThroughputLimit controls the overall throughput.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : On
+
+/// Feature name   : DeviceManufacturerInfo
+/// Display name   : Device Manufacturer Info
+/// Tooltip        : Manufacturer information about the device.
+/// Description    : Manufacturer information about the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0-E9-0-263977-0-0
+
+/// Feature name   : DeviceModelName
+/// Display name   : Device Model Name
+/// Tooltip        : Model of the device.
+/// Description    : Model of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1800 U-501m NIR
+
+/// Feature name   : DeviceReset
+/// Display name   : Device Reset
+/// Tooltip        : Resets the device to its power up state.
+/// Description    : Resets the device to its power up state. After reset, the device must be rediscovered.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : DeviceSFNCVersionMajor
+/// Display name   : Device SFNC Version Major
+/// Tooltip        : Major version of the Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// Description    : Major version of the Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 2
+
+/// Feature name   : DeviceSFNCVersionMinor
+/// Display name   : Device SFNC Version Minor
+/// Tooltip        : Minor version of the Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// Description    : Minor version of the Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 2
+
+/// Feature name   : DeviceSFNCVersionSubMinor
+/// Display name   : Device SFNC Version Sub Minor
+/// Tooltip        : Sub minor version of Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// Description    : Sub minor version of Standard Features Naming Convention that was used to create the device`s GenICam XML.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : DeviceScanType
+/// Display name   : Device Scan Type
+/// Tooltip        : Scan type of the sensor of the device.
+/// Description    : Scan type of the sensor of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Areascan
+
+/// Feature name   : DeviceSerialNumber
+/// Display name   : Device Serial Number
+/// Tooltip        : Device`s serial number.
+/// Description    : Device`s serial number. This string is a unique identifier of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 002L7
+
+/// Feature name   : DeviceTemperature
+/// Display name   : Device Temperature
+/// Tooltip        : Device temperature in degrees Celsius (C).
+/// Description    : Device temperature in degrees Celsius (C). It is measured at the location selected by DeviceTemperatureSelector.
+/// SFNC Namespace : Standard
+/// Unit           : C
+/// Value          : 47.0
+
+/// Feature name   : DeviceTemperatureSelector
+/// Display name   : Device Temperature Selector
+/// Tooltip        : Selects the location within the device, where the temperature will be measured.
+/// Description    : Selects the location within the device, where the temperature will be measured.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Mainboard
+
+/// Feature name   : DeviceUserID
+/// Display name   : Device User ID
+/// Tooltip        : User-programmable device identifier.
+/// Description    : User-programmable device identifier.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 
+
+/// Feature name   : DeviceVendorName
+/// Display name   : Device Vendor Name
+/// Tooltip        : Name of the manufacturer of the device.
+/// Description    : Name of the manufacturer of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Allied Vision
+
+/// Feature name   : DeviceVersion
+/// Display name   : Device Version
+/// Tooltip        : Version of the device.
+/// Description    : Version of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 14613
+
+/// Feature name   : ExposureAuto
+/// Display name   : Exposure Auto
+/// Tooltip        : Sets the auto exposure mode.
+/// Description    : Sets the auto exposure mode.The output of the auto exposure function affects the whole image
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Off
+
+/// Feature name   : ExposureAutoMax
+/// Display name   : Exposure Auto Max
+/// Tooltip        : Maximum for auto exposure control value
+/// Description    : Maximum for auto exposure control value.The output of the auto exposure function affects the whole image
+/// SFNC Namespace : Custom
+/// Unit           : µs
+/// Value          : 481193.8125
+
+/// Feature name   : ExposureAutoMin
+/// Display name   : Exposure Auto Min
+/// Tooltip        : Minimum for auto exposure control value.
+/// Description    : Minimum for auto exposure control value.The output of the auto exposure function affects the whole image.
+/// SFNC Namespace : Custom
+/// Unit           : µs
+/// Value          : 12.956999778747559
+
+/// Feature name   : ExposureMode
+/// Display name   : Exposure Mode
+/// Tooltip        : Sets the operation mode of the Exposure (or shutter).
+/// Description    : Sets the operation mode of the Exposure (or shutter).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Timed
+
+/// Feature name   : ExposureTime
+/// Display name   : Exposure Time
+/// Tooltip        : Sets the Exposure time [µs] when ExposureMode is Timed and ExposureAuto is Off.
+/// Description    : Sets the Exposure time [µs] when ExposureMode is Timed and ExposureAuto is Off. This controls the duration where the photosensitive cells are exposed to light.
+/// SFNC Namespace : Standard
+/// Unit           : µs
+/// Value          : 21559.65234375
+
+/// Feature name   : FileAccessBuffer
+/// Display name   : File Access Buffer
+/// Tooltip        : Defines the intermediate access buffer that allows the exchange of data between the device file storage and the application.
+/// Description    : Defines the intermediate access buffer that allows the exchange of data between the device file storage and the application.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : FileAccessLength
+/// Display name   : File Access Length
+/// Tooltip        : Controls the Length of the mapping between the device file storage and the FileAccessBuffer.
+/// Description    : Controls the Length of the mapping between the device file storage and the FileAccessBuffer.
+/// SFNC Namespace : Standard
+/// Unit           : B
+/// Value          : None
+
+/// Feature name   : FileAccessOffset
+/// Display name   : File Access Offset
+/// Tooltip        : Controls the Offset of the mapping between the device file storage and the FileAccessBuffer.
+/// Description    : Controls the Offset of the mapping between the device file storage and the FileAccessBuffer.
+/// SFNC Namespace : Standard
+/// Unit           : B
+/// Value          : None
+
+/// Feature name   : FileOpenMode
+/// Display name   : File Open Mode
+/// Tooltip        : Selects the access mode in which a file is opened in the device.
+/// Description    : Selects the access mode in which a file is opened in the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Read
+
+/// Feature name   : FileOperationExecute
+/// Display name   : File Operation Execute
+/// Tooltip        : Executes the operation selected by FileOperationSelector on the selected file.
+/// Description    : Executes the operation selected by FileOperationSelector on the selected file.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : FileOperationResult
+/// Display name   : File Operation Result
+/// Tooltip        : Represents the file operation result.
+/// Description    : Represents the file operation result. For Read or Write operations, the number of successfully read/written bytes is returned.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : FileOperationSelector
+/// Display name   : File Operation Selector
+/// Tooltip        : Selects the target operation for the selected file in the device.
+/// Description    : Selects the target operation for the selected file in the device. This Operation is executed when the FileOperationExecute feature is called.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Open
+
+/// Feature name   : FileOperationStatus
+/// Display name   : File Operation Status
+/// Tooltip        : Represents the file operation execution status.
+/// Description    : Represents the file operation execution status.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Success
+
+/// Feature name   : FileProcessStatus
+/// Display name   : File Process Status
+/// Tooltip        : Represents an additional process status.
+/// Description    : Represents an additional process status.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : FileSelector
+/// Display name   : File Selector
+/// Tooltip        : Selects the target file in the device.
+/// Description    : Selects the target file in the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : UserData
+
+/// Feature name   : FileSize
+/// Display name   : File Size
+/// Tooltip        : Represents the size of the selected file in bytes.
+/// Description    : Represents the size of the selected file in bytes.
+/// SFNC Namespace : Standard
+/// Unit           : B
+/// Value          : 0
+
+/// Feature name   : FileStatus
+/// Display name   : File Status
+/// Tooltip        : Represents the status of the selected file.
+/// Description    : Represents the status of the selected file. Allied Vision feature.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Closed
+
+/// Feature name   : Gain
+/// Display name   : Gain
+/// Tooltip        : Controls the selected gain [dB] as an absolute physical value.
+/// Description    : Controls the selected gain [dB] as an absolute physical value. This is an amplification factor applied to the video signal.
+/// SFNC Namespace : Standard
+/// Unit           : dB
+/// Value          : 18.0
+
+/// Feature name   : GainAuto
+/// Display name   : Gain Auto
+/// Tooltip        : Sets the auto gain mode.
+/// Description    : Sets the auto gain mode.The output of the auto gain function affects the whole image
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Off
+
+/// Feature name   : GainAutoMax
+/// Display name   : Gain Auto Max
+/// Tooltip        : Maximum for auto gain control value
+/// Description    : Maximum for auto gain control value.The output of the auto gain function affects the whole image
+/// SFNC Namespace : Custom
+/// Unit           : dB
+/// Value          : 24.18470001220703
+
+/// Feature name   : GainAutoMin
+/// Display name   : Gain Auto Min
+/// Tooltip        : Minimum for auto gain control value.
+/// Description    : Minimum for auto gain control value.The output of the auto gain function affects the whole image.
+/// SFNC Namespace : Custom
+/// Unit           : dB
+/// Value          : 0.0
+
+/// Feature name   : GainSelector
+/// Display name   : Gain Selector
+/// Tooltip        : Selects which Gain is controlled by the various Gain features.
+/// Description    : Selects which Gain is controlled by the various Gain features.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : All
+
+/// Feature name   : Gamma
+/// Display name   : Gamma
+/// Tooltip        : Controls the gamma correction of pixel intensity.
+/// Description    : Controls the gamma correction of pixel intensity. This is typically used to compensate for non-linearity of the display system (such as CRT).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1.0
+
+/// Feature name   : Height
+/// Display name   : Height
+/// Tooltip        : Height of the image provided by the device (in pixels).
+/// Description    : Height of the image provided by the device (in pixels).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1944
+
+/// Feature name   : HeightMax
+/// Display name   : Height Max
+/// Tooltip        : Maximum height of the image (in pixels).
+/// Description    : Maximum height of the image (in pixels). This dimension is calculated after vertical binning, decimation or any other function changing the vertical dimension of the image
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1944
+
+/// Feature name   : IntensityAutoPrecedenceMode
+/// Display name   : Intensity Auto Precedence
+/// Tooltip        : Selects the Precedence for Intensity Controller
+/// Description    : Selects the Precedence of Intensity Controller
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Minimizenoise
+
+/// Feature name   : IntensityControllerAlgorithm
+/// Display name   : Intensity Controller Algorithm
+/// Tooltip        : Algorithm determining how the histogram is used to determine the current intensity value.
+/// Description    : Algorithm determining how the histogram is used to determine the current intensity value.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : Mean
+
+/// Feature name   : IntensityControllerOutliersBright
+/// Display name   : Intensity Controller Outliers Bright
+/// Tooltip        : Defines the number of pixels from the top of the distribution to be ignored.
+/// Description    : Defines the number of pixels from the top of the distribution to be ignored.
+/// SFNC Namespace : Custom
+/// Unit           : Percentage
+/// Value          : 0.0
+
+/// Feature name   : IntensityControllerOutliersDark
+/// Display name   : Intensity Controller Outliers Dark
+/// Tooltip        : Defines the number of pixels from the bottom of the distribution to be ignored
+/// Description    : Defines the number of pixels from the bottom of the distribution to be ignored
+/// SFNC Namespace : Custom
+/// Unit           : Percentage
+/// Value          : 0.0
+
+/// Feature name   : IntensityControllerRate
+/// Display name   : Intensity Controller Rate
+/// Tooltip        : The rate at which the controller should compute an intensity value. This rate also defines the period where the associated auto functions change their control value.
+/// Description    : The rate at which the controller should compute an intensity value. This rate also defines the period where the associated auto functions change their control value.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 100
+
+/// Feature name   : IntensityControllerRegion
+/// Display name   : Intensity Controller Region
+/// Tooltip        : The subregion of the image where the intensity controller operates on.
+/// Description    : The subregion of the image where the intensity controller operates on.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : FullImage
+
+/// Feature name   : IntensityControllerSelector
+/// Display name   : Intensity Controller Selector
+/// Tooltip        : Selects the Intensity controller to configure.
+/// Description    : Selects the Intensity controller to configure.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : IntensityController1
+
+/// Feature name   : IntensityControllerTarget
+/// Display name   : Intensity Controller Target
+/// Tooltip        : Target intensity value for auto intensity control
+/// Description    : Target intensity value for auto intensity control (using ExposureTime, Gain, and Iris as configured).
+/// SFNC Namespace : Custom
+/// Unit           : Percentage
+/// Value          : 50.0
+
+/// Feature name   : IntensityControllerTolerance
+/// Display name   : Intensity Controller Tolerance
+/// Tooltip        : Tolerance in variation from the target value in which the algorithm will not react.
+/// Description    : Tolerance in variation from the target value in which the algorithm will not react.
+/// SFNC Namespace : Custom
+/// Unit           : Percentage
+/// Value          : 5
+
+/// Feature name   : LineInverter
+/// Display name   : Line Inverter
+/// Tooltip        : Controls the inversion of the signal of the selected input or output Line.
+/// Description    : Controls the inversion of the signal of the selected input or output Line.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : LineMode
+/// Display name   : Line Mode
+/// Tooltip        : Controls if the physical Line is used to Input or Output a signal.
+/// Description    : Controls if the physical Line is used to Input or Output a signal.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Input
+
+/// Feature name   : LineSelector
+/// Display name   : Line Selector
+/// Tooltip        : Selects the physical line (or pin) of the external device connector or the virtual line of the Transport Layer to configure.
+/// Description    : Selects the physical line (or pin) of the external device connector or the virtual line of the Transport Layer to configure.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Line0
+
+/// Feature name   : LineSource
+/// Display name   : Line Source
+/// Tooltip        : Selects which internal acquisition or I/O source signal to output on the selected Line.
+/// Description    : Selects which internal acquisition or I/O source signal to output on the selected Line. LineMode must be Output.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : LineStatus
+/// Display name   : Line Status
+/// Tooltip        : Returns the current status of the selected input or output Line.
+/// Description    : Returns the current status of the selected input or output Line.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : True
+
+/// Feature name   : LineStatusAll
+/// Display name   : Line StatusAll
+/// Tooltip        : Returns the current status of the all input or output Line.
+/// Description    : Returns the current status of the all input or output Line.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 15
+
+/// Feature name   : MaxDriverBuffersCount
+/// Display name   : Max Driver Buffers Count
+/// Tooltip        : 
+/// Description    : Maximum number of driver buffers used by the acquisition engine.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : 64
+
+/// Feature name   : OffsetX
+/// Display name   : Offset X
+/// Tooltip        : Horizontal offset from the origin to the region of interest (in pixels).
+/// Description    : Horizontal offset from the origin to the region of interest (in pixels).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : OffsetY
+/// Display name   : Offset Y
+/// Tooltip        : Vertical offset from the origin to the region of interest (in pixels).
+/// Description    : Vertical offset from the origin to the region of interest (in pixels).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : PayloadSize
+/// Display name   : Payload Size
+/// Tooltip        : Provides the number of bytes transferred for each image or chunk on the stream channel.
+/// Description    : Provides the number of bytes transferred for each image or chunk on the stream channel. This includes any end-of-line, end-of-frame statistics or other stamp data. This is the total size of data payload for a data block.
+/// SFNC Namespace : Standard
+/// Unit           : B
+/// Value          : 5038848
+
+/// Feature name   : PixelFormat
+/// Display name   : Pixel Format
+/// Tooltip        : Format of the pixels provided by the device.
+/// Description    : Format of the pixels provided by the device. It represents all the information provided by PixelCoding, PixelSize, PixelColorFilter combined in a single feature.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Mono8
+
+/// Feature name   : PixelSize
+/// Display name   : Pixel Size
+/// Tooltip        : Total size in bits of a pixel of the image.
+/// Description    : Total size in bits of a pixel of the image.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Bpp8
+
+/// Feature name   : ReverseX
+/// Display name   : Reverse X
+/// Tooltip        : Flip horizontally the image sent by the device.
+/// Description    : Flip horizontally the image sent by the device. The Region of interest is applied after the flipping.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : False
+
+/// Feature name   : ReverseY
+/// Display name   : Reverse Y
+/// Tooltip        : Flip vertically the image sent by the device.
+/// Description    : Flip vertically the image sent by the device. The Region of interest is applied after the flipping.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : False
+
+/// Feature name   : SensorHeight
+/// Display name   : Sensor Height
+/// Tooltip        : Effective height of the sensor in pixels.
+/// Description    : Effective height of the sensor in pixels.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 1944
+
+/// Feature name   : SensorShutterMode
+/// Display name   : Shutter Mode
+/// Tooltip        : Selects the sensor shutter mode
+/// Description    : Selects the type of test pattern that is generated by the device as image source
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : RollingShutter
+
+/// Feature name   : SensorWidth
+/// Display name   : Sensor Width
+/// Tooltip        : Effective width of the sensor in pixels.
+/// Description    : Effective width of the sensor in pixels.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 2592
+
+/// Feature name   : StreamAnnounceBufferMinimum
+/// Display name   : Stream Announce Buffer Minimum
+/// Tooltip        : 
+/// Description    : Minimal number of buffers to announce to enable selected buffer handling mode. Corresponds to the STREAM_INFO_BUF_ANNOUNCE_MIN command of DSGetInfo function.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : StreamAnnouncedBufferCount
+/// Display name   : Stream Announced Buffer Count
+/// Tooltip        : 
+/// Description    : Number of announced (known) buffers on this stream. Corresponds to the STREAM_INFO_NUM_ANNOUNCED command of DSGetInfo function.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 0
+
+/// Feature name   : StreamBufferHandlingMode
+/// Display name   : Stream Buffer Handling Mode
+/// Tooltip        : 
+/// Description    : Available acquisition modes of this stream.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Default
+
+/// Feature name   : StreamID
+/// Display name   : Stream ID
+/// Tooltip        : 
+/// Description    : Device unique ID for the stream, for instance a GUID.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : DEV_1AB22C000D1B_DS_0x0
+
+/// Feature name   : StreamIsGrabbing
+/// Display name   : Stream Is Grabbing
+/// Tooltip        : 
+/// Description    : Flag indicating whether the acquisition engine is started or not.
+/// SFNC Namespace : Custom
+/// Unit           : 
+/// Value          : False
+
+/// Feature name   : StreamType
+/// Display name   : Stream Type
+/// Tooltip        : 
+/// Description    : Transport layer type of the Data Stream.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : USB3
+
+/// Feature name   : TestPendingAck
+/// Display name   : Test Pending Ack
+/// Tooltip        : Tests the device's pending acknowledge feature.
+/// Description    : Tests the device's pending acknowledge feature. When this feature is written, the device waits a time period corresponding to the value of TestPendingAck before acknowledging the write.
+/// SFNC Namespace : Standard
+/// Unit           : ms
+/// Value          : 0
+
+/// Feature name   : TriggerActivation
+/// Display name   : Trigger Activation
+/// Tooltip        : Specifies the activation mode of the trigger.
+/// Description    : Specifies the activation mode of the trigger.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : AnyEdge
+
+/// Feature name   : TriggerMode
+/// Display name   : Trigger Mode
+/// Tooltip        : Controls if the selected trigger is active.
+/// Description    : Controls if the selected trigger is active.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Off
+
+/// Feature name   : TriggerSelector
+/// Display name   : Trigger Selector
+/// Tooltip        : Selects the type of trigger to configure.
+/// Description    : Selects the type of trigger to configure.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : AcquisitionStart
+
+/// Feature name   : TriggerSoftware
+/// Display name   : Trigger Software
+/// Tooltip        : Generates an internal trigger.
+/// Description    : Generates an internal trigger. TriggerSource must be set to Software.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : TriggerSource
+/// Display name   : Trigger Source
+/// Tooltip        : Specifies the internal signal or physical input Line to use as the trigger source.
+/// Description    : Specifies the internal signal or physical input Line to use as the trigger source. The selected trigger must have its TriggerMode set to On.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Software
+
+/// Feature name   : UserSetDefault
+/// Display name   : User Set Default
+/// Tooltip        : Selects the feature User Set to load and make active by default when the device is reset.
+/// Description    : Selects the feature User Set to load and make active by default when the device is reset.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Default
+
+/// Feature name   : UserSetLoad
+/// Display name   : User Set Load
+/// Tooltip        : Loads the User Set specified by UserSetSelector to the device and makes it active.
+/// Description    : Loads the User Set specified by UserSetSelector to the device and makes it active.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : UserSetSave
+/// Display name   : User Set Save
+/// Tooltip        : Save the User Set specified by UserSetSelector to the non-volatile memory of the device.
+/// Description    : Save the User Set specified by UserSetSelector to the non-volatile memory of the device.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : None
+
+/// Feature name   : UserSetSelector
+/// Display name   : User Set Selector
+/// Tooltip        : Selects the feature User Set to load, save or configure.
+/// Description    : Selects the feature User Set to load, save or configure.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : Default
+
+/// Feature name   : Width
+/// Display name   : Width
+/// Tooltip        : Width of the image provided by the device (in pixels).
+/// Description    : Width of the image provided by the device (in pixels).
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 2592
+
+/// Feature name   : WidthMax
+/// Display name   : Width Max
+/// Tooltip        : Maximum width of the image (in pixels).
+/// Description    : Maximum width of the image (in pixels). The dimension is calculated after horizontal binning, decimation or any other function changing the horizontal dimension of the image.
+/// SFNC Namespace : Standard
+/// Unit           : 
+/// Value          : 2592
+

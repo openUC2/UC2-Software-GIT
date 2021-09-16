@@ -18,6 +18,12 @@ import unipath as uni
 if fg.i2c:
     from I2CDevice import I2CDevice
     from I2CBus import I2CBus
+elif fg.is_serial:
+    # Quick hack to switch to USB
+    from SerialDevice import SerialDevice as I2CDevice
+elif fg.is_gpio:
+    # Quick hack to switch to GPIO
+    from GPIODevice import GPIODevice as I2CDevice    
 else:
     from MQTTDevice import MQTTDevice
     import paho.mqtt.client as mqtt
@@ -33,6 +39,10 @@ logger = logger_createChild('init','UC2')
 def controller_init():
     if fg.i2c:
         arduino_init()
+    elif fg.is_serial:
+        serial_init()
+    elif fg.is_gpio:        
+        gpio_init()
     else:  # case of e.g. ESP32
         mqtt_init()
     camera_init()
@@ -53,14 +63,69 @@ def camera_init():
 
 def arduino_init():
     # address = I2CBus.scanBus()
-    fg.ledarr = I2CDevice(0x07)  # normally 0x07
-    fg.motors = I2CDevice(0x08)  # normally 0x08
+    # connect to LEDarray    
+    try:
+        fg.ledarr = I2CDevice(0x07)  # normally 0x07
+    except:
+        fg.ledarr = False
+        logger.debug("LEDARray is not connected!")
+
+    # connect to Motors        
+    try:
+        fg.motors = I2CDevice(0x08)  # normally 0x08
+    except:
+        fg.motors = False
+        logger.debug("Motors are not connected!")
+     
+    # connect to Fluo
+    try:
+        fg.fluo = I2CDevice(0x08)
+    except:
+        fg.fluo = False
+        logger.debug("Fluo module isnot connected!")
+        
     # time.sleep(1.0) #because accessing same device
     # sits on the same Arduino as motors for now
-    fg.fluo = I2CDevice(0x08)
     # fg.ledarr.announce()
     # fg.motors.announce()
     #fluidiscopeIO.send(fg.ledarr, "CLEAR")
+
+def serial_init():
+    
+    # Very hacky to have always the same Serial device..    
+    fg.serialdevice = serial.Serial(fg.serialadress, 115200, timeout=.1)
+
+    try:
+        fg.ledarr = I2CDevice(fg.serialdevice)  # normally 0x07
+    except Exception as e:
+        print(e)
+        fg.ledarr = False
+        logger.debug("LEDARray is not connected!")
+
+    # connect to Motors        
+    try:
+        fg.motors = I2CDevice(fg.serialdevice)  # normally 0x08
+    except:
+        fg.motors = False
+        logger.debug("Motors are not connected!")
+     
+    # connect to Fluo
+    try:
+        fg.fluo = I2CDevice(fg.serialdevice)
+    except:
+        fg.fluo = False
+        logger.debug("Fluo module isnot connected!")
+
+
+def gpio_init():
+    
+    # Very hacky to have always the same Serial device..
+    fg.serialdevice = I2CDevice()
+    fg.ledarr = I2CDevice()  # normally 0x07
+    fg.fluo = I2CDevice()
+    fg.motors = I2CDevice()  # normally 0x08
+    
+    
 
 # MQTT Functions ------------------------------------------------------------------------------
 
