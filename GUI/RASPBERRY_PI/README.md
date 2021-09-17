@@ -439,16 +439,16 @@ We will briefly describe how to access your device using the sFTP-interface. In 
 # Optional Steps from now
 ## BugFixing the "SNAP"-crash
 On some RasPi<-->Camera combinations you might run out of GPU-memory if you want to take a big image with the function "SNAP". To test this, you can add a handy command shortcut to your environment. Create a new-file gpumem with:
-    ```
-    mkdir ~/bin
-    nano ~/bin/gpumem
-    chmod +x ~/bin/gpumem
-    ```
-    and fill it with
-    ```
-    #!/bin/bask
-    sudo /opt/vc/bin/vcdbg relo stats
-    ```
+```
+mkdir ~/bin
+nano ~/bin/gpumem
+chmod +x ~/bin/gpumem
+```
+and fill it with
+```
+#!/bin/bask
+sudo /opt/vc/bin/vcdbg reloc stats
+```
 Now you can call **gpumem** and compare to the displayed images
 
 |GPUmem under small image|overload|error-message|
