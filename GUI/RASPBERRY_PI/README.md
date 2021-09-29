@@ -282,8 +282,8 @@ We've put all the necessary steps here, so there's no need for you to jump to th
     ```
     and search (`Ctrl+W`) for `[input]` and add the following two lines
     ```
-    $ mtdev_%(name)s = probesysfs,provider=mtdev
-    $ hid_%(name)s = probesysfs,provider=hidinput
+    mtdev_%(name)s = probesysfs,provider=mtdev
+    hid_%(name)s = probesysfs,provider=hidinput
     ```
     <p align="center">
     <img src="./IMAGES/script08.jpg" width="400" alt="">
