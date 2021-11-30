@@ -261,6 +261,24 @@ python asynchronous_grab_opencv.py
 ```
 
 
+***ALTERNATIVE***
+
+From the original Github issue [here](https://github.com/alliedvision/VimbaPython/issues/36)
+
+```
+
+I believe the following steps should get you a working python3.7 venv with opencv (just writing this from memory, steps were not checked to be correct. If they do not work please let me know so I can fix these instructions.):
+
+install python3.7 and python3-venv (yes the python3-venv package is the one you want. There is no python3.7-venv as far as I remember) via apt
+create a new python3.7 venv in the directory where you want to store it (python3.7 -m venv <name-of-venv>)
+activate that venv (source <name-of-venv>/bin/activate)
+update pip inside that venv to at least 19.3 (with venv activated: python -m pip install -U pip)
+after updating pip install opencv (pip install opencv-python)
+run a python interpreter from that venv and try to import opencv (i.e. execute python on console and simply try import cv2 in that REPL)
+This is now possible thanks to OpenCV being available in a newer precompiled manylinux format from pip and newer versions of pip supporting this format. You can find some more information on the PyPI page for opencv-python: https://pypi.org/project/opencv-python/
+```
+
+
 **Done!**
 
 
