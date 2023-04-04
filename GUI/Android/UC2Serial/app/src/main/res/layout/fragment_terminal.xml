@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+
+    <!-- This is the lens for X in left! -->
+
+
+    <!-- This is the lens for Z in left! -->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textViewZLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="S-Stage"
+            android:textSize="8pt" />
+
+        <Button
+            android:id="@+id/button_s_stage_minusminus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="--" />
+
+        <Button
+            android:id="@+id/button_s_stage_minus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/button_s_stage_plus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/button_s_stage_plusplus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="++" />
+
+    </LinearLayout>
+
+
+
+    <!-- This is the lens for Z in right! -->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView_LEDArray"
+            android:layout_width="80pt"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:text="LED Array (I)"
+            android:textSize="8pt" />
+
+        <SeekBar
+            android:id="@+id/seekbarLEDArray"
+            android:layout_width="match_parent"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:max="255" />
+
+    </LinearLayout>
+
+
+    <!-- This is the lens for X in right! -->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <TextView
+            android:id="@+id/textView_LED_MATRIX_VAL"
+            android:layout_width="80pt"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:text="LED (M)"
+            android:textSize="8pt" />
+
+        <SeekBar
+            android:id="@+id/seekbar_ledmatrix_naval"
+            style="@style/Widget.AppCompat.SeekBar.Discrete"
+            android:layout_width="match_parent"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:max="4"
+            android:progress="2" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textViewDeltaX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delta (X)"
+            android:textSize="8pt" />
+
+        <Button
+            android:id="@+id/button_deltastage_x_minusminus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="--" />
+
+        <Button
+            android:id="@+id/button_deltastage_x_minus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/button_deltastage_x_plus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/button_deltastage_x_plusplus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="++" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textViewDeltaY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delta (Y)"
+            android:textSize="8pt" />
+
+        <Button
+            android:id="@+id/button_deltastage_y_minusminus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="--" />
+
+        <Button
+            android:id="@+id/button_deltastage_y_minus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/button_deltastage_y_plus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/button_deltastage_y_plusplus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="++" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/textViewDeltaZ"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delta (Z)"
+            android:textSize="8pt" />
+
+        <Button
+            android:id="@+id/button_deltastage_z_minusminus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="--" />
+
+        <Button
+            android:id="@+id/button_deltastage_z_minus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="-" />
+
+        <Button
+            android:id="@+id/button_deltastage_z_plus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="+" />
+
+        <Button
+            android:id="@+id/button_deltastage_z_plusplus"
+            android:layout_width="1pt"
+            android:layout_height="25pt"
+            android:layout_weight="1"
+            android:text="++" />
+
+    </LinearLayout>
+
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="10dp" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textViewIPNR"
+            android:layout_width="30pt"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:text="IP#"
+            android:textSize="8pt" />
+
+        <EditText
+            android:id="@+id/editText_ip_address"
+            android:layout_width="80pt"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:digits="0123456789."
+            android:ems="10"
+            android:inputType="number"
+            android:text="192.168.43.88" />
+
+        <TextView
+            android:id="@+id/textViewIDNR"
+            android:layout_width="30pt"
+            android:layout_height="20pt"
+            android:layout_weight="1"
+            android:text="ID#"
+            android:textSize="8pt" />
+
+        <EditText
+            android:id="@+id/editText_id_nr"
+            android:layout_width="40pt"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:digits="0123456789."
+            android:ems="10"
+            android:inputType="number"
+            android:text="1." />
+
+        <Button
+            android:id="@+id/button_load_localip"
+            android:layout_width="wrap_content"
+            android:layout_height="24pt"
+            android:layout_weight="1"
+            android:text="IP!" />
+
+        <Button
+            android:id="@+id/button_ip_address_go"
+            android:layout_width="wrap_content"
+            android:layout_height="24pt"
+            android:layout_weight="1"
+            android:text="Go!" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <Button
+            android:id="@+id/button_start_mqtt_service"
+            android:layout_width="wrap_content"
+            android:layout_height="24pt"
+            android:layout_weight="1"
+            android:text="START SERVER!" />
+
+        <Button
+            android:id="@+id/button_stop_mqtt_service"
+            android:layout_width="wrap_content"
+            android:layout_height="24pt"
+            android:layout_weight="1"
+            android:text="STOP SERVER!" />
+
+    </LinearLayout>
+
+
+
+</LinearLayout>
+
+
